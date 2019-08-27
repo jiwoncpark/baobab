@@ -29,18 +29,13 @@ python -m ipykernel install --user --name baobab --display-name "Python (baobab)
 
 ### Usage
 
-1. Edit the configuration parameters `configs/config.py`. Pay special attention to the `components` field, which determines which components of the lensed system (e.g. lens light, AGN light) become sampled from relevant priors and rendered in the image.
+1. *Copy* your favorite config file in the `configs` directory, e.g. `configs/tdlmc_config.py`, and customize it. You might want to change the `name` field first with something recognizable. Pay special attention to the `components` field, which determines which components of the lensed system (e.g. lens light, AGN light) become sampled from relevant priors and rendered in the image.
 
 2. Run
 ```shell
-python generate.py
+python generate.py <path to your config file>
 ```
 
-You can visualize the training results by running
-```
-tensorboard --logdir runs
-```
+Please message @jiwoncpark with any questions.
 
-Please message @jiwoncpark with .
-
-There is an ongoing [document](https://www.overleaf.com/read/pswdqwttjbjr) that details our prior choice, written and maintained by Ji Won.
+There is an ongoing [document](https://www.overleaf.com/read/pswdqwttjbjr) that details our BNN prior choice, written and maintained by Ji Won.
