@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 # custom config class
 from configs.parser import Config
 # BNN prior class
-from baobab_bnn_prior import BNNPrior
+import bnn_priors
 # Lenstronomy modules
 from lenstronomy.LensModel.lens_model import LensModel
 from lenstronomy.LensModel.Solver.lens_equation_solver import LensEquationSolver
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         ps_model = PointSource(point_source_type_list=cfg.bnn_omega.agn_light.type, fixed_magnification_list=[False])
 
     # Initialize BNN prior
-    bnn_prior = BNNPrior(cfg.is_interim, cfg.bnn_omega, cfg.components)
+    bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components)
 
     # Initialize dataframe of labels
     param_list = []

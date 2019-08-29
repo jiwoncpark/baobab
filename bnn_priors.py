@@ -1,22 +1,15 @@
 import numpy as np
 import lenstronomy.Util.param_util as param_util
 
-class BNNPrior:
-    def __init__(self, is_interim, bnn_omega, components):
-        self.is_interim = is_interim
+class DiagonalBNNPrior:
+    def __init__(self, bnn_omega, components):
         self.components = components
         for comp in bnn_omega:
             if comp in self.components:
                 # e.g. self.lens_mass = cfg.bnn_omega.lens_mass
                 setattr(self, comp, bnn_omega[comp])
 
-    def sample(self): # TODO: subclass for interim, models as we add more parameterization
-        if self.is_interim:
-            return self._sample_interim()
-        else:
-            return self._sample_test()
-
-    def _sample_interim(self):
+    def sample(self):
         kwargs = dict(
                       spemd=self._sample_spemd(),
                       ext_shear=self._sample_ext_shear(),
@@ -27,10 +20,6 @@ class BNNPrior:
         if 'agn_light' in self.components:
             kwargs['agn_ps'] = self._sample_agn_ps()
         return kwargs
-
-    def _sample_test(self):
-        # TODO: check if 'cosmo' is provided
-        raise NotImplementedError
 
     def _sample_spemd(self):
         om = self.lens_mass # convenience renaming (from \Omega)

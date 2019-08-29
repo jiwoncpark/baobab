@@ -2,12 +2,12 @@ import os, sys
 
 name = 'tdlmc'
 seed = 1113 # random seed
-is_interim = True
+bnn_prior_class = 'DiagonalBNNPrior'
 n_data = 200 # number of images to generate
 train_vs_val = 'train'
 out_dir = os.path.join('out_data', '{:s}_{:s}_{:s}_seed{:d}'.format(name,
                                                                     train_vs_val,
-                                                                    'interim' if is_interim else 'empirical',
+                                                                    bnn_prior_class,
                                                                     seed))
 components = ['lens_mass', 'src_light', 'lens_light', 'agn_light']
 
