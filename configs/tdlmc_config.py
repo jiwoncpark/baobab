@@ -3,7 +3,7 @@ import os, sys
 name = 'tdlmc'
 seed = 1113 # random seed
 is_interim = True
-n_data = 20 # number of images to generate
+n_data = 200 # number of images to generate
 train_vs_val = 'train'
 out_dir = os.path.join('out_data', '{:s}_{:s}_{:s}_seed{:d}'.format(name,
                                                                     train_vs_val,
@@ -37,10 +37,11 @@ bnn_omega = dict(
                                  y = dict(
                                           mu=0.0,
                                           sigma=1.e-7),
-                                 log_gamma = dict(
+                                 # Lognormal(mu, sigma^2)
+                                 gamma = dict(
                                               mu=0.7,
                                               sigma=0.02),
-                                 log_theta_E = dict(
+                                 theta_E = dict(
                                                 mu=0.0,
                                                 sigma=0.1),
                                  # Beta(a, b)
@@ -70,14 +71,14 @@ bnn_omega = dict(
                                   type=['SERSIC_ELLIPSE'], # only available type now
                                   params=['amp', 'n_sersic', 'R_sersic', 'e1', 'e2'],
                                   # Centered at lens mass
-                                  # Normal(mu, sigma^2)
-                                  log_amp = dict(
+                                  # Lognormal(mu, sigma^2)
+                                  amp = dict(
                                                mu=3.9,
                                                sigma=0.7),
-                                  log_n_sersic = dict(
+                                  n_sersic = dict(
                                                   mu=1.25,
                                                   sigma=0.13),
-                                  log_r_eff = dict(
+                                  R_sersic = dict(
                                                mu=-0.35,
                                                sigma=0.3,),
                                   # Beta(a, b)
@@ -96,22 +97,23 @@ bnn_omega = dict(
                 src_light = dict(
                                 type=['SERSIC_ELLIPSE'], # only available type now
                                 params=['amp', 'center_x', 'center_y', 'n_sersic', 'R_sersic', 'e1', 'e2'],
-                                # Normal(mu, sigma^2)
-                                log_amp = dict(
+                                # Lognormal(mu, sigma^2)
+                                amp = dict(
                                         mu=5.0,
                                         sigma=0.3),
+                                n_sersic = dict(
+                                                  mu=1.1,
+                                                  sigma=0.2),
+                                R_sersic = dict(
+                                            mu=-0.7,
+                                            sigma=0.4,),
+                                # Normal(mu, sigma^2)
                                 x = dict(
                                         mu=0.0,
                                         sigma=0.01),
                                 y = dict(
                                         mu=0.0,
                                         sigma=0.01),
-                                log_n_sersic = dict(
-                                                  mu=1.1,
-                                                  sigma=0.2),
-                                log_r_eff = dict(
-                                            mu=-0.7,
-                                            sigma=0.4,),
                                 # Beta(a, b)
                                 e1 = dict(
                                           a=4.0,
@@ -130,7 +132,8 @@ bnn_omega = dict(
                                  params=['amp'],
                                  # Centered at host
                                  # Pre-magnification, image-plane amplitudes if 'LENSED_POSITION'
-                                 log_amp = dict(
+                                 # Lognormal(mu, sigma^2)
+                                 amp = dict(
                                           mu=3.5, 
                                           sigma=0.3),
                                  ),

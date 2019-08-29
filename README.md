@@ -21,6 +21,10 @@ git clone https://github.com/sibirrer/fastell4py <DESIRED DESTINATION>
 cd <DESIRED DESTINATION>/fastell4py
 python setup.py install --user
 ```
+Note: this requires a Fortran compiler, e.g. on a debian system
+```shell
+sudo apt-get install gfortran
+```
 
 4. (Optional) To run the notebooks, add the Jupyter kernel.
 ```shell
