@@ -31,6 +31,8 @@ class BNNPrior(ABC):
             return self.sample_beta(**hyperparams)
         elif dist == 'normal':
             return self.sample_normal(**hyperparams)
+        elif dist == 'generalized_normal':
+            return self.sample_generalized_normal(**hyperparams)
 
     def sample_normal(self, mu, sigma, lower=-np.inf, upper=np.inf, log=False):
         """Samples from a normal distribution, optionally truncated
@@ -57,6 +59,8 @@ class BNNPrior(ABC):
             """
         sample = stats.truncnorm((lower - mu)/sigma, (upper - mu)/sigma,
                                  loc=mu, scale=sigma).rvs()
+        base = np.e if log else 1.0
+        sample = np.power(base, sample)
         return sample
 
     def sample_multivar_normal(self, mu, cov_mat, lower=None, upper=None):
@@ -121,6 +125,43 @@ class BNNPrior(ABC):
         """
         sample = np.random.beta(a, b)
         sample = sample*(upper - lower) + lower
+        return sample
+
+    def sample_generalized_normal(self, mu=0.0, alpha=1.0, p=10.0, lower=-np.inf, upper=np.inf):
+        """Samples from a generalized normal distribution, optionally truncated
+
+        Note
+        ----
+        Also called the exponential power distribution, this distribution converges
+        pointwise to uniform as p --> infinity. To approximate a uniform between ``a`` and ``b``,
+        define ``mu = 0.5*(a + b)`` and ``alpha=0.5*(b - a)``.
+        For ``p=1``, it's identical to Laplace.
+        For ``p=2``, it's identical to normal.
+
+        Parameters
+        ----------
+        mu : float
+            location (default: 0.0)
+        alpha : float
+            scale (default: 1.0)
+        p : float
+            shape (default: 10.0)
+        lower : float
+            min value (default: -np.inf)
+        upper : float
+            max value (default: np.inf)
+
+        References
+        ----------
+        .. [1] "Generalized normal distribution, Version 1",
+           https://en.wikipedia.org/wiki/Generalized_normal_distribution#Version_1
+
+        """
+        generalized_normal = stats.gennorm(beta=p, loc=mu, scale=alpha)
+        sample = generalized_normal.rvs()
+        # Reject samples outside of bounds, repeat sampling until accepted
+        while not np.all([np.greater(sample, lower), np.greater(upper, sample)]):
+            sample = generalized_normal.rvs()
         return sample
 
 class DiagonalBNNPrior(BNNPrior):

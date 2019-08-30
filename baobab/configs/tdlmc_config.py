@@ -1,4 +1,5 @@
 import os, sys
+import numpy as np
 
 name = 'tdlmc'
 seed = 1113 # random seed
@@ -67,17 +68,17 @@ bnn_omega = dict(
                  external_shear = dict(
                                        profile='SHEAR_GAMMA_PSI',
                                        gamma_ext = dict(
-                                                         dist='beta',
-                                                         a=4.0,
-                                                         b=4.0,
-                                                         lower=-0.2,
-                                                         upper=0.2),
+                                                         dist='normal',
+                                                         mu=-2.73, # See overleaf doc
+                                                         sigma=1.05,
+                                                         log=True,),
                                        psi_ext = dict(
-                                                     dist='beta',
-                                                     a=4.0,
-                                                     b=4.0,
-                                                     lower=-0.2,
-                                                     upper=0.2)
+                                                     dist='generalized_normal',
+                                                     mu=np.pi,
+                                                     alpha=np.pi,
+                                                     p=10.0,
+                                                     lower=0.0,
+                                                     upper=2.0*np.pi)
                                        ),
 
                  lens_light = dict(
@@ -134,13 +135,17 @@ bnn_omega = dict(
                                                 log=True),
                                 # Normal(mu, sigma^2)
                                 center_x = dict(
-                                         dist='normal',
+                                         dist='generalized_normal',
                                          mu=0.0,
-                                         sigma=0.01),
+                                         alpha=0.03,
+                                         p=10.0,
+                                         ),
                                 center_y = dict(
-                                         dist='normal',
+                                         dist='generalized_normal',
                                          mu=0.0,
-                                         sigma=0.01),
+                                         alpha=0.03,
+                                         p=10.0,
+                                         ),
                                 # Beta(a, b)
                                 e1 = dict(
                                           dist='beta',

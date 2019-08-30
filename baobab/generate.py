@@ -76,6 +76,7 @@ def get_PSF_models(psf_config, pixel_scale):
 if __name__ == "__main__":
     args = parse_args()
     cfg = Config.fromfile(args.config)
+    # Seed for reproducibility
     np.random.seed(cfg.seed)
     random.seed(cfg.seed)
 
