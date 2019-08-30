@@ -4,7 +4,7 @@ import numpy as np
 name = 'tdlmc'
 seed = 1113 # random seed
 bnn_prior_class = 'DiagonalBNNPrior'
-n_data = 200 # number of images to generate
+n_data = 1000 # number of images to generate
 train_vs_val = 'train'
 out_dir = os.path.join('out_data', '{:s}_{:s}_{:s}_seed{:d}'.format(name,
                                                                     train_vs_val,
@@ -34,11 +34,13 @@ bnn_omega = dict(
                                  center_x = dict(
                                           dist='normal', # one of ['normal', 'beta']
                                           mu=0.0,
-                                          sigma=1.e-7),
+                                          sigma=1.e-7,
+                                          log=False),
                                  center_y = dict(
                                           dist='normal',
                                           mu=0.0,
-                                          sigma=1.e-7),
+                                          sigma=1.e-7,
+                                          log=False),
                                  # Lognormal(mu, sigma^2)
                                  gamma = dict(
                                               dist='normal',
