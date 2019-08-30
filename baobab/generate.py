@@ -7,7 +7,7 @@ Example
 -------
 To run this script, pass in the desired config file as argument::
 
-    $ python generate.py configs/tdlmc_config
+    $ python generate.py configs/tdlmc_diagonal_config.py
 
 """
 
@@ -44,6 +44,35 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+def get_PSF_models(psf_config, pixel_scale):
+    """Instantiate PSF models by reading in template PSF maps
+
+    Parameters
+    ----------
+    psf_config : dict
+        copy of the PSF config
+    pixel_scale : float
+        pixel scale in arcsec/pix
+
+    Returns
+    -------
+    list
+        list of lenstronomy PSF instances
+    """ 
+    if psf_config.type == 'PIXEL':
+        # Instantiate PSF with available PSF maps
+        psf_seed_list = [101, 102, 103, 104, 105, 107, 108, 109, 110, 111, 113, 114, 115, 116, 117, 118]
+        psf_models = []
+        for psf_i, psf_seed in enumerate(psf_seed_list):
+            psf_path = os.path.join(psf_config.kernel_dir, 'psf_{:d}.fits'.format(psf_seed))
+            psf_map = pyfits.getdata(psf_path)
+            kernel_cut = kernel_util.cut_psf(psf_map, psf_config.kernel_size)
+            kwargs_psf = {'psf_type': 'PIXEL', 'pixel_size': pixel_scale, 'kernel_point_source': kernel_cut}
+            psf_models.append(PSF(**kwargs_psf))
+    else:
+        raise NotImplementedError
+    return psf_models
+
 if __name__ == "__main__":
     args = parse_args()
     cfg = Config.fromfile(args.config)
@@ -56,22 +85,15 @@ if __name__ == "__main__":
     else:
         raise OSError("Destination folder already exists.")
 
-    # Instantiate PSF with available PSF maps
-    psf_seed_list = [101, 102, 103, 104, 105, 107, 108, 109, 110, 111, 113, 114, 115, 116, 117, 118]
-    n_psf = len(psf_seed_list)
-    psf_models = []
-    for psf_i, psf_seed in enumerate(psf_seed_list):
-        psf_path = os.path.join(cfg.psf.kernel_dir, 'psf_{:d}.fits'.format(psf_seed))
-        psf_map = pyfits.getdata(psf_path)
-        kernel_cut = kernel_util.cut_psf(psf_map, cfg.psf.kernel_size)
-        kwargs_psf = {'psf_type': cfg.psf.type, 'pixel_size': cfg.image.deltaPix, 'kernel_point_source': kernel_cut}
-        psf_models.append(PSF(**kwargs_psf))
+    # Instantiate PSF models
+    psf_models = get_PSF_models(cfg.psf, cfg.image.deltaPix)
+    n_psf = len(psf_models)
 
     # Instantiate ImageData
     kwargs_data = sim_util.data_configure_simple(**cfg.image)
     image_data = ImageData(**kwargs_data)
 
-    # Instantiate models
+    # Instantiate density models
     lens_mass_model = LensModel(lens_model_list=[cfg.bnn_omega.lens_mass.profile, cfg.bnn_omega.external_shear.profile])
     src_light_model = LightModel(light_model_list=[cfg.bnn_omega.src_light.profile])
     lens_eq_solver = LensEquationSolver(lens_mass_model)
@@ -111,7 +133,8 @@ if __name__ == "__main__":
                                                               search_window=cfg.image.numPix*cfg.image.deltaPix)
             mag = lens_mass_model.magnification(x_image, y_image, kwargs=kwargs_lens_mass)
             unlensed_amp = sample['agn_light']['amp']
-            kwargs_ps = [{'ra_image': x_image, 'dec_image': y_image, 'point_amp': np.abs(mag)*unlensed_amp}]
+            lensed_amp = np.abs(mag)*unlensed_amp
+            kwargs_ps = [{'ra_image': x_image, 'dec_image': y_image, 'point_amp': lensed_amp}]
             
         if 'lens_light' in cfg.components:
             kwargs_lens_light = [sample['lens_light']]
@@ -132,10 +155,6 @@ if __name__ == "__main__":
         # Save image file
         img_path = os.path.join(cfg.out_dir, 'X_{0:07d}.npy'.format(i+1))
         np.save(img_path, img)
-
-        #img = Image.fromarray(img, mode='L')
-        #img = img.convert('L')
-        #img.save(img_path)
 
         # Save labels
         meta = {}
