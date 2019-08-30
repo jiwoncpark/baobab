@@ -16,7 +16,7 @@ class BNNPrior(ABC):
         """
         params = dict(SPEMD=['center_x', 'center_y', 'gamma', 'theta_E', 'e1', 'e2'],
                           SHEAR_GAMMA_PSI=['gamma_ext', 'psi_ext'],
-                          SERSIC_ELLIPSE=['amp', 'n_sersic', 'R_sersic', 'e1', 'e2'],
+                          SERSIC_ELLIPSE=['amp', 'center_x', 'center_y', 'n_sersic', 'R_sersic', 'e1', 'e2'],
                           LENSED_POSITION=['amp'],
                           SOURCE_POSITION=['ra_source', 'dec_source', 'amp'],)
         setattr(self, 'params', params)
@@ -33,6 +33,19 @@ class BNNPrior(ABC):
             return self.sample_normal(**hyperparams)
         elif dist == 'generalized_normal':
             return self.sample_generalized_normal(**hyperparams)
+
+    def eval_param_pdf(self, eval_at, hyperparams):
+        """Assigns and evaluates the PDF 
+
+        """
+        # TODO: see if direct attribute call is quicker than string comparison
+        dist = hyperparams.pop('dist')
+        if dist == 'beta':
+            return self.eval_beta_pdf(eval_at, **hyperparams)
+        elif dist == 'normal':
+            return self.eval_normal_pdf(eval_at, **hyperparams)
+        elif dist == 'generalized_normal':
+            return self.eval_generalized_normal_pdf(eval_at, **hyperparams)
 
     def sample_normal(self, mu, sigma, lower=-np.inf, upper=np.inf, log=False):
         """Samples from a normal distribution, optionally truncated
@@ -59,9 +72,26 @@ class BNNPrior(ABC):
             """
         sample = stats.truncnorm((lower - mu)/sigma, (upper - mu)/sigma,
                                  loc=mu, scale=sigma).rvs()
-        base = np.e if log else 1.0
-        sample = np.power(base, sample)
+        if log:
+            sample = np.exp(sample)
         return sample
+
+    def eval_normal_pdf(self, eval_at, mu, sigma, lower=-np.inf, upper=np.inf, log=False):
+        """Evaluate the normal pdf, optionally truncated
+
+        See `sample_normal` for parameter definitions.
+
+        """
+        if log:
+            dist = stats.lognorm(scale=np.exp(mu), s=sigma, loc=0.0)
+            eval_unnormed_pdf = dist.pdf(eval_at)
+            accept_norm = dist.cdf(upper) - dist.cdf(lower)
+            eval_normed_pdf = eval_unnormed_pdf/accept_norm
+            return eval_normed_pdf
+        else:
+            dist = stats.truncnorm((lower - mu)/sigma, (upper - mu)/sigma, loc=mu, scale=sigma)
+            eval_pdf = dist.pdf(eval_at)
+            return eval_pdf
 
     def sample_multivar_normal(self, mu, cov_mat, lower=None, upper=None):
         """Samples from an N-dimensional normal distribution, optionally truncated
@@ -125,7 +155,19 @@ class BNNPrior(ABC):
         """
         sample = np.random.beta(a, b)
         sample = sample*(upper - lower) + lower
+        # TODO: check if same as
+        # stats.beta(a=a, b=b, loc=lower, scale=upper-lower).rvs()
         return sample
+
+    def eval_beta_pdf(self, eval_at, a, b, lower=0.0, upper=1.0):
+        """Evaluate the beta pdf, scaled/shifted
+
+        See `sample_beta` for parameter definitions.
+
+        """
+        dist = stats.beta(a=a, b=b, loc=lower, scale=upper-lower)
+        eval_pdf = dist.pdf(eval_at)
+        return eval_pdf
 
     def sample_generalized_normal(self, mu=0.0, alpha=1.0, p=10.0, lower=-np.inf, upper=np.inf):
         """Samples from a generalized normal distribution, optionally truncated
@@ -163,6 +205,18 @@ class BNNPrior(ABC):
         while not np.all([np.greater(sample, lower), np.greater(upper, sample)]):
             sample = generalized_normal.rvs()
         return sample
+
+    def eval_generalized_normal_pdf(self, eval_at, mu=0.0, alpha=1.0, p=10.0, lower=-np.inf, upper=np.inf):
+        """Evaluate the generalized normal pdf, scaled/shifted
+
+        See `sample_generalized_normal` for parameter definitions.
+
+        """
+        generalized_normal = stats.gennorm(beta=p, loc=mu, scale=alpha)
+        unnormed_eval_pdf = generalized_normal.pdf(eval_at)
+        accept_norm = generalized_normal.cdf(upper) - generalized_normal.cdf(lower)
+        normed_eval_pdf = unnormed_eval_pdf/accept_norm
+        return normed_eval_pdf
 
 class DiagonalBNNPrior(BNNPrior):
     """BNN prior with independent parameters

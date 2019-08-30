@@ -114,7 +114,10 @@ if __name__ == "__main__":
     for comp in cfg.components:
         param_list += ['{:s}_{:s}'.format(comp, param) for param in bnn_prior.params[cfg.bnn_omega[comp]['profile']] ]
     if 'agn_light' in cfg.components:
-        param_list += ['magnification', 'x_image', 'y_image']
+        param_list += ['mag_{:d}'.format(i) for i in range(4)]
+        param_list += ['x_image_{:d}'.format(i) for i in range(4)]
+        param_list += ['y_image_{:d}'.format(i) for i in range(4)]
+        param_list += ['n_img']
     metadata = pd.DataFrame(columns=param_list)
 
     print("Starting simulation...")
@@ -165,9 +168,12 @@ if __name__ == "__main__":
             for param_name, param_value in sample[comp].items():
                 meta['{:s}_{:s}'.format(comp, param_name)] = param_value
         if 'agn_light' in cfg.components:
-            meta['magnification'] = mag
-            meta['x_image'] = x_image
-            meta['y_image'] = y_image
+            n_img = len(x_image)
+            for i in range(n_img):
+                meta['mag_{:d}'.format(i)] = mag[i]
+                meta['x_image_{:d}'.format(i)] = x_image[i]
+                meta['y_image_{:d}'.format(i)] = y_image[i]
+                meta['n_img'] = n_img
         metadata = metadata.append(meta, ignore_index=True)
 
     # Fix column ordering
