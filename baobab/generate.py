@@ -1,12 +1,24 @@
+# -*- coding: utf-8 -*-
+"""Generating the training data.
+
+This script generates the training data according to the config specifications.
+
+Example
+-------
+To run this script, pass in the desired config file as argument::
+
+    $ python generate.py configs/tdlmc_config
+
+"""
+
 import os, sys
 import time
 import random
-from tqdm import tqdm
-import astropy.io.fits as pyfits
 import argparse
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import astropy.io.fits as pyfits
 # custom config class
 from configs.parser import Config
 # BNN prior class
@@ -24,6 +36,9 @@ from lenstronomy.Data.imaging_data import ImageData
 from lenstronomy.Data.psf import PSF
 
 def parse_args():
+    """Parses command-line arguments
+
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('config', help='train config file path')
     args = parser.parse_args()
@@ -57,16 +72,16 @@ if __name__ == "__main__":
     image_data = ImageData(**kwargs_data)
 
     # Instantiate models
-    lens_mass_model = LensModel(lens_model_list=cfg.bnn_omega.lens_mass.type)
-    src_light_model = LightModel(light_model_list=cfg.bnn_omega.src_light.type)
+    lens_mass_model = LensModel(lens_model_list=[cfg.bnn_omega.lens_mass.profile, cfg.bnn_omega.external_shear.profile])
+    src_light_model = LightModel(light_model_list=[cfg.bnn_omega.src_light.profile])
     lens_eq_solver = LensEquationSolver(lens_mass_model)
     lens_light_model = None
     ps_model = None
 
     if 'lens_light' in cfg.components:
-        lens_light_model = LightModel(light_model_list=cfg.bnn_omega.lens_light.type)
+        lens_light_model = LightModel(light_model_list=[cfg.bnn_omega.lens_light.profile])
     if 'agn_light' in cfg.components:
-        ps_model = PointSource(point_source_type_list=cfg.bnn_omega.agn_light.type, fixed_magnification_list=[False])
+        ps_model = PointSource(point_source_type_list=[cfg.bnn_omega.agn_light.profile], fixed_magnification_list=[False])
 
     # Initialize BNN prior
     bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components)
@@ -74,7 +89,7 @@ if __name__ == "__main__":
     # Initialize dataframe of labels
     param_list = []
     for comp in cfg.components:
-        param_list += ['{:s}_{:s}'.format(comp, param) for param in cfg['bnn_omega'][comp]['params'] ]
+        param_list += ['{:s}_{:s}'.format(comp, param) for param in bnn_prior.params[cfg.bnn_omega[comp]['profile']] ]
     metadata = pd.DataFrame(columns=param_list)
 
     print("Starting simulation...")
@@ -82,24 +97,24 @@ if __name__ == "__main__":
         psf_model = psf_models[i%n_psf]
         sample = bnn_prior.sample() # FIXME: sampling in batches
 
-        kwargs_lens_mass = [sample['spemd'], sample['ext_shear']]
-        kwargs_src_light = [sample['src_sersic']]
+        kwargs_lens_mass = [sample['lens_mass'], sample['external_shear']]
+        kwargs_src_light = [sample['src_light']]
         kwargs_lens_light = None
         kwargs_ps = None
 
         if 'agn_light' in cfg.components:
-            x_image, y_image = lens_eq_solver.findBrightImage(sample['src_sersic']['center_x'],
-                                                              sample['src_sersic']['center_y'],
+            x_image, y_image = lens_eq_solver.findBrightImage(sample['src_light']['center_x'],
+                                                              sample['src_light']['center_y'],
                                                               kwargs_lens_mass,
                                                               numImages=4,
                                                               min_distance=cfg.image.deltaPix, 
                                                               search_window=cfg.image.numPix*cfg.image.deltaPix)
             mag = lens_mass_model.magnification(x_image, y_image, kwargs=kwargs_lens_mass)
-            unlensed_amp = sample['agn_ps']['amp']
+            unlensed_amp = sample['agn_light']['amp']
             kwargs_ps = [{'ra_image': x_image, 'dec_image': y_image, 'point_amp': np.abs(mag)*unlensed_amp}]
             
         if 'lens_light' in cfg.components:
-            kwargs_lens_light = [sample['lens_sersic']]
+            kwargs_lens_light = [sample['lens_light']]
 
         # Instantiate image model
         kwargs_numerics = {'supersampling_factor': 1}
@@ -123,14 +138,10 @@ if __name__ == "__main__":
         #img.save(img_path)
 
         # Save labels
-        # Hardcoded but is meant to facilitate introduction of other profiles, e.g. NFW + Sersic...
-        meta = {'lens_mass_{:s}'.format(k): v for k, v in sample['spemd'].items()}
-        meta.update({'lens_mass_{:s}'.format(k): v for k, v in sample['ext_shear'].items()})
-        meta.update({'src_light_{:s}'.format(k): v for k, v in sample['src_sersic'].items()})
-        if 'lens_light' in cfg.components:
-            meta.update({'lens_light_{:s}'.format(k): v for k, v in sample['lens_sersic'].items()})
-        if 'agn_light' in cfg.components:
-            meta.update({'agn_light_{:s}'.format(k): v for k, v in sample['agn_ps'].items()})
+        meta = {}
+        for comp in cfg.components:
+            for param_name, param_value in sample[comp].items():
+                meta['{:s}_{:s}'.format(comp, param_name)] = param_value
         metadata = metadata.append(meta, ignore_index=True)
 
     # Fix column ordering
