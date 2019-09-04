@@ -1,7 +1,6 @@
 # Data
 *.csv
 *.npy
-*.fits
 *.txt
 out_data/*
 
