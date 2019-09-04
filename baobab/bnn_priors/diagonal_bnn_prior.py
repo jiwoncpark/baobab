@@ -52,8 +52,8 @@ class DiagonalBNNPrior(BaseBNNPrior):
                 kwargs[comp][param_name] = self.sample_param(hyperparams)
 
         # Source pos is defined wrt the lens pos
-        kwargs['src_light']['center_x'] += kwargs['lens_light']['center_x']
-        kwargs['srC_light']['center_y'] += kwargs['lens_light']['center_y']
+        kwargs['src_light']['center_x'] += kwargs['lens_mass']['center_x']
+        kwargs['src_light']['center_y'] += kwargs['lens_mass']['center_y']
         return kwargs
 
 
