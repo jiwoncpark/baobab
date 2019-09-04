@@ -1,9 +1,8 @@
 from setuptools import setup, find_packages
-print(find_packages())
+#print(find_packages())
 reqs = []
 with open('requirements.txt') as f:
     reqs = f.read().splitlines()
-
 #print(reqs)
 
 setup(
@@ -17,19 +16,7 @@ setup(
       long_description=open("README.md").read(),
       long_description_content_type='text/markdown',
       url='https://github.com/jiwoncpark/baobab',
-      install_requires=[
-      'lenstronomy',
-      'astropy',
-      'numpy',
-      'nose',
-      'matplotlib',
-      'ipykernel',
-      'pandas',
-      'dynesty',
-      'tqdm',
-      'corner',
-      'mpmath',
-      'addict',],
+      install_requires=reqs,
       dependency_links=[
       'http://github.com/sibirrer/fastell4py/tarball/master#egg=fastell4py',],
       include_package_data=True,
