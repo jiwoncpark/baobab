@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-#print(find_packages())
+print(find_packages())
 reqs = []
 with open('requirements.txt') as f:
     reqs = f.read().splitlines()
@@ -21,6 +21,7 @@ setup(
       'lenstronomy',
       'astropy',
       'numpy',
+      'nose',
       'matplotlib',
       'ipykernel',
       'pandas',

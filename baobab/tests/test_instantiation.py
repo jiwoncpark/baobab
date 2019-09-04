@@ -1,12 +1,13 @@
 from unittest import TestCase
 
-import baobab
-
 class TestInstantiation(TestCase):
     def instantiate_config(self):
-        # cfg = baobab.configs.Cfg(path)
-        pass
+        from baobab import configs
+        cfg = configs.Cfg('../configs/test_config.py')
+        return cfg
 
     def instantiate_diagonal_bnn_prior(self):
-        # diagonal_bnn_prior = baobab.DiagonalBNNPrior(cfg.bnn_omega, cfg.components)
-        pass
+        from baobab.bnn_priors import DiagonalBNNPrior
+        cfg = self.instantiate_config
+        diagonal_bnn_prior = DiagonalBNNPrior(cfg.bnn_omega, cfg.components)
+    

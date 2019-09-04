@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats as stats
 import lenstronomy.Util.param_util as param_util
-from base_bnn_prior import BaseBNNPrior
+from .base_bnn_prior import BaseBNNPrior
 
 class DiagonalBNNPrior(BaseBNNPrior):
     """BNN prior with independent parameters
