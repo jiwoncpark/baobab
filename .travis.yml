@@ -5,19 +5,6 @@ python:
 
 compiler:
     - g++
-
-before_install:
-    #- "sudo apt-get -qq update"
-    # Non-pip dependency
-    #- "sudo apt-get install -y libffi-dev libssl-dev python-dev"
-    #- "pip install --user pyOpenSSL ndg-httpsclient pyasn1"
-    #- "pip install --user urllib3[secure] --upgrade"
-    #- "pip install --user requests[security] --upgrade"
-    # GalSim dependencies
-    #- "sudo apt-get install -y libfftw3-dev libav-tools libeigen3-dev cmake"
-    #- "pip install --user pybind11"
-    # Install GalSim
-    #- "pip install --user galsim"
    
 cache:
     ccache: true
