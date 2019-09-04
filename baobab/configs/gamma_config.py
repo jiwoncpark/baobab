@@ -1,4 +1,5 @@
 import os, sys
+import numpy as np
 
 name = 'gamma'
 seed = 1113 # random seed
@@ -9,7 +10,7 @@ out_dir = os.path.join('out_data', '{:s}_{:s}_{:s}_seed{:d}'.format(name,
                                                                     train_vs_val,
                                                                     bnn_prior_class,
                                                                     seed))
-components = ['lens_mass', 'external_shear', 'src_light',] #'lens_light', 'agn_light']
+components = ['lens_mass', 'external_shear', 'src_light',]
 
 image = dict(
              sigma_bkg=0.05, 
@@ -33,16 +34,18 @@ bnn_omega = dict(
                                  center_x = dict(
                                           dist='normal', # one of ['normal', 'beta']
                                           mu=0.0,
-                                          sigma=1.e-7),
+                                          sigma=1.e-7,
+                                          log=False),
                                  center_y = dict(
                                           dist='normal',
                                           mu=0.0,
-                                          sigma=1.e-7),
+                                          sigma=1.e-7,
+                                          log=False),
                                  # Lognormal(mu, sigma^2)
                                  gamma = dict(
                                               dist='normal',
                                               mu=0.7,
-                                              sigma=0.02,
+                                              sigma=0.06,
                                               log=True),
                                  theta_E = dict(
                                                 dist='normal',
@@ -67,17 +70,17 @@ bnn_omega = dict(
                  external_shear = dict(
                                        profile='SHEAR_GAMMA_PSI',
                                        gamma_ext = dict(
-                                                         dist='beta',
-                                                         a=4.0,
-                                                         b=4.0,
-                                                         lower=-0.2,
-                                                         upper=0.2),
+                                                         dist='normal',
+                                                         mu=-2.73, # See overleaf doc
+                                                         sigma=1.05,
+                                                         log=True,),
                                        psi_ext = dict(
-                                                     dist='beta',
-                                                     a=4.0,
-                                                     b=4.0,
-                                                     lower=-0.2,
-                                                     upper=0.2)
+                                                     dist='generalized_normal',
+                                                     mu=np.pi,
+                                                     alpha=np.pi,
+                                                     p=10.0,
+                                                     lower=0.0,
+                                                     upper=2.0*np.pi)
                                        ),
 
                  lens_light = dict(
@@ -124,8 +127,8 @@ bnn_omega = dict(
                                            log=True),
                                 n_sersic = dict(
                                                 dist='normal',
-                                                mu=1.1,
-                                                sigma=0.2,
+                                                mu=0.7,
+                                                sigma=0.4,
                                                 log=True),
                                 R_sersic = dict(
                                                 dist='normal',
@@ -134,13 +137,17 @@ bnn_omega = dict(
                                                 log=True),
                                 # Normal(mu, sigma^2)
                                 center_x = dict(
-                                         dist='normal',
+                                         dist='generalized_normal',
                                          mu=0.0,
-                                         sigma=0.01),
+                                         alpha=0.03,
+                                         p=10.0,
+                                         ),
                                 center_y = dict(
-                                         dist='normal',
+                                         dist='generalized_normal',
                                          mu=0.0,
-                                         sigma=0.01),
+                                         alpha=0.03,
+                                         p=10.0,
+                                         ),
                                 # Beta(a, b)
                                 e1 = dict(
                                           dist='beta',
