@@ -37,7 +37,9 @@ python -m ipykernel install --user --name baobab --display-name "Python (baobab)
 
 2. Run
 ```shell
+cd baobab
 python generate.py <path to your config file>
+# e.g. python generate.py configs/tdlmc_config.py
 ```
 
 Please message @jiwoncpark with any questions.
