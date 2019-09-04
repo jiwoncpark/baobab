@@ -8,6 +8,8 @@ out_data/*
 # Cache
 *ipynb_checkpoints
 *__pycache__
+.eggs/*
+baobab.egg-info/*
 
 # Temp
 *Untitled.ipynb
