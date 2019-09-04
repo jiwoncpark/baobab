@@ -4,7 +4,7 @@ import numpy as np
 name = 'tdlmc'
 seed = 1113 # random seed
 bnn_prior_class = 'DiagonalBNNPrior'
-n_data = 1000 # number of images to generate
+n_data = 200 # number of images to generate
 train_vs_val = 'train'
 out_dir = os.path.join('out_data', '{:s}_{:s}_{:s}_seed{:d}'.format(name,
                                                                     train_vs_val,
@@ -127,8 +127,8 @@ bnn_omega = dict(
                                            log=True),
                                 n_sersic = dict(
                                                 dist='normal',
-                                                mu=1.1,
-                                                sigma=0.2,
+                                                mu=0.7,
+                                                sigma=0.4,
                                                 log=True),
                                 R_sersic = dict(
                                                 dist='normal',
