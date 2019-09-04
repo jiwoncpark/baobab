@@ -1,3 +1,5 @@
+import os, sys
+import shutil
 from unittest import TestCase
 
 class TestBreakage(TestCase):
@@ -5,12 +7,12 @@ class TestBreakage(TestCase):
     instantiation of classes or execution of scripts
 
     """
-    def test_config(self):
-        """Tests instantiation of Config
+    def test_tdlmc_diagonal_config(self):
+        """Tests instantiation of TDLMC diagonal Config
 
         """
         from baobab import configs
-        cfg = configs.Config.fromfile(configs.tdlmc_config.__file__)
+        cfg = configs.Config.fromfile(configs.tdlmc_diagonal_config.__file__)
         return cfg
 
     def test_diagonal_bnn_prior(self):
@@ -18,12 +20,24 @@ class TestBreakage(TestCase):
 
         """
         from baobab.bnn_priors import DiagonalBNNPrior
-        cfg = self.test_config()
+        cfg = self.test_tdlmc_diagonal_config()
         diagonal_bnn_prior = DiagonalBNNPrior(cfg.bnn_omega, cfg.components)
 
     def test_generate(self):
         """Tests execution of `generate.py` script
-
+        from 
         """
-        pass
+        cfg = self.test_tdlmc_diagonal_config()
+        try:
+            os.system('generate baobab/configs/tdlmc_diagonal_config.py 2')
+        except RuntimeError:
+            print("generate.py script is broken.")
+        # Delete resulting data
+        if os.path.exists(cfg.out_dir):
+            shutil.rmtree(cfg.out_dir)
+            
+
+
+        
+
     

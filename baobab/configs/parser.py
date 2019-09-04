@@ -61,7 +61,7 @@ class Config(object):
                 if not name.startswith('__')
             }
         else:
-            raise IOError('Only py type are supported now!')
+            raise IOError('Only py type is supported now!')
         return Config(cfg_dict, filename=filename)
 
     def __init__(self, cfg_dict=None, filename=None):
