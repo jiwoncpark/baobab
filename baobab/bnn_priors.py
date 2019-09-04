@@ -265,6 +265,10 @@ class DiagonalBNNPrior(BNNPrior):
             for param_name in profile_params: # e.g. 'theta_E'
                 hyperparams = comp_omega[param_name].copy()
                 kwargs[comp][param_name] = self.sample_param(hyperparams)
+
+        # Source pos is defined wrt the lens pos
+        kwargs['src_light']['center_x'] += kwargs['lens_light']['center_x']
+        kwargs['srC_light']['center_y'] += kwargs['lens_light']['center_y']
         return kwargs
 
 
