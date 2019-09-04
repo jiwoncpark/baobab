@@ -2,7 +2,7 @@
 
 Training data generator for hierarchical inference with Bayesian neural networks
 
-### Installation
+## Installation
 
 0. You'll need a Fortran compiler, which you can get on a debian system by running
 ```shell
@@ -17,14 +17,14 @@ conda activate baobab
 
 2. Now do one of the following. 
 
-## Option 2(a): clone the repo (please do this if you'd like to contribute to the development).
+### Option 2(a): clone the repo (please do this if you'd like to contribute to the development).
 ```
 git clone https://github.com/jiwoncpark/baobab.git
 cd baobab
 pip install -e .
 ```
 
-## Option 2(b): pip install the release version (only recommended if you're a user).
+### Option 2(b): pip install the release version (only recommended if you're a user).
 ```
 pip install baobab
 ```
@@ -34,7 +34,7 @@ pip install baobab
 python -m ipykernel install --user --name baobab --display-name "Python (baobab)"
 ```
 
-### Usage
+## Usage
 
 1. Choose your favorite config file among the templates in the `configs` directory and *copy* it to a directory of your choice, e.g.
 ```shell
