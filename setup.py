@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
-#print(find_packages())
-reqs = []
+print(find_packages())
+required_packages = []
 with open('requirements.txt') as f:
-    reqs = f.read().splitlines()
+    required_packages = f.read().splitlines()
 #print(reqs)
 
 setup(
@@ -16,10 +16,13 @@ setup(
       long_description=open("README.md").read(),
       long_description_content_type='text/markdown',
       url='https://github.com/jiwoncpark/baobab',
-      install_requires=reqs,
+      install_requires=required_packages,
       dependency_links=[
       'http://github.com/sibirrer/fastell4py/tarball/master#egg=fastell4py',],
       include_package_data=True,
+      entry_points={
+      'console_scripts': ['generate=baobab.generate:main',],
+      },
       test_suite='nose.collector',
       tests_require=['nose'],
       classifiers=['Development Status :: 4 - Beta',

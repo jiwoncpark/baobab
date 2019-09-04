@@ -1,7 +1,7 @@
 import os, sys
 import numpy as np
 
-name = 'tdlmc'
+name = 'gamma'
 seed = 1113 # random seed
 bnn_prior_class = 'DiagonalBNNPrior'
 n_data = 200 # number of images to generate
@@ -10,7 +10,7 @@ out_dir = os.path.join('out_data', '{:s}_{:s}_{:s}_seed{:d}'.format(name,
                                                                     train_vs_val,
                                                                     bnn_prior_class,
                                                                     seed))
-components = ['lens_mass', 'external_shear', 'src_light', 'lens_light', 'agn_light']
+components = ['lens_mass', 'external_shear', 'src_light',]
 
 image = dict(
              sigma_bkg=0.05, 
@@ -22,7 +22,6 @@ image = dict(
 
 psf = dict(
            type='PIXEL', # one of ['gaussian', 'PIXEL', 'NONE']
-           kernel_dir=os.path.join('in_data', 'psf_maps'), # only valid when profile='PIXEL'
            kernel_size=91, # dimension of provided PSF kernel, only valid when profile='PIXEL'
            fwhm=0.1, # only valid when profile='gaussian'
            )
@@ -45,7 +44,7 @@ bnn_omega = dict(
                                  gamma = dict(
                                               dist='normal',
                                               mu=0.7,
-                                              sigma=0.02,
+                                              sigma=0.06,
                                               log=True),
                                  theta_E = dict(
                                                 dist='normal',

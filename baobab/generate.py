@@ -15,14 +15,16 @@ import os, sys
 import time
 import random
 import argparse
+from types import SimpleNamespace
+from pkg_resources import resource_filename
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import astropy.io.fits as pyfits
 # custom config class
-from configs.parser import Config
+from baobab.configs import Config
 # BNN prior class
-import bnn_priors
+import baobab.bnn_priors as bnn_priors
 # Lenstronomy modules
 from lenstronomy.LensModel.lens_model import LensModel
 from lenstronomy.LensModel.Solver.lens_equation_solver import LensEquationSolver
@@ -38,10 +40,19 @@ from lenstronomy.Data.psf import PSF
 def parse_args():
     """Parses command-line arguments
 
+    Note: there's currently just one -- the config file.
+
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('config', help='train config file path')
+    parser.add_argument('n_data', default=None, type=int,
+                        help='size of dataset to generate (overrides config file)')
     args = parser.parse_args()
+    # sys.argv rerouting for setuptools entry point
+    if args is None:
+        args = SimpleNamespace()
+        args.config = sys.argv[0]
+        args.n_data = sys.argv[1]
     return args
 
 def get_PSF_models(psf_config, pixel_scale):
@@ -64,7 +75,7 @@ def get_PSF_models(psf_config, pixel_scale):
         psf_seed_list = [101, 102, 103, 104, 105, 107, 108, 109, 110, 111, 113, 114, 115, 116, 117, 118]
         psf_models = []
         for psf_i, psf_seed in enumerate(psf_seed_list):
-            psf_path = os.path.join(psf_config.kernel_dir, 'psf_{:d}.fits'.format(psf_seed))
+            psf_path = resource_filename('baobab.in_data', 'psf_maps/psf_{:d}.fits'.format(psf_seed))
             psf_map = pyfits.getdata(psf_path)
             kernel_cut = kernel_util.cut_psf(psf_map, psf_config.kernel_size)
             kwargs_psf = {'psf_type': 'PIXEL', 'pixel_size': pixel_scale, 'kernel_point_source': kernel_cut}
@@ -73,9 +84,11 @@ def get_PSF_models(psf_config, pixel_scale):
         raise NotImplementedError
     return psf_models
 
-if __name__ == "__main__":
+def main():
     args = parse_args()
     cfg = Config.fromfile(args.config)
+    if args.n_data is not None:
+        cfg.n_data = args.n_data
     # Seed for reproducibility
     np.random.seed(cfg.seed)
     random.seed(cfg.seed)
@@ -181,3 +194,6 @@ if __name__ == "__main__":
     metadata_path = os.path.join(cfg.out_dir, 'metadata.csv')
     metadata.to_csv(metadata_path, index=None)
     print("Labels include: ", metadata.columns.values)
+
+if __name__ == '__main__':
+    main()
