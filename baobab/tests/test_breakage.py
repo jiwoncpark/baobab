@@ -24,17 +24,20 @@ class TestBreakage(TestCase):
         diagonal_bnn_prior = DiagonalBNNPrior(cfg.bnn_omega, cfg.components)
 
     def test_generate(self):
-        """Tests execution of `generate.py` script
+        """Tests execution of `generate.py` script for all template config files
         from 
         """
         cfg = self.test_tdlmc_diagonal_config()
-        try:
-            os.system('generate baobab/configs/tdlmc_diagonal_config.py 2')
-        except RuntimeError:
-            print("generate.py script is broken.")
-        # Delete resulting data
-        if os.path.exists(cfg.out_dir):
-            shutil.rmtree(cfg.out_dir)
+        for cfg_filename in dir('baobab/configs'):
+            if cfg_filename.endswith('_config'):
+                try:
+                    # tdlmc_diagonal_config.py
+                    os.system('generate baobab/configs/{:s} 2'.format(cfg_filename))
+                except RuntimeError:
+                    print("generate.py script is broken.")
+                # Delete resulting data
+                if os.path.exists(cfg.out_dir):
+                    shutil.rmtree(cfg.out_dir)
             
 
 
