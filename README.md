@@ -1,6 +1,6 @@
 # baobab
 
-Training data generator for hierarchical inference with Bayesian neural networks
+Training data generator for hierarchical inference of strong lenses with Bayesian neural networks
 
 ## Installation
 
