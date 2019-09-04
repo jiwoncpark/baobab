@@ -4,11 +4,20 @@
 *.txt
 out_data/*
 
-# Cache
+# Notebook
 *ipynb_checkpoints
+
+# Compiled python modules.
+*.pyc
 *__pycache__
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
+/*.egg
 .eggs/*
-baobab.egg-info/*
 
 # Temp
 *Untitled.ipynb
