@@ -12,7 +12,7 @@ setup(
       author_email='jiwon.christine.park@gmail.com',
       packages=find_packages(),
       license='LICENSE.md',
-      description='Data generator for hierarchical inference with Bayesian neural networks',
+      description='Data generator for hierarchically modeling strongly-lensed systems with Bayesian neural networks',
       long_description=open("README.md").read(),
       long_description_content_type='text/markdown',
       url='https://github.com/jiwoncpark/baobab',

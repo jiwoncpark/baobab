@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/jiwoncpark/baobab.svg?branch=master)](https://travis-ci.org/jiwoncpark/baobab)
 [![Documentation Status](https://readthedocs.org/projects/baobab/badge/?version=latest)](https://baobab.readthedocs.io/en/latest/?badge=latest)
 
-Training data generator for hierarchical inference of strong lenses with Bayesian neural networks
+Training data generator for hierarchically modeling strong lenses with Bayesian neural networks
 
 ## Installation
 
