@@ -21,16 +21,22 @@ from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import astropy.io.fits as pyfits
+sys.path.insert(0, '/home/jwp/stage/sl/lenstronomy')
+import lenstronomy
 # custom config class
 from baobab.configs import Config
 # BNN prior class
 import baobab.bnn_priors as bnn_priors
 # Lenstronomy modules
+print(lenstronomy.__path__)
 from lenstronomy.LensModel.lens_model import LensModel
 from lenstronomy.LensModel.Solver.lens_equation_solver import LensEquationSolver
 from lenstronomy.LightModel.light_model import LightModel
 from lenstronomy.PointSource.point_source import PointSource
 from lenstronomy.ImSim.image_model import ImageModel
+#from lenstronomy.SimulationAPI.sim_api import SimAPI
+from lenstronomy.SimulationAPI.data_api import DataAPI
+import lenstronomy.Util.util as util
 import lenstronomy.Util.simulation_util as sim_util
 import lenstronomy.Util.image_util as image_util
 from lenstronomy.Util import kernel_util
@@ -70,12 +76,17 @@ def get_PSF_models(psf_config, pixel_scale):
     list
         list of lenstronomy PSF instances
     """ 
+    psf_models = []
     if psf_config.type == 'PIXEL':
-        # Instantiate PSF with available PSF maps
-        psf_seed_list = [101, 102, 103, 104, 105, 107, 108, 109, 110, 111, 113, 114, 115, 116, 117, 118]
-        psf_models = []
-        for psf_i, psf_seed in enumerate(psf_seed_list):
-            psf_path = resource_filename('baobab.in_data', 'psf_maps/psf_{:d}.fits'.format(psf_seed))
+        if psf_config.which_psf_maps is None:
+            # Instantiate PSF with all available PSF maps
+            #FIXME: equate psf_id with psf_i since seed number is meaningless
+            psf_id_list = [101, 102, 103, 104, 105, 107, 108, 109, 110, 111, 113, 114, 115, 116, 117, 118]
+        else:
+            psf_id_list = [psf_config.which_psf_maps]
+
+        for psf_i, psf_id in enumerate(psf_id_list):
+            psf_path = resource_filename('baobab.in_data', 'psf_maps/psf_{:d}.fits'.format(psf_id))
             psf_map = pyfits.getdata(psf_path)
             kernel_cut = kernel_util.cut_psf(psf_map, psf_config.kernel_size)
             kwargs_psf = {'psf_type': 'PIXEL', 'pixel_size': pixel_scale, 'kernel_point_source': kernel_cut}
@@ -83,6 +94,30 @@ def get_PSF_models(psf_config, pixel_scale):
     else:
         raise NotImplementedError
     return psf_models
+
+def amp_to_mag_extended(mag_kwargs_list, light_model, data_api):
+    amp_kwargs_list = mag_kwargs_list.copy()
+    for i, mag_kwargs in enumerate(mag_kwargs_list):
+        amp_kwargs = amp_kwargs_list[i]
+        mag = amp_kwargs.pop('magnitude')
+        cps_norm = light_model.total_flux(amp_kwargs_list, norm=True, k=i)[0]
+        cps = data_api.magnitude2cps(mag)
+        amp = cps/ cps_norm
+        amp_kwargs['amp'] = amp 
+    return amp_kwargs_list
+
+def amp_to_mag_point(mag_kwargs_list, point_source_model, data_api):
+    amp_kwargs_list = mag_kwargs_list.copy()
+    amp_list = []
+    for i, mag_kwargs in enumerate(mag_kwargs_list):
+        amp_kwargs = amp_kwargs_list[i]
+        cps_norm = 1.0
+        mag = np.array(amp_kwargs.pop('magnitude'))
+        cps = data_api.magnitude2cps(mag)
+        amp = cps/ cps_norm
+        amp_list.append(amp)
+    amp_kwargs_list = point_source_model.set_amplitudes(amp_list, amp_kwargs_list)
+    return amp_kwargs_list
 
 def main():
     args = parse_args()
@@ -100,24 +135,30 @@ def main():
         raise OSError("Destination folder already exists.")
 
     # Instantiate PSF models
-    psf_models = get_PSF_models(cfg.psf, cfg.image.deltaPix)
+    psf_models = get_PSF_models(cfg.psf, cfg.instrument.pixel_scale)
     n_psf = len(psf_models)
 
     # Instantiate ImageData
-    kwargs_data = sim_util.data_configure_simple(**cfg.image)
-    image_data = ImageData(**kwargs_data)
+    #kwargs_data = sim_util.data_configure_simple(**cfg.image)
+    #image_data = ImageData(**kwargs_data)
 
     # Instantiate density models
-    lens_mass_model = LensModel(lens_model_list=[cfg.bnn_omega.lens_mass.profile, cfg.bnn_omega.external_shear.profile])
-    src_light_model = LightModel(light_model_list=[cfg.bnn_omega.src_light.profile])
+    kwargs_model = dict(
+                    lens_model_list=[cfg.bnn_omega.lens_mass.profile, cfg.bnn_omega.external_shear.profile],
+                    source_light_model_list=[cfg.bnn_omega.src_light.profile],
+                    )       
+    lens_mass_model = LensModel(lens_model_list=kwargs_model['lens_model_list'])
+    src_light_model = LightModel(light_model_list=kwargs_model['source_light_model_list'])
     lens_eq_solver = LensEquationSolver(lens_mass_model)
     lens_light_model = None
-    ps_model = None
+    ps_model = None                                     
 
     if 'lens_light' in cfg.components:
-        lens_light_model = LightModel(light_model_list=[cfg.bnn_omega.lens_light.profile])
+        kwargs_model['lens_light_model_list'] = [cfg.bnn_omega.lens_light.profile]
+        lens_light_model = LightModel(light_model_list=kwargs_model['lens_light_model_list'])
     if 'agn_light' in cfg.components:
-        ps_model = PointSource(point_source_type_list=[cfg.bnn_omega.agn_light.profile], fixed_magnification_list=[False])
+        kwargs_model['point_source_model_list'] = [cfg.bnn_omega.agn_light.profile]
+        ps_model = PointSource(point_source_type_list=kwargs_model['point_source_model_list'], fixed_magnification_list=[False])
 
     # Initialize BNN prior
     bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components)
@@ -138,8 +179,22 @@ def main():
         psf_model = psf_models[i%n_psf]
         sample = bnn_prior.sample() # FIXME: sampling in batches
 
+        # Instantiate SimAPI (converts mag to amp and wraps around image model)
+        kwargs_detector = util.merge_dicts(cfg.instrument, cfg.bandpass, cfg.observation)
+        kwargs_detector.update(seeing=cfg.psf.fwhm,
+                               psf_type=cfg.psf.type,
+                               psf_model=psf_model)
+        data_api = DataAPI(cfg.image.num_pix, **kwargs_detector)
+        image_data = data_api.data_class
+
+        #sim_api = SimAPI(numpix=cfg.image.num_pix, 
+        #                 kwargs_single_band=kwargs_detector,
+        #                 kwargs_model=kwargs_model, 
+        #                 kwargs_numerics=cfg.numerics)
+
         kwargs_lens_mass = [sample['lens_mass'], sample['external_shear']]
         kwargs_src_light = [sample['src_light']]
+        kwargs_src_light = amp_to_mag_extended(kwargs_src_light, src_light_model, data_api)
         kwargs_lens_light = None
         kwargs_ps = None
 
@@ -148,28 +203,32 @@ def main():
                                                               sample['src_light']['center_y'],
                                                               kwargs_lens_mass,
                                                               numImages=4,
-                                                              min_distance=cfg.image.deltaPix, 
-                                                              search_window=cfg.image.numPix*cfg.image.deltaPix)
+                                                              min_distance=cfg.instrument.pixel_scale, 
+                                                              search_window=cfg.image.num_pix*cfg.instrument.pixel_scale)
             mag = lens_mass_model.magnification(x_image, y_image, kwargs=kwargs_lens_mass)
-            unlensed_amp = sample['agn_light']['amp']
-            lensed_amp = np.abs(mag)*unlensed_amp
-            kwargs_ps = [{'ra_image': x_image, 'dec_image': y_image, 'point_amp': lensed_amp}]
-            
+            unlensed_mag = sample['agn_light']['magnitude']
+            lensed_mag = np.abs(mag)*unlensed_mag
+            kwargs_ps = [{'ra_image': x_image, 'dec_image': y_image, 'magnitude': lensed_mag}]
+            kwargs_ps = amp_to_mag_point(kwargs_ps, ps_model, data_api)
+
         if 'lens_light' in cfg.components:
             kwargs_lens_light = [sample['lens_light']]
+            kwargs_lens_light = amp_to_mag_extended(kwargs_lens_light, lens_light_model, data_api)
 
         # Instantiate image model
-        kwargs_numerics = {'supersampling_factor': 1}
         image_model = ImageModel(image_data, psf_model, lens_mass_model, src_light_model,
-                                 lens_light_model, ps_model, kwargs_numerics=kwargs_numerics)
+                                 lens_light_model, ps_model, kwargs_numerics=cfg.numerics)
+
         # Generate image
         img = image_model.image(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps)
 
+        #kwargs_in_amp = sim_api.magnitude2amplitude(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps)
+        #imsim_api = sim_api.image_model_class
+        #imsim_api.image(*kwargs_in_amp)
+
         # Add noise
-        poisson = image_util.add_poisson(img, exp_time=cfg.image.exposure_time)
-        bkg = image_util.add_background(img, sigma_bkd=cfg.image.sigma_bkg)
-        #img = img + bkg + poisson
-        #image_data.update_data(img)
+        noise = data_api.noise_for_model(img, background_noise=True, poisson_noise=True, seed=cfg.seed)
+        img += noise
 
         # Save image file
         img_path = os.path.join(cfg.out_dir, 'X_{0:07d}.npy'.format(i+1))
