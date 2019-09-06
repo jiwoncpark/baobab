@@ -4,6 +4,9 @@
 *.txt
 out_data/*
 
+# Personal config files under development
+my_configs/*
+
 # Notebook
 *ipynb_checkpoints
 
