@@ -15,6 +15,7 @@ import os, sys
 import time
 import random
 import argparse
+import copy
 from types import SimpleNamespace
 from pkg_resources import resource_filename
 from tqdm import tqdm
@@ -96,7 +97,26 @@ def get_PSF_models(psf_config, pixel_scale):
     return psf_models
 
 def amp_to_mag_extended(mag_kwargs_list, light_model, data_api):
-    import copy
+    """Converts the magnitude entries into amp (counts per second)
+    used by lenstronomy to render the image, for extended objects
+
+    Parameters
+    ----------
+    mag_kwargs_list : list
+        list of kwargs dictionaries in which 'amp' keys are replaced by 'magnitude'
+    light_model : lenstronomy.LightModel object
+        light model describing the surface brightness profile, used for calculating
+        the total flux. Note that only some profiles with an analytic integral can be
+        used.
+    data_api : lenstronomy.DataAPI object
+        a wrapper object around lenstronomy.Observation that has the magnitude zeropoint
+        information, with which the magnitude-to-amp conversion is done.
+
+    Returns
+    -------
+    list
+        list of kwargs dictionaries with 'magnitude' replaced by 'amp'
+    """
     amp_kwargs_list = copy.deepcopy(mag_kwargs_list)
     for i, mag_kwargs in enumerate(mag_kwargs_list):
         amp_kwargs = amp_kwargs_list[i]
@@ -108,6 +128,12 @@ def amp_to_mag_extended(mag_kwargs_list, light_model, data_api):
     return amp_kwargs_list
 
 def amp_to_mag_point(mag_kwargs_list, point_source_model, data_api):
+    """Converts the magnitude entries into amp (counts per second)
+    used by lenstronomy to render the image, for point sources
+
+    See the docstring for `amp_to_mag_extended` for parameter descriptions.
+
+    """
     amp_kwargs_list = mag_kwargs_list.copy()
     amp_list = []
     for i, mag_kwargs in enumerate(mag_kwargs_list):
@@ -119,6 +145,30 @@ def amp_to_mag_point(mag_kwargs_list, point_source_model, data_api):
         amp_list.append(amp)
     amp_kwargs_list = point_source_model.set_amplitudes(amp_list, amp_kwargs_list)
     return amp_kwargs_list
+
+def get_unlensed_total_flux(kwargs_src_light_list, src_light_model, kwargs_ps_list=None, ps_model=None):
+    """Computes the total flux of unlensed objects
+
+    Parameter
+    ---------
+    kwargs_src_light_list : list
+        list of kwargs dictionaries for the unlensed source galaxy, each with an 'amp' key
+    kwargs_ps_list : list
+        list of kwargs dictionaries for the unlensed point source (if any), each with an 'amp' key
+
+    Returns
+    -------
+    float
+        the total unlensed flux
+    """
+    total_flux = 0.0
+    for i, kwargs_src in enumerate(kwargs_src_light_list):
+        total_flux += src_light_model.total_flux(kwargs_src_light_list, norm=True, k=i)[0]
+    if kwargs_ps_list is not None:
+        assert ps_model is not None
+        for i, kwargs_ps in enumerate(kwargs_ps_list):
+            total_flux += kwargs_ps['point_amp']
+    return total_flux
 
 def main():
     args = parse_args()
@@ -173,11 +223,14 @@ def main():
         param_list += ['x_image_{:d}'.format(i) for i in range(4)]
         param_list += ['y_image_{:d}'.format(i) for i in range(4)]
         param_list += ['n_img']
+    param_list += ['total_magnification']
     metadata = pd.DataFrame(columns=param_list)
 
     print("Starting simulation...")
-    for i in tqdm(range(cfg.n_data)):
-        psf_model = psf_models[i%n_psf]
+    current_idx = 0 # running idx of dataset
+    pbar = tqdm(total=cfg.n_data)
+    while current_idx <= cfg.n_data:
+        psf_model = psf_models[current_idx%n_psf]
         sample = bnn_prior.sample() # FIXME: sampling in batches
 
         # Instantiate SimAPI (converts mag to amp and wraps around image model)
@@ -206,11 +259,13 @@ def main():
                                                               numImages=4,
                                                               min_distance=cfg.instrument.pixel_scale, 
                                                               search_window=cfg.image.num_pix*cfg.instrument.pixel_scale)
-            magnification = lens_mass_model.magnification(x_image, y_image, kwargs=kwargs_lens_mass)
+            magnification = np.abs(lens_mass_model.magnification(x_image, y_image, kwargs=kwargs_lens_mass))
             unlensed_mag = sample['agn_light']['magnitude']
-            lensed_mag = np.abs(magnification)*unlensed_mag
-            kwargs_ps = [{'ra_image': x_image, 'dec_image': y_image, 'magnitude': lensed_mag}]
-            kwargs_ps = amp_to_mag_point(kwargs_ps, ps_model, data_api)
+            kwargs_unlensed_mag_ps = [{'ra_image': x_image, 'dec_image': y_image, 'magnitude': unlensed_mag}] # note unlensed magnitude
+            kwargs_unlensed_amp_ps = amp_to_mag_point(kwargs_unlensed_mag_ps, ps_model, data_api) # note unlensed amp
+            kwargs_ps = copy.deepcopy(kwargs_unlensed_amp_ps)
+            for kw in kwargs_ps:
+                kw.update(point_amp=kw['point_amp']*magnification)
 
         if 'lens_light' in cfg.components:
             kwargs_lens_light = [sample['lens_light']]
@@ -220,7 +275,18 @@ def main():
         image_model = ImageModel(image_data, psf_model, lens_mass_model, src_light_model,
                                  lens_light_model, ps_model, kwargs_numerics=cfg.numerics)
 
-        # Generate image
+        # Compute magnification
+        lensed_src_image = image_model.image(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps,
+                                             lens_light_add=False)
+        lensed_total_flux = np.sum(lensed_src_image)
+        unlensed_total_flux = get_unlensed_total_flux(kwargs_src_light, src_light_model, kwargs_unlensed_amp_ps, ps_model)
+        total_magnification = lensed_total_flux/unlensed_total_flux
+
+        # Apply magnification cut
+        if total_magnification < cfg.selection.magnification.min:
+            continue
+
+        # Generate image for export
         img = image_model.image(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps)
 
         #kwargs_in_amp = sim_api.magnitude2amplitude(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps)
@@ -232,7 +298,7 @@ def main():
         img += noise
 
         # Save image file
-        img_path = os.path.join(cfg.out_dir, 'X_{0:07d}.npy'.format(i+1))
+        img_path = os.path.join(cfg.out_dir, 'X_{0:07d}.npy'.format(current_idx+1))
         np.save(img_path, img)
 
         # Save labels
@@ -247,7 +313,13 @@ def main():
                 meta['x_image_{:d}'.format(i)] = x_image[i]
                 meta['y_image_{:d}'.format(i)] = y_image[i]
                 meta['n_img'] = n_img
+        meta['total_magnification'] = total_magnification
         metadata = metadata.append(meta, ignore_index=True)
+
+        # Update progress
+        current_idx += 1
+        pbar.update(1)
+    pbar.close()
 
     # Fix column ordering
     metadata = metadata[param_list]

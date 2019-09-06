@@ -12,6 +12,10 @@ out_dir = os.path.join('out_data', '{:s}_{:s}_{:s}_seed{:d}'.format(name,
                                                                     seed))
 components = ['lens_mass', 'external_shear', 'src_light', 'lens_light', 'agn_light']
 
+selection = dict(
+                 magnification=dict(
+                                    min=2.0))
+
 instrument = dict(
               pixel_scale=0.08, # scale (in arcseonds) of pixels
               ccd_gain=4.5, # electrons/ADU (analog-to-digital unit). A gain of 8 means that the camera digitizes the CCD signal so that each ADU corresponds to 8 photoelectrons.
