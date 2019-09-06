@@ -1,7 +1,7 @@
 # baobab
 
 [![Build Status](https://travis-ci.com/jiwoncpark/baobab.svg?branch=master)](https://travis-ci.org/jiwoncpark/baobab)
-[![Documentation Status](https://readthedocs.org/projects/baobab/badge/?version=latest)](https://baobab.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/pybaobab/badge/?version=latest)](https://pybaobab.readthedocs.io/en/latest/?badge=latest)
 
 Training data generator for hierarchically modeling strong lenses with Bayesian neural networks
 
