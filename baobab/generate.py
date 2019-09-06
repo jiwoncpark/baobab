@@ -96,7 +96,8 @@ def get_PSF_models(psf_config, pixel_scale):
     return psf_models
 
 def amp_to_mag_extended(mag_kwargs_list, light_model, data_api):
-    amp_kwargs_list = mag_kwargs_list.copy()
+    import copy
+    amp_kwargs_list = copy.deepcopy(mag_kwargs_list)
     for i, mag_kwargs in enumerate(mag_kwargs_list):
         amp_kwargs = amp_kwargs_list[i]
         mag = amp_kwargs.pop('magnitude')
@@ -111,8 +112,8 @@ def amp_to_mag_point(mag_kwargs_list, point_source_model, data_api):
     amp_list = []
     for i, mag_kwargs in enumerate(mag_kwargs_list):
         amp_kwargs = amp_kwargs_list[i]
-        cps_norm = 1.0
         mag = np.array(amp_kwargs.pop('magnitude'))
+        cps_norm = 1.0
         cps = data_api.magnitude2cps(mag)
         amp = cps/ cps_norm
         amp_list.append(amp)
@@ -168,7 +169,7 @@ def main():
     for comp in cfg.components:
         param_list += ['{:s}_{:s}'.format(comp, param) for param in bnn_prior.params[cfg.bnn_omega[comp]['profile']] ]
     if 'agn_light' in cfg.components:
-        param_list += ['mag_{:d}'.format(i) for i in range(4)]
+        param_list += ['magnification_{:d}'.format(i) for i in range(4)]
         param_list += ['x_image_{:d}'.format(i) for i in range(4)]
         param_list += ['y_image_{:d}'.format(i) for i in range(4)]
         param_list += ['n_img']
@@ -183,7 +184,7 @@ def main():
         kwargs_detector = util.merge_dicts(cfg.instrument, cfg.bandpass, cfg.observation)
         kwargs_detector.update(seeing=cfg.psf.fwhm,
                                psf_type=cfg.psf.type,
-                               psf_model=psf_model)
+                               psf_model=psf_model) # keyword deprecation warning: I asked Simon to change this to kernel_point_source
         data_api = DataAPI(cfg.image.num_pix, **kwargs_detector)
         image_data = data_api.data_class
 
@@ -205,9 +206,9 @@ def main():
                                                               numImages=4,
                                                               min_distance=cfg.instrument.pixel_scale, 
                                                               search_window=cfg.image.num_pix*cfg.instrument.pixel_scale)
-            mag = lens_mass_model.magnification(x_image, y_image, kwargs=kwargs_lens_mass)
+            magnification = lens_mass_model.magnification(x_image, y_image, kwargs=kwargs_lens_mass)
             unlensed_mag = sample['agn_light']['magnitude']
-            lensed_mag = np.abs(mag)*unlensed_mag
+            lensed_mag = np.abs(magnification)*unlensed_mag
             kwargs_ps = [{'ra_image': x_image, 'dec_image': y_image, 'magnitude': lensed_mag}]
             kwargs_ps = amp_to_mag_point(kwargs_ps, ps_model, data_api)
 
@@ -242,7 +243,7 @@ def main():
         if 'agn_light' in cfg.components:
             n_img = len(x_image)
             for i in range(n_img):
-                meta['mag_{:d}'.format(i)] = mag[i]
+                meta['magnification_{:d}'.format(i)] = magnification[i]
                 meta['x_image_{:d}'.format(i)] = x_image[i]
                 meta['y_image_{:d}'.format(i)] = y_image[i]
                 meta['n_img'] = n_img

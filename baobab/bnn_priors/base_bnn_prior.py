@@ -16,9 +16,9 @@ class BaseBNNPrior(ABC):
         """
         params = dict(SPEMD=['center_x', 'center_y', 'gamma', 'theta_E', 'e1', 'e2'],
                           SHEAR_GAMMA_PSI=['gamma_ext', 'psi_ext'],
-                          SERSIC_ELLIPSE=['amp', 'center_x', 'center_y', 'n_sersic', 'R_sersic', 'e1', 'e2'],
-                          LENSED_POSITION=['amp'],
-                          SOURCE_POSITION=['ra_source', 'dec_source', 'amp'],)
+                          SERSIC_ELLIPSE=['magnitude', 'center_x', 'center_y', 'n_sersic', 'R_sersic', 'e1', 'e2'],
+                          LENSED_POSITION=['magnitude'],
+                          SOURCE_POSITION=['ra_source', 'dec_source', 'magnitude'],)
         setattr(self, 'params', params)
 
     def sample_param(self, hyperparams):

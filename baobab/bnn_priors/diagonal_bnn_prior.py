@@ -54,6 +54,10 @@ class DiagonalBNNPrior(BaseBNNPrior):
         # Source pos is defined wrt the lens pos
         kwargs['src_light']['center_x'] += kwargs['lens_mass']['center_x']
         kwargs['src_light']['center_y'] += kwargs['lens_mass']['center_y']
+
+        # Lens light shares center with lens mass
+        kwargs['lens_light']['center_x'] = kwargs['lens_mass']['center_x']
+        kwargs['lens_light']['center_y'] = kwargs['lens_mass']['center_y']
         return kwargs
 
 

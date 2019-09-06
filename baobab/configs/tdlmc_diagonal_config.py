@@ -26,7 +26,7 @@ observation = dict(
                   exposure_time=100.0, # exposure time per image (in seconds)
                   sky_brightness=20.1, # sky brightness (in magnitude per square arcseconds)
                   num_exposures=10, # number of exposures that are combined
-                  background_noise=10.0, # overrides exposure_time, sky_brightness, read_noise, num_exposures
+                  background_noise=0.25, # overrides exposure_time, sky_brightness, read_noise, num_exposures
                   )
 
 psf = dict(
