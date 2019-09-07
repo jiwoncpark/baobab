@@ -7,7 +7,7 @@ with open('requirements.txt') as f:
 
 setup(
       name='pybaobab',
-      version='0.1',
+      version='0.1.0',
       author='Ji Won Park',
       author_email='jiwon.christine.park@gmail.com',
       packages=find_packages(),

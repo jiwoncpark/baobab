@@ -29,7 +29,7 @@ pip install -e .
 
 ### Option 2(b): pip install the release version (only recommended if you're a user).
 ```
-pip install baobab
+pip install pybaobab
 ```
 
 3. (Optional) To run the notebooks, add the Jupyter kernel.
