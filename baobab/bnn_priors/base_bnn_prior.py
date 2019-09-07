@@ -179,6 +179,7 @@ class BaseBNNPrior(ABC):
         define ``mu = 0.5*(a + b)`` and ``alpha=0.5*(b - a)``.
         For ``p=1``, it's identical to Laplace.
         For ``p=2``, it's identical to normal.
+        See [1]_.
 
         Parameters
         ----------
@@ -195,8 +196,7 @@ class BaseBNNPrior(ABC):
 
         References
         ----------
-        .. [1] "Generalized normal distribution, Version 1",
-           https://en.wikipedia.org/wiki/Generalized_normal_distribution#Version_1
+        .. [1] `"Generalized normal distribution, Version 1" <https://en.wikipedia.org/wiki/Generalized_normal_distribution#Version_1>`_
 
         """
         generalized_normal = stats.gennorm(beta=p, loc=mu, scale=alpha)

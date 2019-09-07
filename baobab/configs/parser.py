@@ -1,4 +1,3 @@
-# Modified from: https://github.com/open-mmlab/mmcv/blob/5b10dcd79f0f0e9d443c7071c8d798c1a92a6bc5/mmcv/utils/config.py#L49
 import os, sys
 from argparse import ArgumentParser
 from importlib import import_module
@@ -25,22 +24,28 @@ class Config(object):
     It supports common file formats as configs: python/json/yaml. The interface
     is the same as a dict object and also allows access config values as
     attributes.
-    Example:
-        >>> cfg = Config(dict(a=1, b=dict(b1=[0, 1])))
-        >>> cfg.a
-        1
-        >>> cfg.b
-        {'b1': [0, 1]}
-        >>> cfg.b.b1
-        [0, 1]
-        >>> cfg = Config.fromfile('tests/data/config/a.py')
-        >>> cfg.filename
-        "/home/kchen/projects/mmcv/tests/data/config/a.py"
-        >>> cfg.item4
-        'test'
-        >>> cfg
-        "Config [path: /home/kchen/projects/mmcv/tests/data/config/a.py]: "
-        "{'item1': [1, 2], 'item2': {'a': 0}, 'item3': True, 'item4': 'test'}"
+
+    Examples
+    --------
+    >>> cfg = Config(dict(a=1, b=dict(b1=[0, 1])))
+    >>> cfg.a
+    1
+    >>> cfg.b
+    {'b1': [0, 1]}
+    >>> cfg.b.b1
+    [0, 1]
+    >>> cfg = Config.fromfile('tests/data/config/a.py')
+    >>> cfg.filename
+    "/home/kchen/projects/mmcv/tests/data/config/a.py"
+    >>> cfg.item4
+    'test'
+    >>> cfg
+    "Config [path: /home/kchen/projects/mmcv/tests/data/config/a.py]: "
+    "{'item1': [1, 2], 'item2': {'a': 0}, 'item3': True, 'item4': 'test'}"
+    
+    References
+    ----------
+    This code was modified from `the mmcv implementation <https://github.com/open-mmlab/mmcv/blob/5b10dcd79f0f0e9d443c7071c8d798c1a92a6bc5/mmcv/utils/config.py#L49>`_
     """
 
     @staticmethod
