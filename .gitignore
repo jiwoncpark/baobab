@@ -7,6 +7,9 @@ out_data/*
 # Personal config files under development
 my_configs/*
 
+# HTML builds
+docs/_build/*
+
 # Notebook
 *ipynb_checkpoints
 
