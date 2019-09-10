@@ -54,12 +54,12 @@ generate my_config_collection/my_config.py
 
 Although the `n_data` (size of training set) value is specified in the config file, you may choose to override it in the command line, as in
 ```shell
-generate my_config_collection/my_config.py 100
+generate my_config_collection/my_config.py --n_data 100
 ```
 
 Alternatively, you can run
 ```shell
-python -m baobab.generate my_config_collection/my_config.py 100
+python -m baobab.generate my_config_collection/my_config.py --n_data 100
 ```
 
 Please message @jiwoncpark with any questions.
