@@ -132,7 +132,7 @@ def amp_to_mag_point(mag_kwargs_list, point_source_model, data_api):
     See the docstring for `amp_to_mag_extended` for parameter descriptions.
 
     """
-    amp_kwargs_list = mag_kwargs_list.copy()
+    amp_kwargs_list = copy.deepcopy(mag_kwargs_list)
     amp_list = []
     for i, mag_kwargs in enumerate(mag_kwargs_list):
         amp_kwargs = amp_kwargs_list[i]
@@ -167,6 +167,19 @@ def get_unlensed_total_flux(kwargs_src_light_list, src_light_model, kwargs_ps_li
         for i, kwargs_ps in enumerate(kwargs_ps_list):
             total_flux += kwargs_ps['point_amp']
     return total_flux
+        
+def get_lensed_total_flux(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps, image_model):
+    """Computes the total flux of the lensed image
+
+    Returns
+    -------
+    float
+        the total lensed flux
+    """
+
+    lensed_src_image = image_model.image(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps, lens_light_add=False)
+    lensed_total_flux = np.sum(lensed_src_image)
+    return lensed_total_flux
 
 def main():
     args = parse_args()
@@ -258,12 +271,14 @@ def main():
                                                               min_distance=cfg.instrument.pixel_scale, 
                                                               search_window=cfg.image.num_pix*cfg.instrument.pixel_scale)
             magnification = np.abs(lens_mass_model.magnification(x_image, y_image, kwargs=kwargs_lens_mass))
-            unlensed_mag = sample['agn_light']['magnitude']
+            unlensed_mag = sample['agn_light']['magnitude'] # unlensed agn mag
             kwargs_unlensed_mag_ps = [{'ra_image': x_image, 'dec_image': y_image, 'magnitude': unlensed_mag}] # note unlensed magnitude
             kwargs_unlensed_amp_ps = amp_to_mag_point(kwargs_unlensed_mag_ps, ps_model, data_api) # note unlensed amp
             kwargs_ps = copy.deepcopy(kwargs_unlensed_amp_ps)
             for kw in kwargs_ps:
                 kw.update(point_amp=kw['point_amp']*magnification)
+        else:
+            kwargs_unlensed_amp_ps = None
 
         if 'lens_light' in cfg.components:
             kwargs_lens_light = [sample['lens_light']]
@@ -274,9 +289,7 @@ def main():
                                  lens_light_model, ps_model, kwargs_numerics=cfg.numerics)
 
         # Compute magnification
-        lensed_src_image = image_model.image(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps,
-                                             lens_light_add=False)
-        lensed_total_flux = np.sum(lensed_src_image)
+        lensed_total_flux = get_lensed_total_flux(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps, image_model)
         unlensed_total_flux = get_unlensed_total_flux(kwargs_src_light, src_light_model, kwargs_unlensed_amp_ps, ps_model)
         total_magnification = lensed_total_flux/unlensed_total_flux
 
@@ -286,13 +299,12 @@ def main():
 
         # Generate image for export
         img = image_model.image(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps)
-
         #kwargs_in_amp = sim_api.magnitude2amplitude(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps)
         #imsim_api = sim_api.image_model_class
         #imsim_api.image(*kwargs_in_amp)
 
         # Add noise
-        noise = data_api.noise_for_model(img, background_noise=True, poisson_noise=True, seed=cfg.seed)
+        noise = data_api.noise_for_model(img, background_noise=True, poisson_noise=True, seed=None)
         img += noise
 
         # Save image file
@@ -314,6 +326,7 @@ def main():
         meta['total_magnification'] = total_magnification
         meta['img_path'] = img_path
         metadata = metadata.append(meta, ignore_index=True)
+
 
         # Update progress
         current_idx += 1
