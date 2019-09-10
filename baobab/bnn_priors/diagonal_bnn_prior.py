@@ -55,9 +55,10 @@ class DiagonalBNNPrior(BaseBNNPrior):
         kwargs['src_light']['center_x'] += kwargs['lens_mass']['center_x']
         kwargs['src_light']['center_y'] += kwargs['lens_mass']['center_y']
 
-        # Lens light shares center with lens mass
-        kwargs['lens_light']['center_x'] = kwargs['lens_mass']['center_x']
-        kwargs['lens_light']['center_y'] = kwargs['lens_mass']['center_y']
+        if 'lens_light' in self.components:
+            # Lens light shares center with lens mass
+            kwargs['lens_light']['center_x'] = kwargs['lens_mass']['center_x']
+            kwargs['lens_light']['center_y'] = kwargs['lens_mass']['center_y']
         return kwargs
 
 
