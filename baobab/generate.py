@@ -47,12 +47,10 @@ from lenstronomy.Data.psf import PSF
 def parse_args():
     """Parses command-line arguments
 
-    Note: there's currently just one -- the config file.
-
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('config', help='train config file path')
-    parser.add_argument('n_data', default=None, type=int,
+    parser.add_argument('--n_data', default=None, dest='n_data', type=int,
                         help='size of dataset to generate (overrides config file)')
     args = parser.parse_args()
     # sys.argv rerouting for setuptools entry point
@@ -223,13 +221,13 @@ def main():
         param_list += ['x_image_{:d}'.format(i) for i in range(4)]
         param_list += ['y_image_{:d}'.format(i) for i in range(4)]
         param_list += ['n_img']
-    param_list += ['total_magnification']
+    param_list += ['img_path', 'total_magnification']
     metadata = pd.DataFrame(columns=param_list)
 
     print("Starting simulation...")
     current_idx = 0 # running idx of dataset
     pbar = tqdm(total=cfg.n_data)
-    while current_idx <= cfg.n_data:
+    while current_idx < cfg.n_data:
         psf_model = psf_models[current_idx%n_psf]
         sample = bnn_prior.sample() # FIXME: sampling in batches
 
@@ -314,6 +312,7 @@ def main():
                 meta['y_image_{:d}'.format(i)] = y_image[i]
                 meta['n_img'] = n_img
         meta['total_magnification'] = total_magnification
+        meta['img_path'] = img_path
         metadata = metadata.append(meta, ignore_index=True)
 
         # Update progress
