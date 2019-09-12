@@ -18,8 +18,7 @@ setup(
       url='https://github.com/jiwoncpark/baobab',
       install_requires=required_packages,
       dependency_links=[
-      'http://github.com/sibirrer/fastell4py/tarball/master#egg=fastell4py',
-      'http://github.com/jiwoncpark/baobab/tarball/master#egg=baobab'],
+      'http://github.com/sibirrer/fastell4py/tarball/master#egg=fastell4py',],
       include_package_data=True,
       entry_points={
       'console_scripts': ['generate=baobab.generate:main',],
