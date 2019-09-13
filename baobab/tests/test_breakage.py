@@ -23,6 +23,22 @@ class TestBreakage(TestCase):
         cfg = self.test_tdlmc_diagonal_config()
         diagonal_bnn_prior = DiagonalBNNPrior(cfg.bnn_omega, cfg.components)
 
+    def test_tdlmc_cov_config(self):
+        """Tests instantiation of TDLMC diagonal Config
+
+        """
+        from baobab import configs
+        cfg = configs.Config.fromfile(configs.tdlmc_cov_config.__file__)
+        return cfg
+
+    def test_cov_bnn_prior(self):
+        """Tests instantiation of CovBNNPrior
+
+        """
+        from baobab.bnn_priors import CovBNNPrior
+        cfg = self.test_tdlmc_cov_config()
+        cov_bnn_prior = CovBNNPrior(cfg.bnn_omega, cfg.components)
+
     def test_generate(self):
         """Tests execution of `generate.py` script for all template config files
         from 

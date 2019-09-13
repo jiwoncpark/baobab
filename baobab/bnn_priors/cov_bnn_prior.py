@@ -33,21 +33,22 @@ class CovBNNPrior(BaseBNNPrior):
                 # e.g. self.lens_mass = cfg.bnn_omega.lens_mass
                 setattr(self, comp, bnn_omega[comp])
 
-        self._check_cov_info_validity(cov_info)
+        self.cov_info = bnn_omega['cov_info']
+        self._check_cov_info_validity()
 
     def _check_cov_info_validity(self):
         """Checks whether the information passed into cov_info is valid.
 
         """
 
-        n_cov_params = self.cov_info['cov_params_list']
+        n_cov_params = len(self.cov_info['cov_params_list'])
         cov_omega = self.cov_info['cov_omega']
         if len(cov_omega['mu']) != n_cov_params:
-            raise ValueError("mu value in cov_omega should have same length as number of cov params in cov_params_list")
+            raise ValueError("mu value in cov_omega should have same length as number of cov params in cov_params_list, {:d}, but instead found {:d}".format(n_cov_params, len(cov_omega['mu'])))
         if cov_omega['is_log'] is not None:
-            if cov_omega['is_log'] != n_cov_params:
-                raise ValueError("is_log value in cov_omega should have same length as number of cov params in cov_params_list")
-        if not np.array_equal(cov_omega['cov_mat'], [n_cov_params, n_cov_params]):
+            if len(cov_omega['is_log']) != n_cov_params:
+                raise ValueError("is_log value in cov_omega should have same length as number of cov params in cov_params_list, {:d}, but instead found {:d}".format(n_cov_params, len(cov_omega['is_log'])))
+        if not np.array_equal(cov_omega['cov_mat'].shape, [n_cov_params, n_cov_params]):
             raise ValueError("cov_mat value in cov_omega should have shape [n_cov_params, n_cov_params]")
 
     def sample(self):
