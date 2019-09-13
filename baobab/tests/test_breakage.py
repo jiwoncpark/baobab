@@ -1,5 +1,6 @@
 import os, sys
 import shutil
+import subprocess
 from unittest import TestCase
 
 class TestBreakage(TestCase):
@@ -43,19 +44,25 @@ class TestBreakage(TestCase):
         """Tests execution of `generate.py` script for all template config files
         from 
         """
-        cfg = self.test_tdlmc_diagonal_config()
-        for cfg_filename in dir('baobab/configs'):
-            if cfg_filename.endswith('_config'):
+
+        from baobab import configs
+        cfg_root = os.path.abspath(os.path.dirname(configs.__file__))
+        n_failures = 0
+        for cfg_filename in os.listdir(cfg_root):
+            if cfg_filename.endswith('_config.py'):
+                cfg_filepath = os.path.join(cfg_root, cfg_filename)
+                cfg = configs.Config.fromfile(cfg_filepath)
                 try:
-                    # tdlmc_diagonal_config.py
-                    os.system('generate baobab/configs/{:s} 2'.format(cfg_filename))
-                except RuntimeError:
-                    print("generate.py script is broken.")
+                    subprocess.check_output('generate {:s} --n_data 2'.format(cfg_filepath), shell=True)
+                except:
+                    n_failures += 1
                 # Delete resulting data
                 if os.path.exists(cfg.out_dir):
                     shutil.rmtree(cfg.out_dir)
+        self.assertTrue(n_failures==0) # FIXME: clumsy
             
-
+if __name__ == '__main__':
+    unittest.main()
 
         
 

@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-print(find_packages())
+#print(find_packages())
 required_packages = []
 with open('requirements.txt') as f:
     required_packages = f.read().splitlines()
