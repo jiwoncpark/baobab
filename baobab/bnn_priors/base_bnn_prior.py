@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats as stats
 import lenstronomy.Util.param_util as param_util
-from abc import ABC
+from abc import ABC, abstractmethod
 
 class BaseBNNPrior(ABC):
     def __init__(self):
@@ -93,7 +93,7 @@ class BaseBNNPrior(ABC):
             eval_pdf = dist.pdf(eval_at)
             return eval_pdf
 
-    def sample_multivar_normal(self, mu, cov_mat, lower=None, upper=None):
+    def sample_multivar_normal(self, mu, cov_mat, is_log=None, lower=None, upper=None):
         """Samples from an N-dimensional normal distribution, optionally truncated
 
         An error will be raised if the cov_mat is not PSD.
@@ -104,6 +104,8 @@ class BaseBNNPrior(ABC):
             mean
         cov_mat : 2-D array_like, of shape (N, N)
             symmetric, PSD matrix
+        is_log : 1-D array_like, of length N where each element is bool
+            whether each param is log-parameterized
         lower : None, float, or 1-D array_like, of length N
             min values (default: None)
         upper : None, float, or 1-D array_like, of length N
@@ -123,15 +125,17 @@ class BaseBNNPrior(ABC):
 
         # TODO: get the PDF, scaled for truncation
         # TODO: issue warning if significant portion of marginal PDF is truncated
-        if (lower is None) and (upper is None):
-            return sample
-        else:
+        if (lower is not None) or (upper is not None):
             lower = -np.inf if lower is None else lower
             upper = np.inf if upper is None else upper
             # Reject samples outside of bounds, repeat sampling until accepted
             while not np.all([np.greater(sample, lower), np.greater(upper, sample)]):
                 sample = np.random.multivariate_normal(mean=mu, cov=cov_mat)
-            return sample
+        
+        if is_log is not None:
+            sample[is_log] = np.exp(sample[is_log])
+
+        return sample
 
     def sample_beta(self, a, b, lower=0.0, upper=1.0):
         """Samples from a beta distribution, scaled/shifted
@@ -217,3 +221,12 @@ class BaseBNNPrior(ABC):
         accept_norm = generalized_normal.cdf(upper) - generalized_normal.cdf(lower)
         normed_eval_pdf = unnormed_eval_pdf/accept_norm
         return normed_eval_pdf
+
+    @abstractmethod
+    def sample(self):
+        """Gets kwargs of sampled parameters to be passed to lenstronomy
+
+        Overridden by subclasses.
+
+        """
+        return NotImplemented
