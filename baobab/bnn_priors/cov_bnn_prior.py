@@ -34,6 +34,7 @@ class CovBNNPrior(BaseBNNPrior):
                 setattr(self, comp, bnn_omega[comp])
 
         self.cov_info = bnn_omega['cov_info']
+        print(self.cov_info)
         self._check_cov_info_validity()
 
     def _check_cov_info_validity(self):
@@ -74,7 +75,7 @@ class CovBNNPrior(BaseBNNPrior):
                     kwargs[comp][param_name] = self.sample_param(hyperparams)
 
         # Fill in sampled values of covariant parameters
-        cov_sample = self.sample_multivar_normal(self.cov_info['cov_omega'])
+        cov_sample = self.sample_multivar_normal(**self.cov_info['cov_omega'])
         for i, (comp, param_name) in enumerate(self.cov_info['cov_params_list']):
             kwargs[comp][param_name] = cov_sample[i]
 

@@ -118,14 +118,13 @@ class BaseBNNPrior(ABC):
 
             """
         N = len(mu)
-        if not (len(lower) == N and len(upper) == N):
-            raise ValueError("lower and upper bounds must have length (# of parameters)")
-
         sample = np.random.multivariate_normal(mean=mu, cov=cov_mat, check_valid='raise')
 
         # TODO: get the PDF, scaled for truncation
         # TODO: issue warning if significant portion of marginal PDF is truncated
         if (lower is not None) or (upper is not None):
+            if not (len(lower) == N and len(upper) == N):
+                raise ValueError("lower and upper bounds must have length (# of parameters)")
             lower = -np.inf if lower is None else lower
             upper = np.inf if upper is None else upper
             # Reject samples outside of bounds, repeat sampling until accepted
