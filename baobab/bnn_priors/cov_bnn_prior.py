@@ -27,7 +27,9 @@ class CovBNNPrior(BaseBNNPrior):
         super(CovBNNPrior, self).__init__()
         if 'cov_info' not in bnn_omega:
             raise ValueError("cov_info must be specified in the config inside bnn_omega for CovBNNPrior")
-
+        self._check_cov_info_validity(bnn_omega['cov_info'])
+        self.cov_info = bnn_omega['cov_info']
+        
         # Override config components b/c it's possible to specify covariance between params of profile
         # that doesn't land on the image, i.e. aren't in components 
         self.components = ['lens_mass', 'external_shear', 'src_light', 'lens_light', 'agn_light'] 
@@ -36,19 +38,15 @@ class CovBNNPrior(BaseBNNPrior):
                 # e.g. self.lens_mass = cfg.bnn_omega.lens_mass
                 setattr(self, comp, bnn_omega[comp])
 
-        self.cov_info = bnn_omega['cov_info']
-        print(self.cov_info)
-        self._check_cov_info_validity()
-
-    def _check_cov_info_validity(self):
+    def _check_cov_info_validity(self, cov_info):
         """Checks whether the information passed into cov_info is valid.
 
         """
-        if len(set(self.cov_info['cov_params_list']) - set(self.components)) != 0:
-            warnings.warn("You specified covariance between parameters not in components.")
-
-        n_cov_params = len(self.cov_info['cov_params_list'])
-        cov_omega = self.cov_info['cov_omega']
+        if len(set(cov_info['cov_params_list']) - set(self.components)) != 0:
+            warnings.warn("You specified covariance between parameters for profiles not in components list.")
+            
+        n_cov_params = len(cov_info['cov_params_list'])
+        cov_omega = cov_info['cov_omega']
         if len(cov_omega['mu']) != n_cov_params:
             raise ValueError("mu value in cov_omega should have same length as number of cov params in cov_params_list, {:d}, but instead found {:d}".format(n_cov_params, len(cov_omega['mu'])))
         if cov_omega['is_log'] is not None:
