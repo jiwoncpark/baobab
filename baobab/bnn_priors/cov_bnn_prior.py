@@ -38,7 +38,7 @@ class CovBNNPrior(BaseBNNPrior):
                 # e.g. self.lens_mass = cfg.bnn_omega.lens_mass
                 setattr(self, comp, bnn_omega[comp])
 
-    def _check_cov_info_validity(self, cov_info, components):
+    def _check_cov_info_validity(self, cov_info):
         """Checks whether the information passed into cov_info is valid.
 
         """
