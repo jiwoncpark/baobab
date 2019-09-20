@@ -202,7 +202,7 @@ bnn_omega = dict(
                                 # List of 2-tuples specifying which params are correlated 
                                 cov_params_list=[                     
                                 ('lens_mass', 'gamma'),
-                                ('lens_light', 'n_sersic'),
+                                ('src_light', 'magnitude'),
                                 ],
                                 cov_omega = dict(
                                                 # Whether each param is log-parameterized
