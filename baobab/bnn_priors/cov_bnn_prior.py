@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 import scipy.stats as stats
 import lenstronomy.Util.param_util as param_util
@@ -27,7 +28,9 @@ class CovBNNPrior(BaseBNNPrior):
         if 'cov_info' not in bnn_omega:
             raise ValueError("cov_info must be specified in the config inside bnn_omega for CovBNNPrior")
 
-        self.components = components 
+        # Override config components b/c it's possible to specify covariance between params of profile
+        # that doesn't land on the image, i.e. aren't in components 
+        self.components = ['lens_mass', 'external_shear', 'src_light', 'lens_light', 'agn_light'] 
         for comp in bnn_omega:
             if comp in self.components:
                 # e.g. self.lens_mass = cfg.bnn_omega.lens_mass
@@ -41,6 +44,8 @@ class CovBNNPrior(BaseBNNPrior):
         """Checks whether the information passed into cov_info is valid.
 
         """
+        if len(set(self.cov_info['cov_params_list']) - set(self.components)) != 0:
+            warnings.warn("You specified covariance between parameters not in components.")
 
         n_cov_params = len(self.cov_info['cov_params_list'])
         cov_omega = self.cov_info['cov_omega']
