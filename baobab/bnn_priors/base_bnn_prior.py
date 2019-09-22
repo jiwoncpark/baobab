@@ -21,6 +21,14 @@ class BaseBNNPrior(ABC):
                           SOURCE_POSITION=['ra_source', 'dec_source', 'magnitude'],)
         setattr(self, 'params', params)
 
+    def _raise_config_error(self, missing_key, parent_config_key, bnn_prior_class):
+        """Convenience function for raising errors related to config values
+
+        """
+        raise ValueError("{:s} must be specified in the config inside {:s} for {:s}").format(missing_key,
+                                                                                             parent_config_key,
+                                                                                             bnn_prior_class)
+
     def sample_param(self, hyperparams):
         """Assigns a sampling distribution
 
