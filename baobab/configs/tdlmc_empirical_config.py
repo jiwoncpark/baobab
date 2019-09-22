@@ -49,180 +49,31 @@ image = dict(
              )
 
 bnn_omega = dict(
-                 lens_mass = dict(
-                                 profile='SPEMD', # only available type now
-                                 # Normal(mu, sigma^2)
-                                 center_x = dict(
-                                          dist='normal', # one of ['normal', 'beta']
-                                          mu=0.0,
-                                          sigma=1.e-7,
-                                          log=False),
-                                 center_y = dict(
-                                          dist='normal',
-                                          mu=0.0,
-                                          sigma=1.e-7,
-                                          log=False),
-                                 # Lognormal(mu, sigma^2)
-                                 gamma = dict(
-                                              dist='normal',
-                                              mu=0.7,
-                                              sigma=0.02,
-                                              log=True),
-                                 theta_E = dict(
-                                                dist='normal',
-                                                mu=0.0,
-                                                sigma=0.1,
-                                                log=True),
-                                 # Beta(a, b)
-                                 e1 = dict(
-                                           dist='beta',
-                                           a=4.0,
-                                           b=4.0,
-                                           lower=-0.9,
-                                           upper=0.9),
-                                 e2 = dict(
-                                           dist='beta',
-                                           a=4.0,
-                                           b=4.0,
-                                           lower=-0.9,
-                                           upper=0.9,),
-                                 ),
+                 # Inference hyperparameters defining the cosmology
+                 cosmology = dict(
+                                  H0=70.0, # Hubble constant at z = 0. If a float, must be in [km/sec/Mpc]
+                                  Om0=0.3, # Omega matter: density of non-relativistic matter in units of the critical density at z=0.
+                                  Ode0=0.7, # Omega dark energy: density of dark energy in units of the critical density at z=0.
+                                  w0=-1.0), # Dark energy equation of state at all redshifts. This is pressure/density for dark energy in units where c=1. A cosmological constant has w0=-1.0.
 
-                 external_shear = dict(
-                                       profile='SHEAR_GAMMA_PSI',
-                                       gamma_ext = dict(
-                                                         dist='normal',
-                                                         mu=-2.73, # See overleaf doc
-                                                         sigma=1.05,
-                                                         log=True,),
-                                       psi_ext = dict(
-                                                     dist='generalized_normal',
-                                                     mu=np.pi,
-                                                     alpha=np.pi,
-                                                     p=10.0,
-                                                     lower=0.0,
-                                                     upper=2.0*np.pi)
-                                       ),
-
-                 lens_light = dict(
-                                  profile='SERSIC_ELLIPSE', # only available type now
-                                  # Centered at lens mass
-                                  # Lognormal(mu, sigma^2)
-                                  magnitude = dict(
-                                             dist='normal',
-                                             mu=15,
-                                             sigma=1,
-                                             lower=0.0,
-                                             log=False),
-                                  n_sersic = dict(
-                                                  dist='normal',
-                                                  mu=1.25,
-                                                  sigma=0.13,
-                                                  log=True),
-                                  R_sersic = dict(
-                                                  dist='normal',
-                                                  mu=-0.35,
-                                                  sigma=0.3,
-                                                  log=True),
-                                  # Beta(a, b)
-                                  e1 = dict(
-                                            dist='beta',
-                                            a=4.0,
-                                            b=4.0,
-                                            lower=-0.9,
-                                            upper=0.9),
-                                  e2 = dict(
-                                            dist='beta',
-                                            a=4.0,
-                                            b=4.0,
-                                            lower=-0.9,
-                                            upper=0.9),
-                                  ),
-
-                 src_light = dict(
-                                profile='SERSIC_ELLIPSE', # only available type now
-                                # Lognormal(mu, sigma^2)
-                                magnitude = dict(
-                                             dist='normal',
-                                             mu=22,
-                                             sigma=1,
-                                             lower=0.0,
-                                             log=False),
-                                n_sersic = dict(
-                                                dist='normal',
-                                                mu=0.7,
-                                                sigma=0.4,
-                                                log=True),
-                                R_sersic = dict(
-                                                dist='normal',
-                                                mu=-0.7,
-                                                sigma=0.4,
-                                                log=True),
-                                # Normal(mu, sigma^2)
-                                center_x = dict(
-                                         dist='generalized_normal',
-                                         mu=0.0,
-                                         alpha=0.03,
-                                         p=10.0,
-                                         ),
-                                center_y = dict(
-                                         dist='generalized_normal',
-                                         mu=0.0,
-                                         alpha=0.03,
-                                         p=10.0,
-                                         ),
-                                # Beta(a, b)
-                                e1 = dict(
-                                          dist='beta',
-                                          a=4.0,
-                                          b=4.0,
-                                          lower=-0.9,
-                                          upper=0.9),
-                                e2 = dict(
-                                          dist='beta',
-                                          a=4.0,
-                                          b=4.0,
-                                          lower=-0.9,
-                                          upper=0.9),
+                 redshift = dict(
+                                model='differential_comoving_volume',
+                                # Grid of redshift to sample from
+                                grid = dict(
+                                            start=0.01, # min redshift
+                                            stop=5.0, # max redshift
+                                            step=0.1, # resolution of the z_grid
+                                            ),
                                 ),
 
-                 agn_light = dict(
-                                 profile='LENSED_POSITION', # contains one of 'LENSED_POSITION' or 'SOURCE_POSITION'
-                                 # Centered at host
-                                 # Pre-magnification, image-plane amplitudes if 'LENSED_POSITION'
-                                 # Lognormal(mu, sigma^2)
-                                 magnitude = dict(
-                                             dist='normal',
-                                             mu=21,
-                                             sigma=1,
-                                             lower=0.0,
-                                             log=False),
-                                 ),
-                 cov_info = dict(
-                                # List of 2-tuples specifying which params are correlated 
-                                cov_params_list=[                     
-                                ('lens_mass', 'gamma'),
-                                ('lens_light', 'n_sersic'),
-                                ],
-                                cov_omega = dict(
-                                                # Whether each param is log-parameterized
-                                                is_log=[
-                                                True,
-                                                True,
-                                                ],
-                                                # The mean vector
-                                                mu=np.array([0.7, 1.25]),
-                                                # The covariance matrix (must be PSD and symmetric numpy array)
-                                                cov_mat=np.array([[0.1, 0.03], [0.03, 0.4]]),
-                                                lower=None,
-                                                upper=None,
-                                                 ),
-                                ),
+                 kinematics = dict(
+                                   # Grid of velocity dispersion to sample from
+                                   velocity_dispersion = dict(
+                                                              model = 'CPV2007', # one of ['CPV2007',] -- see docstring for details 
+                                                              grid = dict(
+                                                                         start=100.0, # km/s
+                                                                         stop=400.0, # km/s
+                                                                         step=10.0, # km/s
+                                                                         ),
+                                                              )
                  )
-
-cosmo = dict(
-             H0=70.0,
-             Om0=0.3,
-             Ode0=0.7,
-             Ob0=None,
-             )
