@@ -143,7 +143,7 @@ def gamma_from_size_relation(R_eff, slope=-0.41, intercept=0.39, delta_slope=0.1
     gamma_minus_2 = log_R_eff*slope + intercept
     gamma = gamma_minus_2 + 2.0
     gamma_sig = (intrinsic_scatter**2.0 + np.abs(log_R_eff)*delta_slope**2.0 + delta_intercept**2.0)**0.5
-    scatter = np.randn()*gamma_sig
+    scatter = np.random.randn()*gamma_sig
     return gamma + scatter
 
 def axis_ratio_from_SDSS(vel_disp, A=0.38, B=5.7*1.e-4, truncate=0.2):
@@ -216,7 +216,7 @@ def redshift_binned_luminosity_function(redshift, M_grid):
     # Define redshift bins by right edge of bin
     z_bins = np.array([0.2, 0.4, 0.6, 0.8, 1.2, 2.25, 3.4, 4.5, 5.5, 6.5, 7.5, np.inf])
     alphas = np.array([-1.21, -1.19, -1.55, -1.60, -1.63, -1.49, -1.47, -1.56, -1.67, -2.02, -2.03, -2.36])
-    M_stars = np.array([-18.05, -18.38, -19.49, -19.84, -20.11, -19.53, -19.63, -19.89, -20.33, -21.08, -20.73, -20.81, -21.13, -21.03, -20.89])
+    M_stars = np.array([-18.05, -18.38, -19.49, -19.84, -20.11, -20.33, -21.08, -20.73, -20.81, -21.13, -21.03, -20.89])
     alpha = alphas[redshift < z_bins][0]
     M_star = M_stars[redshift < z_bins][0]
 
@@ -262,7 +262,7 @@ def size_from_luminosity_and_redshift_relation(z, M_V):
 
     """
     log_R_eff = (M_V/-19.5)**-0.22 * ((1.0 + z)/5.0)**-1.2
-    scatter = np.randn()*0.3
+    scatter = np.random.randn()*0.3
     return log_R_eff + scatter
 
 def axis_ratio_disklike(scale=0.3, truncate=0.2):

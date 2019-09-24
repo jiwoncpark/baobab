@@ -3,8 +3,9 @@ import scipy.stats as stats
 from astropy.cosmology import wCDM
 import astropy.units as u
 import lenstronomy.Util.param_util as param_util
+from lenstronomy.Cosmo.lens_cosmo import LensCosmo
 from .base_bnn_prior import BaseBNNPrior
-import baobab.models as models
+from . import models
 
 class EmpiricalBNNPrior(BaseBNNPrior):
     """BNN prior with marginally covariant parameters
@@ -43,7 +44,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         required_keys = ['cosmology', 'redshift', 'kinematics']
         for possible_missing_key in required_keys:
             if possible_missing_key not in bnn_omega:
-            self._raise_config_error(possible_missing_key, 'bnn_omega', cls.__name__)
+                self._raise_config_error(possible_missing_key, 'bnn_omega', cls.__name__)
 
     def define_cosmology(self, cosmology_config):
         """Define the cosmology based on `cfg.bnn_omega.cosmology`
@@ -168,7 +169,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         # FIXME: I could grab some template SEDs and K-correct explicitly, accounting for band throughput
         # for IR WF F140W. Should I do this?
-        dist_mod = self.cosmo.distmod(z_lens)
+        dist_mod = self.cosmo.distmod(z_lens).value
         M_V = -2.5 * log_L_V + M_V_sol
         m_V = dist_mod - A_V
         return m_V
@@ -230,12 +231,15 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         """
         q = models.axis_ratio_from_SDSS(vel_disp)
         # Approximately uniform in ellipticity angle
-        phi = self.sample_param(dist='generalized_normal',
-                                mu=np.pi,
-                                alpha=np.pi,
-                                p=10.0,
-                                lower=0.0,
-                                upper=2.0*np.pi)
+        hyperparams = dict(
+                           dist='generalized_normal',
+                           mu=np.pi,
+                           alpha=np.pi,
+                           p=10.0,
+                           lower=0.0,
+                           upper=2.0*np.pi,
+                           )
+        phi = self.sample_param(hyperparams)
         e1, e2 = param_util.phi_q2_ellipticity(phi, q)
         return e1, e2
 
@@ -255,7 +259,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         """
         M_grid = np.arange(-23.0, -17.8, 0.2)
-        nM_dM1500 = models.redshift_binned_luminosity_function(redshift, M_grid)
+        nM_dM1500 = models.redshift_binned_luminosity_function(z_src, M_grid)
         nM_dM1500_normed = nM_dM1500/np.sum(nM_dM1500)
         M1500_src = np.random.choice(M_grid, None, replace=True, p=nM_dM1500_normed)
         return M1500_src
@@ -283,7 +287,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         """
         dust = 0.0
-        dist_mod = self.cosmo.distmod(z_src)
+        dist_mod = self.cosmo.distmod(z_src).value
         m_src = M_src + dist_mod - dust
         return m_src
 
@@ -319,12 +323,15 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         """
         q = models.axis_ratio_disklike()
         # Approximately uniform in ellipticity angle
-        phi = self.sample_param(dist='generalized_normal',
-                                mu=np.pi,
-                                alpha=np.pi,
-                                p=10.0,
-                                lower=0.0,
-                                upper=2.0*np.pi)
+        hyperparams = dict(
+                           dist='generalized_normal',
+                           mu=np.pi,
+                           alpha=np.pi,
+                           p=10.0,
+                           lower=0.0,
+                           upper=2.0*np.pi,
+                           )
+        phi = self.sample_param(hyperparams)
         e1, e2 = param_util.phi_q2_ellipticity(phi, q)
         return e1, e2
 
@@ -378,7 +385,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             profile = comp_omega.pop('profile') # e.g. 'SPEMD'
             profile_params = comp_omega.keys()
             for param_name in profile_params: # e.g. 'theta_E'
-                if param_name not in kwargs['comp']:
+                if param_name not in kwargs[comp]:
                     hyperparams = comp_omega[param_name].copy()
                     kwargs[comp][param_name] = self.sample_param(hyperparams)
 
