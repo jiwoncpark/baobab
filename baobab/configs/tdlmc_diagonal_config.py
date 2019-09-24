@@ -198,28 +198,4 @@ bnn_omega = dict(
                                              lower=0.0,
                                              log=False),
                                  ),
-
-                 cosmo = dict(
-                             # Normal(mu, sigma^2)
-                             z_lens = dict(
-                                           dist='normal',
-                                           mu=1.5,
-                                           sigma=0.2,
-                                           lower=0.1,
-                                           upper=2.5),
-                             z_src = dict(
-                                          dist='normal',
-                                          mu=1.5,
-                                          sigma=0.2,
-                                          lower=-1,
-                                          upper=99),
-                             # Uniform
-                             H0 = dict(
-                                       lower=50.0,
-                                       upper=90.0),
-                             # Uniform (scaled by r_eff)
-                             r_ani = dict(
-                                          lower=0.5,
-                                          upper=5.0),
-                             ),
                  )
