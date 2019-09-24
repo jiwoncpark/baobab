@@ -87,13 +87,13 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             raise NotImplementedError
         return z_lens, z_src
 
-    def sample_velocity_dispersion(self, veldisp_config):
+    def sample_velocity_dispersion(self, vel_disp_config):
         """ Sample velocity dispersion from the config-specified model,
         on a grid with the range and resolution specified in the config
 
         Parameters
         ----------
-        veldisp_config : dict
+        vel_disp_config : dict
             Copy of cfg.bnn_omega.kinematics.velocity_dispersion
 
         Returns
@@ -102,8 +102,8 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             a realization of velocity dispersion
 
         """
-        vel_disp_grid = np.arange(**veldisp_config.grid)
-        if veldisp_config.model == 'CPV2007':
+        vel_disp_grid = np.arange(**vel_disp_config.grid)
+        if vel_disp_config.model == 'CPV2007':
             dn = models.velocity_dispersion_function_CPV2007(vel_disp_grid)
         else:
             raise NotImplementedError
@@ -141,7 +141,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         return theta_E_SIS
 
     def get_lens_apparent_magnitude(self, vel_disp, z_lens):
-        """Get the lens V-band apparent magnitude from the Faber-Jackson relation
+        """Get the lens apparent magnitude from the Faber-Jackson relation
         given the realized velocity dispersion, with some scatter
 
         Parameters
@@ -151,18 +151,23 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         Note
         ----
-        Does not account for peculiar velocity.
+        Does not account for peculiar velocity or dust. K-correction is approximate and implicit,
+        as the absolute magnitude is in the V-band (480nm ~ 650nm) and, for z ~ 2-3, this portion 
+        of the SED roughly lands in the IR.
 
         Returns
         -------
         m_V : float
-            the V-band apparent magnitude
+            the apparent magnitude in the IR
 
         """
         log_L_V = models.luminosity_from_faber_jackson(vel_disp)
         M_V_sol = 4.84
-        A_V = 0.2 # V-band dust attenuation along LOS
+        # FIXME: Enter good model for dust?
+        A_V = 0.0 # V-band dust attenuation along LOS
 
+        # FIXME: I could grab some template SEDs and K-correct explicitly, accounting for band throughput
+        # for IR WF F140W. Should I do this?
         dist_mod = self.cosmo.distmod(z_lens)
         M_V = -2.5 * log_L_V + M_V_sol
         m_V = dist_mod - A_V
@@ -188,7 +193,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         """
         R_eff = models.size_from_fundamental_plane(vel_disp, m_V) # in kpc
-        r_eff = R_eff * self.cosmo.arcsec_per_kpc_comoving(z) # in arcsec
+        r_eff = R_eff * self.cosmo.arcsec_per_kpc_comoving(z_lens) # in arcsec
         return R_eff, r_eff
 
     def get_gamma(self, R_eff):
@@ -206,7 +211,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             gamma with random scatter from propgated fit errors and intrinsic scatter
 
         """
-        gamma_with_scatter = models.gamma_from_size_correlation(R_eff)
+        gamma_with_scatter = models.gamma_from_size_relation(R_eff)
         return gamma_with_scatter
 
     def get_lens_light_ellipticity(self, vel_disp):
@@ -234,6 +239,95 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         e1, e2 = param_util.phi_q2_ellipticity(phi, q)
         return e1, e2
 
+    def get_src_absolute_magnitude(self, z_src):
+        """Sample the UV absolute magnitude from the luminosity function for the given redshift
+        and convert into apparent magnitude
+
+        Parameters
+        ----------
+        z_src : float
+            the source redshift
+
+        Returns
+        -------
+        float
+            the absolute magnitude at 1500A
+
+        """
+        M_grid = np.arange(-23.0, -17.8, 0.2)
+        nM_dM1500 = models.redshift_binned_luminosity_function(redshift, M_grid)
+        nM_dM1500_normed = nM_dM1500/np.sum(nM_dM1500)
+        M1500_src = np.random.choice(M_grid, None, replace=True, p=nM_dM1500_normed)
+        return M1500_src
+
+    def get_src_apparent_magnitude(self, z_src, M_src):
+        """Convert the souce absolute magnitude into apparent magnitude
+
+        Parameters
+        ----------
+        z_src : float
+            the source redshift
+        M_src : float
+            the source absolute magnitude
+
+        Note
+        ----
+        Does not account for peculiar velocity or dust. K-correction is approximate and implicit,
+        as the absolute magnitude is at 150nm and, for z ~ 5-9, this portion 
+        of the SED roughly lands in the IR.
+
+        Returns
+        -------
+        float
+            the apparent magnitude in the IR
+
+        """
+        dust = 0.0
+        dist_mod = self.cosmo.distmod(z_src)
+        m_src = M_src + dist_mod - dust
+        return m_src
+
+    def get_src_size(self, z_src, M_V_src):
+        """Get the effective radius of the source from its empirical relation with V-band absolute
+        magnitude and redshift
+
+        Parameters
+        ----------
+        M_V_src : float
+            V-band absolute magnitude of the source
+        z_src : float
+            source redshift
+
+        Returns
+        -------
+        tuple
+            tuple of the effective radius in kpc and arcsec
+
+        """
+        R_eff = models.size_from_luminosity_and_redshift_relation(z_src, M_V_src)
+        r_eff = R_eff * self.cosmo.arcsec_per_kpc_comoving(z_src) # in arcsec
+        return R_eff, r_eff
+
+    def get_src_light_ellipticity(self):
+        """Sample the source light ellipticity
+
+        Returns
+        -------
+        tuple
+            tuple of floats e1, e2
+
+        """
+        q = models.axis_ratio_disklike()
+        # Approximately uniform in ellipticity angle
+        phi = self.sample_param(dist='generalized_normal',
+                                mu=np.pi,
+                                alpha=np.pi,
+                                p=10.0,
+                                lower=0.0,
+                                upper=2.0*np.pi)
+        e1, e2 = param_util.phi_q2_ellipticity(phi, q)
+        return e1, e2
+
     def sample(self):
         """Gets kwargs of sampled parameters to be passed to lenstronomy
 
@@ -246,44 +340,47 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
             """
         kwargs = {}
-        z_lens, z_src = self.sample_redshifts(self.redshift)
+        z_lens, z_src = self.sample_redshifts(redshifts_config=self.redshift)
         # Sample lens_mass and lens_light parameters
-        vel_disp_iso = self.sample_velocity_dispersion(self.kinematics.velocity_dispersion)
-        theta_E = self.get_theta_E_SIS(vel_disp_iso=vel_disp_iso, z_lens=z_lens, z_src=z_src)
-        mag_lens = self.get_lens_apparent_magnitude(vel_disp=vel_disp_iso, z_lens=z_lens)
-        R_eff, r_eff = self.get_lens_size(vel_disp=vel_disp_iso, z_lens=z_lens, m_V=mag_lens)
-        gamma = self.get_gamma(R_eff)
+        vel_disp_iso = self.sample_velocity_dispersion(vel_disp_config=self.kinematics.velocity_dispersion)
+        theta_E = self.get_theta_E_SIS(vel_disp_iso, z_lens, z_src)
+        apmag_lens = self.get_lens_apparent_magnitude(vel_disp_iso, z_lens)
+        R_eff_lens, r_eff_lens = self.get_lens_size(vel_disp_iso, z_lens, apmag_lens)
+        gamma = self.get_gamma(R_eff_lens)
         lens_light_e1, lens_light_e2 = self.get_lens_light_ellipticity(vel_disp_iso)
         kwargs['lens_mass'] = dict(
                                    theta_E=theta_E,
                                    gamma=gamma,
                                    )
         kwargs['lens_light'] = dict(
-                                    magnitude=mag_lens,
-                                    R_sersic=r_eff,
+                                    magnitude=apmag_lens,
+                                    R_sersic=r_eff_lens,
                                     e1=lens_light_e1,
                                     e2=lens_light_e2,
                                     )
         # Sample src_light parameters
-        
-        # draw source luminosity in redshift bin
-        # draw effective radius like LensPop
+        abmag_src = self.get_src_absolute_magnitude(z_src)
+        apmag_src = self.get_src_apparent_magnitude(z_src, abmag_src)
+        r_eff_src = self.get_src_size(z_src, abmag_src)
+        src_light_e1, src_light_e2 = self.get_src_light_ellipticity()
+        kwargs['src_light'] = dict(
+                                   magnitude=apmag_src,
+                                   R_sersic=r_eff_src,
+                                   e1=src_light_e1,
+                                   e2=src_light_e2,
+                                   )
 
-        kwargs = {}
+        # Sample remaining parameters, not constrained by the above empirical relations,
+        # independently from their (marginally) diagonal BNN prior
         for comp in self.components: # e.g. 'lens mass'
             kwargs[comp] = {}
             comp_omega = getattr(self, comp).copy() # e.g. self.lens_mass
             profile = comp_omega.pop('profile') # e.g. 'SPEMD'
             profile_params = comp_omega.keys()
             for param_name in profile_params: # e.g. 'theta_E'
-                if (comp, param_name) not in self.cov_info['cov_params_list']:
+                if param_name not in kwargs['comp']:
                     hyperparams = comp_omega[param_name].copy()
                     kwargs[comp][param_name] = self.sample_param(hyperparams)
-
-        # Fill in sampled values of covariant parameters
-        cov_sample = self.sample_multivar_normal(**self.cov_info['cov_omega'])
-        for i, (comp, param_name) in enumerate(self.cov_info['cov_params_list']):
-            kwargs[comp][param_name] = cov_sample[i]
 
         # Source pos is defined wrt the lens pos
         kwargs['src_light']['center_x'] += kwargs['lens_mass']['center_x']
@@ -294,5 +391,3 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             kwargs['lens_light']['center_x'] = kwargs['lens_mass']['center_x']
             kwargs['lens_light']['center_y'] = kwargs['lens_mass']['center_y']
         return kwargs
-
-
