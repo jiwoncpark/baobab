@@ -376,11 +376,12 @@ class EmpiricalBNNPrior(BaseBNNPrior):
                                    e1=src_light_e1,
                                    e2=src_light_e2,
                                    )
+        # Sample AGN_light parameters
+        kwargs['agn_light'] = {}
 
         # Sample remaining parameters, not constrained by the above empirical relations,
         # independently from their (marginally) diagonal BNN prior
         for comp in self.components: # e.g. 'lens mass'
-            kwargs[comp] = {}
             comp_omega = getattr(self, comp).copy() # e.g. self.lens_mass
             profile = comp_omega.pop('profile') # e.g. 'SPEMD'
             profile_params = comp_omega.keys()
