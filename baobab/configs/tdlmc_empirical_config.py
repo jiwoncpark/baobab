@@ -229,7 +229,7 @@ bnn_omega = dict(
                                  # Lognormal(mu, sigma^2)
                                  magnitude = dict(
                                              dist='normal',
-                                             mu=21,
+                                             mu=27,
                                              sigma=1,
                                              lower=0.0,
                                              log=False),

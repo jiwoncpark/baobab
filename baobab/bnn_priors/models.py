@@ -115,7 +115,7 @@ def size_from_fundamental_plane(vel_disp, m_V, a=1.4335, b=0.3150, c=-8.8979):
     Monthly Notices of the Royal Astronomical Society 396.2 (2009): 1171-1185.
 
     """
-    log_R_eff = a*np.log10(vel_disp) + b*m_V + c # in kpc
+    log_R_eff = a*np.log10(vel_disp) + b*m_V + c
     R_eff = 10**log_R_eff
     return R_eff
 

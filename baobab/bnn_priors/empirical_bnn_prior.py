@@ -78,14 +78,12 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         """
         z_grid = np.arange(**redshifts_config.grid)
-        if redshifts_config.model == 'differential_comoving_volume':
-            dVol_dz = self.cosmo.differential_comoving_volume(z_grid).value
-            dVol_dz_normed = dVol_dz/np.sum(dVol_dz)
-            sampled_z = np.random.choice(z_grid, 2, replace=True, p=dVol_dz_normed)
-            z_lens = np.min(sampled_z)
-            z_src = np.max(sampled_z)
-        else:
-            raise NotImplementedError
+        dVol_dz = self.cosmo.differential_comoving_volume(z_grid).value
+        dVol_dz_normed = dVol_dz/np.sum(dVol_dz)
+        sampled_z = np.random.choice(z_grid, 2, replace=True, p=dVol_dz_normed)
+        z_lens = np.min(sampled_z)
+        z_src = np.max(sampled_z)
+
         return z_lens, z_src
 
     def sample_velocity_dispersion(self, vel_disp_config):
@@ -141,14 +139,36 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         theta_E_SIS = lens_cosmo.sis_sigma_v2theta_E(vel_disp_iso)
         return theta_E_SIS
 
-    def get_lens_apparent_magnitude(self, vel_disp, z_lens):
-        """Get the lens apparent magnitude from the Faber-Jackson relation
+    def get_lens_absolute_magnitude(self, vel_disp):
+        """Get the lens absolute magnitude from the Faber-Jackson relation
         given the realized velocity dispersion, with some scatter
 
         Parameters
         ----------
         vel_disp : float
             the velocity dispersion in km/s
+
+        Returns
+        -------
+        float
+            the V-band absolute magnitude
+
+        """
+        log_L_V = models.luminosity_from_faber_jackson(vel_disp)
+        M_V_sol = 4.84
+        M_V = -2.5 * log_L_V + M_V_sol
+        return M_V        
+
+    def get_lens_apparent_magnitude(self, M_lens, z_lens):
+        """Get the lens apparent magnitude from the Faber-Jackson relation
+        given the realized velocity dispersion, with some scatter
+
+        Parameters
+        ----------
+        M_lens : float
+            the V-band absolute magnitude of lens
+        z_lens : float
+            the lens redshift
 
         Note
         ----
@@ -158,21 +178,17 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         Returns
         -------
-        m_V : float
+        float
             the apparent magnitude in the IR
 
         """
-        log_L_V = models.luminosity_from_faber_jackson(vel_disp)
-        M_V_sol = 4.84
-        # FIXME: Enter good model for dust?
-        A_V = 0.0 # V-band dust attenuation along LOS
-
         # FIXME: I could grab some template SEDs and K-correct explicitly, accounting for band throughput
         # for IR WF F140W. Should I do this?
         dist_mod = self.cosmo.distmod(z_lens).value
-        M_V = -2.5 * log_L_V + M_V_sol
-        m_V = dist_mod - A_V
-        return m_V
+        # FIXME: Enter good model for dust?
+        A_V = 0.0 # V-band dust attenuation along LOS
+        apmag = M_lens + dist_mod - A_V
+        return apmag
 
     def get_lens_size(self, vel_disp, z_lens, m_V):
         """Get the lens V-band efefctive radius from the Fundamental Plane relation
@@ -264,15 +280,15 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         M1500_src = np.random.choice(M_grid, None, replace=True, p=nM_dM1500_normed)
         return M1500_src
 
-    def get_src_apparent_magnitude(self, z_src, M_src):
+    def get_src_apparent_magnitude(self, M_src, z_src):
         """Convert the souce absolute magnitude into apparent magnitude
 
         Parameters
         ----------
-        z_src : float
-            the source redshift
         M_src : float
             the source absolute magnitude
+        z_src : float
+            the source redshift
 
         Note
         ----
@@ -351,7 +367,8 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         # Sample lens_mass and lens_light parameters
         vel_disp_iso = self.sample_velocity_dispersion(vel_disp_config=self.kinematics.velocity_dispersion)
         theta_E = self.get_theta_E_SIS(vel_disp_iso, z_lens, z_src)
-        apmag_lens = self.get_lens_apparent_magnitude(vel_disp_iso, z_lens)
+        abmag_lens = self.get_lens_absolute_magnitude(vel_disp_iso)
+        apmag_lens = self.get_lens_apparent_magnitude(abmag_lens, z_lens)
         R_eff_lens, r_eff_lens = self.get_lens_size(vel_disp_iso, z_lens, apmag_lens)
         gamma = self.get_gamma(R_eff_lens)
         lens_light_e1, lens_light_e2 = self.get_lens_light_ellipticity(vel_disp_iso)
@@ -369,7 +386,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         # Sample src_light parameters
         abmag_src = self.get_src_absolute_magnitude(z_src)
-        apmag_src = self.get_src_apparent_magnitude(z_src, abmag_src)
+        apmag_src = self.get_src_apparent_magnitude(abmag_src, z_src)
         R_eff_src, r_eff_src = self.get_src_size(z_src, abmag_src)
         src_light_e1, src_light_e2 = self.get_src_light_ellipticity()
         kwargs['src_light'] = dict(
@@ -378,6 +395,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
                                    e1=src_light_e1,
                                    e2=src_light_e2,
                                    )
+
         # Sample AGN_light parameters
         kwargs['agn_light'] = {}
 
@@ -388,6 +406,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
                               vel_disp_iso=vel_disp_iso,
                               lens_light_R_eff=R_eff_lens,
                               src_light_R_eff=R_eff_src,
+                              lens_light_abmag=abmag_lens,
                               src_light_abmag=abmag_src,
                               )
 
