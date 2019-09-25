@@ -235,6 +235,8 @@ def main():
         param_list += ['y_image_{:d}'.format(i) for i in range(4)]
         param_list += ['n_img']
     param_list += ['img_path', 'total_magnification']
+    if cfg.bnn_prior_class == 'EmpiricalBNNPrior':
+        param_list += ['z_lens', 'z_src', 'vel_disp_iso', 'R_eff_lens', 'R_eff_src', 'abmag_src']
     metadata = pd.DataFrame(columns=param_list)
 
     print("Starting simulation...")
@@ -243,6 +245,8 @@ def main():
     while current_idx < cfg.n_data:
         psf_model = psf_models[current_idx%n_psf]
         sample = bnn_prior.sample() # FIXME: sampling in batches
+        if sample['lens_mass']['theta_E'] < cfg.selection.theta_E.min:
+            continue
 
         # Instantiate SimAPI (converts mag to amp and wraps around image model)
         kwargs_detector = util.merge_dicts(cfg.instrument, cfg.bandpass, cfg.observation)
@@ -323,10 +327,12 @@ def main():
                 meta['x_image_{:d}'.format(i)] = x_image[i]
                 meta['y_image_{:d}'.format(i)] = y_image[i]
                 meta['n_img'] = n_img
+        if cfg.bnn_prior_class == 'EmpiricalBNNPrior':
+            for misc_name, misc_value in sample['misc'].items():
+                meta['{:s}'.format(misc_name)] = misc_value
         meta['total_magnification'] = total_magnification
         meta['img_path'] = img_path
         metadata = metadata.append(meta, ignore_index=True)
-
 
         # Update progress
         current_idx += 1
