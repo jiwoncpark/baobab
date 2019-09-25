@@ -174,7 +174,7 @@ def axis_ratio_from_SDSS(vel_disp, A=0.38, B=5.7*1.e-4, truncate=0.2):
 
     """
     scale = A + B*vel_disp
-    q = 1.0
+    q = 0.0
     while q < truncate:
         q = 1.0 - np.random.rayleigh(scale, size=None)
     return q
@@ -284,7 +284,7 @@ def axis_ratio_disklike(scale=0.3, truncate=0.2):
         the axis ratio
 
     """
-    q = 1.0
+    q = 0.0
     while q < truncate:
         q = 1.0 - np.random.rayleigh(scale, size=None)
     return q
