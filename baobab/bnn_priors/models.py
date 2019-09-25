@@ -263,7 +263,9 @@ def size_from_luminosity_and_redshift_relation(z, M_V):
     """
     log_R_eff = (M_V/-19.5)**-0.22 * ((1.0 + z)/5.0)**-1.2
     scatter = np.random.randn()*0.3
-    return log_R_eff + scatter
+    log_R_eff += scatter
+    R_eff = 10.0**log_R_eff
+    return R_eff
 
 def axis_ratio_disklike(scale=0.3, truncate=0.2):
     """Sample (one minus) the axis ratio of a disk-like galaxy from the Rayleigh distribution
