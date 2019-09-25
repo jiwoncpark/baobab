@@ -29,7 +29,7 @@ from baobab.configs import Config
 # BNN prior class
 import baobab.bnn_priors as bnn_priors
 # Lenstronomy modules
-print(lenstronomy.__path__)
+print("Lenstronomy path being used: {:s}".format(lenstronomy.__path__))
 from lenstronomy.LensModel.lens_model import LensModel
 from lenstronomy.LensModel.Solver.lens_equation_solver import LensEquationSolver
 from lenstronomy.LightModel.light_model import LightModel
