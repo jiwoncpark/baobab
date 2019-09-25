@@ -252,7 +252,7 @@ def main():
         kwargs_detector = util.merge_dicts(cfg.instrument, cfg.bandpass, cfg.observation)
         kwargs_detector.update(seeing=cfg.psf.fwhm,
                                psf_type=cfg.psf.type,
-                               psf_model=psf_model) # keyword deprecation warning: I asked Simon to change this to kernel_point_source
+                               kernel_point_source=psf_model) # keyword deprecation warning: I asked Simon to change this to 
         data_api = DataAPI(cfg.image.num_pix, **kwargs_detector)
         image_data = data_api.data_class
 
