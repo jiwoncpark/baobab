@@ -79,7 +79,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         """
         z_grid = np.arange(**redshifts_config.grid)
         if redshifts_config.model == 'differential_comoving_volume':
-            dVol_dz = self.cosmo.differential_comoving_volume(z_grid)
+            dVol_dz = self.cosmo.differential_comoving_volume(z_grid).value
             dVol_dz_normed = dVol_dz/np.sum(dVol_dz)
             sampled_z = np.random.choice(z_grid, 2, replace=True, p=dVol_dz_normed)
             z_lens = np.min(sampled_z)
@@ -194,7 +194,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         """
         R_eff = models.size_from_fundamental_plane(vel_disp, m_V) # in kpc
-        r_eff = R_eff * self.cosmo.arcsec_per_kpc_comoving(z_lens) # in arcsec
+        r_eff = R_eff * self.cosmo.arcsec_per_kpc_comoving(z_lens).value # in arcsec
         return R_eff, r_eff
 
     def get_gamma(self, R_eff):
@@ -309,7 +309,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         """
         R_eff = models.size_from_luminosity_and_redshift_relation(z_src, M_V_src)
-        r_eff = R_eff * self.cosmo.arcsec_per_kpc_comoving(z_src) # in arcsec
+        r_eff = R_eff * self.cosmo.arcsec_per_kpc_comoving(z_src).value # in arcsec
         return R_eff, r_eff
 
     def get_src_light_ellipticity(self):
@@ -365,10 +365,12 @@ class EmpiricalBNNPrior(BaseBNNPrior):
                                     e1=lens_light_e1,
                                     e2=lens_light_e2,
                                     )
+        kwargs['external_shear'] = {}
+
         # Sample src_light parameters
         abmag_src = self.get_src_absolute_magnitude(z_src)
         apmag_src = self.get_src_apparent_magnitude(z_src, abmag_src)
-        r_eff_src = self.get_src_size(z_src, abmag_src)
+        R_eff_src, r_eff_src = self.get_src_size(z_src, abmag_src)
         src_light_e1, src_light_e2 = self.get_src_light_ellipticity()
         kwargs['src_light'] = dict(
                                    magnitude=apmag_src,
@@ -378,6 +380,16 @@ class EmpiricalBNNPrior(BaseBNNPrior):
                                    )
         # Sample AGN_light parameters
         kwargs['agn_light'] = {}
+
+        # Miscellaneous other parameters to export
+        kwargs['misc'] = dict(
+                              z_lens=z_lens,
+                              z_src=z_src,
+                              vel_disp_iso=vel_disp_iso,
+                              lens_light_R_eff=R_eff_lens,
+                              src_light_R_eff=R_eff_src,
+                              src_light_abmag=abmag_src,
+                              )
 
         # Sample remaining parameters, not constrained by the above empirical relations,
         # independently from their (marginally) diagonal BNN prior
@@ -398,4 +410,5 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             # Lens light shares center with lens mass
             kwargs['lens_light']['center_x'] = kwargs['lens_mass']['center_x']
             kwargs['lens_light']['center_y'] = kwargs['lens_mass']['center_y']
+
         return kwargs
