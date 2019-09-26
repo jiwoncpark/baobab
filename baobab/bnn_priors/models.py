@@ -46,6 +46,7 @@ def velocity_dispersion_function_CPV2007(vel_disp_grid):
     #dn *= phi_star * h**3.0
     return dn
 
+
 def luminosity_from_faber_jackson(vel_disp, slope=2.0, intercept=5.8):
     """Evaluate the V-band luminosity L_V expected from the Faber-Jackson (FJ) relation
     for a given velocity dispersion
@@ -154,7 +155,6 @@ def gamma_from_size_relation(R_eff, slope=-0.41, intercept=0.39, delta_slope=0.1
     The Astrophysical Journal 724.1 (2010): 511.
 
     """
-
     log_R_eff = np.log10(R_eff)
     gamma_minus_2 = log_R_eff*slope + intercept
     gamma = gamma_minus_2 + 2.0
