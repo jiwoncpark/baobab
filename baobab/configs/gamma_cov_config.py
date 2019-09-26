@@ -3,14 +3,14 @@ import numpy as np
 
 name = 'tdlmc'
 seed = 1113 # random seed
-bnn_prior_class = 'DiagonalBNNPrior'
+bnn_prior_class = 'CovBNNPrior'
 n_data = 200 # number of images to generate
 train_vs_val = 'train'
 out_dir = os.path.join('out_data', '{:s}_{:s}_{:s}_seed{:d}'.format(name,
                                                                     train_vs_val,
                                                                     bnn_prior_class,
                                                                     seed))
-components = ['lens_mass', 'external_shear', 'src_light', 'lens_light', 'agn_light']
+components = ['lens_mass', 'external_shear', 'src_light']
 
 selection = dict(
                  magnification=dict(
@@ -203,4 +203,25 @@ bnn_omega = dict(
                                              lower=0.0,
                                              log=False),
                                  ),
+                 cov_info = dict(
+                                # List of 2-tuples specifying which params are correlated 
+                                cov_params_list=[                     
+                                ('lens_mass', 'gamma'),
+                                ('src_light', 'magnitude'),
+                                ],
+                                cov_omega = dict(
+                                                # Whether each param is log-parameterized
+                                                is_log=[
+                                                True,
+                                                True,
+                                                ],
+                                                # The mean vector
+                                                mu=np.array([0.7, 1.25]),
+                                                # The covariance matrix (must be PSD and symmetric numpy array)
+                                                cov_mat=np.array([[0.1, 0.03], [0.03, 0.4]]),
+                                                lower=None,
+                                                upper=None,
+                                                 ),
+                                )
                  )
+

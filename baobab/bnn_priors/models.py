@@ -14,11 +14,13 @@ def velocity_dispersion_function_CPV2007(vel_disp_grid):
     Returns
     -------
     array-like, same shape as `vel_disp_grid`
-        the unnormalized velocity dispersion function
+        the velocity dispersion function evaluated at `vel_disp_grid`
+        and normalized to unity
 
     Note
     ----
-    The returned function is unnormalized. We use the exact fit values also used in LensPop ([2]_).
+    The returned array is normalized to unity and we treat it as a PMF from which to sample
+    the velocity dispersion. We also use the exact fit values also used in LensPop ([2]_).
 
     References
     ----------
@@ -36,14 +38,16 @@ def velocity_dispersion_function_CPV2007(vel_disp_grid):
     sig_star = 161.0
     alpha = 2.32
     beta = 2.67
+    #beta_over_gamma = 2.43827086163172 # beta/gamma(alpha/beta) for alpha=2.32, beta=2.67
     dn = (vel_disp_grid/sig_star)**alpha
     dn *= np.exp(-(vel_disp_grid/sig_star)**beta)
-    dn *= beta/gamma(alpha/beta)
+    #dn *= beta_over_gamma
     dn *= 1.0/vel_disp_grid
     #dn *= phi_star * h**3.0
     return dn
 
-def luminosity_from_faber_jackson(vel_disp, slope=2.0, intercept=5.4):
+
+def luminosity_from_faber_jackson(vel_disp, slope=2.0, intercept=5.8):
     """Evaluate the V-band luminosity L_V expected from the Faber-Jackson (FJ) relation
     for a given velocity dispersion
 
@@ -52,9 +56,10 @@ def luminosity_from_faber_jackson(vel_disp, slope=2.0, intercept=5.4):
     vel_disp : float
         the velocity dispersion in km/s
     slope : float
-        slope of the log(L_V/L_solar) vs. log(vel_disp) relation
+        linear slope of the log(L_V/L_solar) vs. log(vel_disp/(km/s)) relation
     intercept : float
-        intercept of the log(L_V/L_solar) vs. log(vel_disp) relation
+        intercept of the log(L_V/L_solar) vs. log(vel_disp/(km/s)) relation, i.e.
+        the value of log(L_V/L_solar) at vel_disp = 1 km/s.
 
     Returns
     -------
@@ -120,17 +125,28 @@ def size_from_fundamental_plane(vel_disp, m_V, a=1.4335, b=0.3150, c=-8.8979):
     return R_eff
 
 def gamma_from_size_relation(R_eff, slope=-0.41, intercept=0.39, delta_slope=0.12, delta_intercept=0.10, intrinsic_scatter=0.14):
-    """Evaluate the power-law slope of the mass profile using the empirical correlation derived 
-    from the SLACS lens galaxy sample with a given effective radius
+    """Evaluate the power-law slope of the mass profile from its power-law relation with effective radius
 
     Parameters
     ----------
     R_eff : float
         the effective radius in kpc
+    slope : float
+        the linear slope of the log(gamma) vs. log(R_eff/kpc) relation
+    intercept : float
+        the intercept of the log(gamma) vs. log(R_eff/kpc) relation, i.e.
+        the value of log(gamma) at R_eff = 1 kpc
+    delta_slope : float
+        1-sigma fit error on the slope
+    delta_intercept : float
+        1-sigma fit error on the intercept
+    intrinsic_scatter : float
+        1-sigma intrinsic scatter, i.e. error on the log(R_eff/kpc) measurements
 
     Note
     ----
-    See Table 4 of [1]_ for the default fit values used.
+    See Table 4 of [1]_ for the default fit values, taken from the empirical correlation derived 
+    from the SLACS lens galaxy sample
 
     References
     ----------
@@ -146,7 +162,7 @@ def gamma_from_size_relation(R_eff, slope=-0.41, intercept=0.39, delta_slope=0.1
     scatter = np.random.randn()*gamma_sig
     return gamma + scatter
 
-def axis_ratio_from_SDSS(vel_disp, A=0.38, B=5.7*1.e-4, truncate=0.2):
+def axis_ratio_from_SDSS(vel_disp, scale_slope=5.7*1.e-4, scale_intercept=0.38, truncate=0.2):
     """Sample (one minus) the axis ratio of the lens galaxy from the Rayleigh distribution with scale
     that depends on velocity dispersion
 
@@ -154,6 +170,14 @@ def axis_ratio_from_SDSS(vel_disp, A=0.38, B=5.7*1.e-4, truncate=0.2):
     ----------
     vel_disp : float
         velocity dispersion in km/s
+    scale_slope : float
+        linear slope of the scale vs. velocity dispersion relation, in (km/s)^-1, i.e.
+        how much the velocity dispersion contributes to average flattening 
+    scale_intercept : float
+        intercept of the scale vs. velocity dispersion relation, i.e.
+        the mean flattening independent of velocity dispersion
+    truncate : float
+        minimum value of the axis ratio
 
     Note
     ----
@@ -173,7 +197,7 @@ def axis_ratio_from_SDSS(vel_disp, A=0.38, B=5.7*1.e-4, truncate=0.2):
         the axis ratio q
 
     """
-    scale = A + B*vel_disp
+    scale = scale_slope*vel_disp + scale_intercept
     q = 0.0
     while q < truncate:
         q = 1.0 - np.random.rayleigh(scale, size=None)
@@ -185,6 +209,8 @@ def redshift_binned_luminosity_function(redshift, M_grid):
     Parameters
     ----------
     redshift : float
+    M_grid : array-like
+        grid of FUV absolute magnitudes at which to evaluate luminosity function
 
     Note
     ----
@@ -269,6 +295,13 @@ def size_from_luminosity_and_redshift_relation(z, M_V):
 
 def axis_ratio_disklike(scale=0.3, truncate=0.2):
     """Sample (one minus) the axis ratio of a disk-like galaxy from the Rayleigh distribution
+
+    Parameters
+    ----------
+    scale : float
+        scale of the Rayleigh distribution; the bigger, the smaller the axis ratio
+    truncate : float
+        the minimum value of the axis ratio
 
     Note
     ----

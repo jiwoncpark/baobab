@@ -42,7 +42,7 @@ class TestBreakage(TestCase):
 
     def test_generate(self):
         """Tests execution of `generate.py` script for all template config files
-        from 
+         
         """
 
         from baobab import configs

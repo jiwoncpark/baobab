@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 import scipy.stats as stats
 import lenstronomy.Util.param_util as param_util
@@ -25,25 +26,24 @@ class CovBNNPrior(BaseBNNPrior):
         """
         super(CovBNNPrior, self).__init__()
         if 'cov_info' not in bnn_omega:
-            raise ValueError("cov_info must be specified in the config inside bnn_omega for CovBNNPrior")
+            raise self._raise_config_error('cov_info', 'bnn_omega', cls.__name__)
+        
+        self.components = components
+        self._check_cov_info_validity(bnn_omega['cov_info'])
+        
+        for comp in bnn_omega: 
+            # e.g. self.lens_mass = cfg.bnn_omega.lens_mass
+            setattr(self, comp, bnn_omega[comp])
 
-        self.components = components 
-        for comp in bnn_omega:
-            if comp in self.components:
-                # e.g. self.lens_mass = cfg.bnn_omega.lens_mass
-                setattr(self, comp, bnn_omega[comp])
-
-        self.cov_info = bnn_omega['cov_info']
-        print(self.cov_info)
-        self._check_cov_info_validity()
-
-    def _check_cov_info_validity(self):
+    def _check_cov_info_validity(self, cov_info):
         """Checks whether the information passed into cov_info is valid.
 
         """
-
-        n_cov_params = len(self.cov_info['cov_params_list'])
-        cov_omega = self.cov_info['cov_omega']
+        if len(set(cov_info['cov_params_list']) - set(self.components)) != 0:
+            warnings.warn("You specified covariance between parameters for profiles not in components list.")
+           
+        n_cov_params = len(cov_info['cov_params_list'])
+        cov_omega = cov_info['cov_omega']
         if len(cov_omega['mu']) != n_cov_params:
             raise ValueError("mu value in cov_omega should have same length as number of cov params in cov_params_list, {:d}, but instead found {:d}".format(n_cov_params, len(cov_omega['mu'])))
         if cov_omega['is_log'] is not None:
