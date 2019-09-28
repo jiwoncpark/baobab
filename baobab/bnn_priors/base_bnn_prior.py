@@ -54,6 +54,28 @@ class BaseBNNPrior(ABC):
         elif dist == 'generalized_normal':
             return self.eval_generalized_normal_pdf(eval_at, **hyperparams)
 
+    def sample_one_minus_rayleigh(self, scale, lower):
+        """Samples from a Rayleigh distribution and gets one minus the value,
+        often used for ellipticity modulus
+
+        Parameters
+        ----------
+        scale : float
+            scale of the Rayleigh distribution
+        lower : float
+            min allowed value of the one minus Rayleigh sample
+
+        Returns
+        -------
+        float
+            one minus the Rayleigh sample
+
+        """
+        q = 0.0
+        while q < truncate:
+            q = 1.0 - np.random.rayleigh(scale, size=None)
+        return q
+
     def sample_normal(self, mu, sigma, lower=-np.inf, upper=np.inf, log=False):
         """Samples from a normal distribution, optionally truncated
 

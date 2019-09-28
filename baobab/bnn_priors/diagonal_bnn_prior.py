@@ -51,6 +51,16 @@ class DiagonalBNNPrior(BaseBNNPrior):
                 hyperparams = comp_omega[param_name].copy()
                 kwargs[comp][param_name] = self.sample_param(hyperparams)
 
+        # Convert any q, phi into e1, e2 as required by lenstronomy
+        for comp in self.components: # e.g. 'lens_mass'
+            for profile in self.comp: # e.g. SPEMD
+                if ('e1' in self.params[profile]) and ('e1' not in kwargs[comp]):
+                    q = kwargs[comp].pop('q')
+                    phi = kwargs[comp].pop('phi')
+                    e1, e2 = param_util.phi_q2_ellipticity(phi, q)
+                    kwargs[comp]['e1'] = e1
+                    kwargs[comp]['e2'] = e2
+
         # Source pos is defined wrt the lens pos
         kwargs['src_light']['center_x'] += kwargs['lens_mass']['center_x']
         kwargs['src_light']['center_y'] += kwargs['lens_mass']['center_y']
