@@ -2,6 +2,8 @@
 *.csv
 *.npy
 *.txt
+*.h5
+*.hdf5
 out_data/*
 
 # Personal config files under development
