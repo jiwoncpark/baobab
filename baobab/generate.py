@@ -7,7 +7,7 @@ Example
 -------
 To run this script, pass in the desired config file as argument::
 
-    $ python generate.py configs/tdlmc_diagonal_config.py
+    $ generate baobab/configs/tdlmc_diagonal_config.py --n_data 1000
 
 """
 
@@ -190,9 +190,10 @@ def main():
     np.random.seed(cfg.seed)
     random.seed(cfg.seed)
 
-    if not os.path.exists(cfg.out_dir):
-        os.makedirs(cfg.out_dir)
-        print("Destination folder: {:s}".format(cfg.out_dir))
+    save_dir = os.path.join('out_data', cfg.out_dir)
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+        print("Destination folder: {:s}".format(save_dir))
     else:
         raise OSError("Destination folder already exists.")
 
@@ -234,7 +235,7 @@ def main():
         param_list += ['x_image_{:d}'.format(i) for i in range(4)]
         param_list += ['y_image_{:d}'.format(i) for i in range(4)]
         param_list += ['n_img']
-    param_list += ['img_path', 'total_magnification']
+    param_list += ['img_filename', 'total_magnification']
     if cfg.bnn_prior_class == 'EmpiricalBNNPrior':
         param_list += ['z_lens', 'z_src', 'vel_disp_iso', 'R_eff_lens', 'R_eff_src', 'abmag_src']
     metadata = pd.DataFrame(columns=param_list)
@@ -312,7 +313,8 @@ def main():
         img += noise
 
         # Save image file
-        img_path = os.path.join(cfg.out_dir, 'X_{0:07d}.npy'.format(current_idx+1))
+        img_filename = 'X_{0:07d}.npy'.format(current_idx+1)
+        img_path = os.path.join(save_dir, img_filename)
         np.save(img_path, img)
 
         # Save labels
@@ -331,7 +333,7 @@ def main():
             for misc_name, misc_value in sample['misc'].items():
                 meta['{:s}'.format(misc_name)] = misc_value
         meta['total_magnification'] = total_magnification
-        meta['img_path'] = img_path
+        meta['img_filename'] = img_filename
         metadata = metadata.append(meta, ignore_index=True)
 
         # Update progress
@@ -341,7 +343,7 @@ def main():
 
     # Fix column ordering
     metadata = metadata[param_list]
-    metadata_path = os.path.join(cfg.out_dir, 'metadata.csv')
+    metadata_path = os.path.join(save_dir, 'metadata.csv')
     metadata.to_csv(metadata_path, index=None)
     print("Labels include: ", metadata.columns.values)
 
