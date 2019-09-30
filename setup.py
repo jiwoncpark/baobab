@@ -21,7 +21,7 @@ setup(
       'http://github.com/sibirrer/fastell4py/tarball/master#egg=fastell4py',],
       include_package_data=True,
       entry_points={
-      'console_scripts': ['generate=baobab.generate:main',],
+      'console_scripts': ['generate=baobab.generate:main', 'to_hdf5=baobab.to_hdf5:main'],
       },
       test_suite='nose.collector',
       tests_require=['nose'],
