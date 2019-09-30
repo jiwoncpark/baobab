@@ -5,7 +5,7 @@ import astropy.units as u
 import lenstronomy.Util.param_util as param_util
 from lenstronomy.Cosmo.lens_cosmo import LensCosmo
 from .base_bnn_prior import BaseBNNPrior
-from . import models
+from . import kinematics_models, parameter_models
 
 class EmpiricalBNNPrior(BaseBNNPrior):
     """BNN prior with marginally covariant parameters
@@ -33,8 +33,12 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         self._check_empirical_omega_validity(bnn_omega)
         for comp in bnn_omega:
             setattr(self, comp, bnn_omega[comp])
+        if 'agn_light' not in self.components:
+            self.agn_light = None
 
-        self.define_cosmology(self.cosmology)
+        self._define_cosmology(self.cosmology)
+        self._define_kinematics_models(self.kinematics)
+        self._define_parameter_models(self.lens_mass, self.lens_light, self.src_light, self.agn_light)
 
     def _check_empirical_omega_validity(self, bnn_omega):
         """Check whether the config file specified the hyperparameters for all the fields
@@ -44,31 +48,66 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         required_keys = ['cosmology', 'redshift', 'kinematics']
         for possible_missing_key in required_keys:
             if possible_missing_key not in bnn_omega:
-                self._raise_config_error(possible_missing_key, 'bnn_omega', cls.__name__)
+                self._raise_cfg_error(possible_missing_key, 'bnn_omega', cls.__name__)
 
-    def define_cosmology(self, cosmology_config):
-        """Define the cosmology based on `cfg.bnn_omega.cosmology`
+    def _define_cosmology(self, cosmology_cfg):
+        """Set the cosmology, with which to generate all the training samples, based on the config
 
         Parameters
         ----------
-        cosmology_config : dict
+        cosmology_cfg : dict
             Copy of cfg.bnn_omega.cosmology
 
-        Returns
-        -------
-        astropy.cosmology.wCDM object
-            the cosmology with which to generate all the training samples
+        """
+        self.cosmo = wCDM(**cosmology_cfg)
+
+    def _define_kinematics_models(self, kinematics_cfg):
+        """Set the empirical models related to the kinematics, based on the config
+
+        Parameters
+        ----------
+        kinematics_cfg : dict
+            Copy of cfg.bnn_omega.kinematics
 
         """
-        self.cosmo = wCDM(**cosmology_config)
+        self.velocity_dispersion_function = getattr(kinematics_models, kinematics_cfg.velocity_dispersion.model)
 
-    def sample_redshifts(self, redshifts_config):
+    def _define_parameter_models(self, lens_mass_cfg, lens_light_cfg, src_light_cfg, agn_light_cfg):
+        """Set the empirical models, with which to generate all the training samples,
+        based on each component key in `cfg.bnn_omega`
+
+        Parameters
+        ----------
+        lens_mass_cfg : dict
+            Copy of cfg.bnn_omega.lens_mass
+        lens_light_cfg : dict
+            Copy of cfg.bnn_omega.lens_light
+        src_light_cfg : dict
+            Copy of cfg.bnn_omega.src_light
+        agn_light_cfg : dict
+            Copy of cfg.bnn_omega.agn_light
+
+        """
+        # lens_mass
+        self.gamma_model = getattr(parameter_models, lens_mass_cfg.gamma.model)(**lens_mass_cfg.gamma.model_kwargs).get_gamma
+        self.theta_E_model = self.approximate_theta_E_for_SIS
+
+        # lens_light
+        self.lens_luminosity_model = getattr(parameter_models, lens_light_cfg.magnitude.model)(**lens_light_cfg.magnitude.model_kwargs).get_luminosity
+        self.lens_light_size_model = getattr(parameter_models, lens_light_cfg.R_sersic.model)(**lens_light_cfg.R_sersic.model_kwargs).get_effective_radius
+        self.lens_axis_ratio_model = getattr(parameter_models, lens_light_cfg.q.model)(**lens_light_cfg.q.model_kwargs).get_axis_ratio
+
+        # src_light
+        self.src_luminosity_model = getattr(parameter_models, src_light_cfg.magnitude.model)
+        self.src_light_size_model = getattr(parameter_models, src_light_cfg.R_sersic.model)
+
+    def sample_redshifts(self, redshifts_cfg):
         """Sample redshifts from the differential comoving volume,
         on a grid with the range and resolution specified in the config
 
         Parameters
         ----------
-        redshifts_config : dict
+        redshifts_cfg : dict
             Copy of cfg.bnn_omega.redshift
 
         Returns
@@ -77,7 +116,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             the tuple of floats that are the realized z_lens, z_src
 
         """
-        z_grid = np.arange(**redshifts_config.grid)
+        z_grid = np.arange(**redshifts_cfg.grid)
         dVol_dz = self.cosmo.differential_comoving_volume(z_grid).value
         dVol_dz_normed = dVol_dz/np.sum(dVol_dz)
         sampled_z = np.random.choice(z_grid, 2, replace=True, p=dVol_dz_normed)
@@ -86,13 +125,13 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         return z_lens, z_src
 
-    def sample_velocity_dispersion(self, vel_disp_config):
+    def sample_velocity_dispersion(self, vel_disp_cfg):
         """ Sample velocity dispersion from the config-specified model,
         on a grid with the range and resolution specified in the config
 
         Parameters
         ----------
-        vel_disp_config : dict
+        vel_disp_cfg : dict
             Copy of cfg.bnn_omega.kinematics.velocity_dispersion
 
         Returns
@@ -101,16 +140,13 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             a realization of velocity dispersion
 
         """
-        vel_disp_grid = np.arange(**vel_disp_config.grid)
-        if vel_disp_config.model == 'CPV2007':
-            dn = models.velocity_dispersion_function_CPV2007(vel_disp_grid)
-        else:
-            raise NotImplementedError
+        vel_disp_grid = np.arange(**vel_disp_cfg.grid)
+        dn = self.velocity_dispersion_function(vel_disp_grid)
         dn_normed = dn/np.sum(dn)
         sampled_vel_disp = np.random.choice(vel_disp_grid, None, replace=True, p=dn_normed)
         return sampled_vel_disp
 
-    def get_theta_E_SIS(self, vel_disp_iso, z_lens, z_src):
+    def approximate_theta_E_for_SIS(self, vel_disp_iso, z_lens, z_src):
         """Compute the Einstein radius for a given isotropic velocity dispersion
         assuming a singular isothermal sphere (SIS) mass profile
 
@@ -154,7 +190,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             the V-band absolute magnitude
 
         """
-        log_L_V = models.luminosity_from_faber_jackson(vel_disp)
+        log_L_V = self.lens_luminosity_model(vel_disp)
         M_V_sol = 4.84
         M_V = -2.5 * log_L_V + M_V_sol
         return M_V        
@@ -209,55 +245,9 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             the effective radius in kpc and arcsec
 
         """
-        R_eff = models.size_from_fundamental_plane(vel_disp, m_V) # in kpc
+        R_eff = self.lens_light_size_model(vel_disp, m_V) # in kpc
         r_eff = R_eff * self.cosmo.arcsec_per_kpc_comoving(z_lens).value # in arcsec
         return R_eff, r_eff
-
-    def get_gamma(self, R_eff):
-        """Get the power-law slope of the mass profile using the fit derived from the SLACS
-        sample
-
-        Parameters
-        ----------
-        R_eff : float
-            effective radius of the lens light in kpc
-
-        Returns
-        -------
-        float
-            gamma with random scatter from propgated fit errors and intrinsic scatter
-
-        """
-        gamma_with_scatter = models.gamma_from_size_relation(R_eff)
-        return gamma_with_scatter
-
-    def get_lens_light_ellipticity(self, vel_disp):
-        """Get the lens light ellipticity from a reasonable distribution agreeing with the SDSS data
-
-        Parameters
-        ----------
-        vel_disp : float
-            velocity dispersion in km/s
-
-        Returns
-        -------
-        tuple
-            tuple of floats e1, e2
-
-        """
-        q = models.axis_ratio_from_SDSS(vel_disp)
-        # Approximately uniform in ellipticity angle
-        hyperparams = dict(
-                           dist='generalized_normal',
-                           mu=np.pi,
-                           alpha=np.pi,
-                           p=10.0,
-                           lower=0.0,
-                           upper=2.0*np.pi,
-                           )
-        phi = self.sample_param(hyperparams)
-        e1, e2 = param_util.phi_q2_ellipticity(phi, q)
-        return e1, e2
 
     def get_src_absolute_magnitude(self, z_src):
         """Sample the UV absolute magnitude from the luminosity function for the given redshift
@@ -275,7 +265,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         """
         M_grid = np.arange(-23.0, -17.8, 0.2)
-        nM_dM1500 = models.redshift_binned_luminosity_function(z_src, M_grid)
+        nM_dM1500 = self.src_luminosity_model(z_src, M_grid)
         nM_dM1500_normed = nM_dM1500/np.sum(nM_dM1500)
         M1500_src = np.random.choice(M_grid, None, replace=True, p=nM_dM1500_normed)
         return M1500_src
@@ -324,32 +314,9 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             tuple of the effective radius in kpc and arcsec
 
         """
-        R_eff = models.size_from_luminosity_and_redshift_relation(z_src, M_V_src)
+        R_eff = self.src_light_size_model(z_src, M_V_src)
         r_eff = R_eff * self.cosmo.arcsec_per_kpc_comoving(z_src).value # in arcsec
         return R_eff, r_eff
-
-    def get_src_light_ellipticity(self):
-        """Sample the source light ellipticity
-
-        Returns
-        -------
-        tuple
-            tuple of floats e1, e2
-
-        """
-        q = models.axis_ratio_disklike()
-        # Approximately uniform in ellipticity angle
-        hyperparams = dict(
-                           dist='generalized_normal',
-                           mu=np.pi,
-                           alpha=np.pi,
-                           p=10.0,
-                           lower=0.0,
-                           upper=2.0*np.pi,
-                           )
-        phi = self.sample_param(hyperparams)
-        e1, e2 = param_util.phi_q2_ellipticity(phi, q)
-        return e1, e2
 
     def sample(self):
         """Gets kwargs of sampled parameters to be passed to lenstronomy
@@ -363,15 +330,17 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
             """
         kwargs = {}
-        z_lens, z_src = self.sample_redshifts(redshifts_config=self.redshift)
+        # Sample redshifts
+        z_lens, z_src = self.sample_redshifts(redshifts_cfg=self.redshift)
+        # Sample velocity dispersion
+        vel_disp_iso = self.sample_velocity_dispersion(vel_disp_cfg=self.kinematics.velocity_dispersion)
         # Sample lens_mass and lens_light parameters
-        vel_disp_iso = self.sample_velocity_dispersion(vel_disp_config=self.kinematics.velocity_dispersion)
-        theta_E = self.get_theta_E_SIS(vel_disp_iso, z_lens, z_src)
         abmag_lens = self.get_lens_absolute_magnitude(vel_disp_iso)
         apmag_lens = self.get_lens_apparent_magnitude(abmag_lens, z_lens)
+        theta_E = self.theta_E_model(vel_disp_iso, z_lens, z_src)
         R_eff_lens, r_eff_lens = self.get_lens_size(vel_disp_iso, z_lens, apmag_lens)
-        gamma = self.get_gamma(R_eff_lens)
-        lens_light_e1, lens_light_e2 = self.get_lens_light_ellipticity(vel_disp_iso)
+        gamma = self.gamma_model(R_eff_lens)
+        lens_light_q = self.lens_axis_ratio_model(vel_disp_iso) 
         kwargs['lens_mass'] = dict(
                                    theta_E=theta_E,
                                    gamma=gamma,
@@ -379,8 +348,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         kwargs['lens_light'] = dict(
                                     magnitude=apmag_lens,
                                     R_sersic=r_eff_lens,
-                                    e1=lens_light_e1,
-                                    e2=lens_light_e2,
+                                    q=lens_light_q,
                                     )
         kwargs['external_shear'] = {}
 
@@ -388,12 +356,9 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         abmag_src = self.get_src_absolute_magnitude(z_src)
         apmag_src = self.get_src_apparent_magnitude(abmag_src, z_src)
         R_eff_src, r_eff_src = self.get_src_size(z_src, abmag_src)
-        src_light_e1, src_light_e2 = self.get_src_light_ellipticity()
         kwargs['src_light'] = dict(
                                    magnitude=apmag_src,
                                    R_sersic=r_eff_src,
-                                   e1=src_light_e1,
-                                   e2=src_light_e2,
                                    )
 
         # Sample AGN_light parameters
@@ -420,6 +385,17 @@ class EmpiricalBNNPrior(BaseBNNPrior):
                 if param_name not in kwargs[comp]:
                     hyperparams = comp_omega[param_name].copy()
                     kwargs[comp][param_name] = self.sample_param(hyperparams)
+
+        # Convert any q, phi into e1, e2 as required by lenstronomy
+        for comp in self.components: # e.g. 'lens_mass'
+            comp_omega = getattr(self, comp).copy() # e.g. self.lens_mass
+            profile = comp_omega.pop('profile') # e.g. 'SPEMD'
+            if ('e1' in self.params[profile]) and ('e1' not in kwargs[comp]):
+                q = kwargs[comp].pop('q')
+                phi = kwargs[comp].pop('phi')
+                e1, e2 = param_util.phi_q2_ellipticity(phi, q)
+                kwargs[comp]['e1'] = e1
+                kwargs[comp]['e2'] = e2
 
         # Source pos is defined wrt the lens pos
         kwargs['src_light']['center_x'] += kwargs['lens_mass']['center_x']

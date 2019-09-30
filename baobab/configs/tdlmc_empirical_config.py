@@ -74,7 +74,7 @@ bnn_omega = dict(
                  kinematics = dict(
                                    # Grid of velocity dispersion to sample from
                                    velocity_dispersion = dict(
-                                                              model = 'CPV2007', # one of ['CPV2007',] -- see docstring for details 
+                                                              model = 'velocity_dispersion_function_CPV2007', # one of ['velocity_dispersion_function_CPV2007',] -- see docstring for details 
                                                               grid = dict(
                                                                          start=100.0, # km/s
                                                                          stop=400.0, # km/s
@@ -82,9 +82,6 @@ bnn_omega = dict(
                                                                          ),
                                                               )
                                    ),
-
-                 # Remaining parameters not constrained by empirical relations
-                 # will be sampled independently
                  lens_mass = dict(
                                  profile='SPEMD', # only available type now
                                  # Normal(mu, sigma^2)
@@ -98,17 +95,15 @@ bnn_omega = dict(
                                           mu=0.0,
                                           sigma=1.e-7,
                                           log=False),
-                                 # Lognormal(mu, sigma^2)
                                  gamma = dict(
-                                              dist='normal',
-                                              mu=0.7,
-                                              sigma=0.02,
-                                              log=True),
+                                              model='FundamentalMassHyperplane',
+                                              model_kwargs = dict(
+                                                                  fit_data='SLACS',
+                                                                  ),
+                                              ),
                                  theta_E = dict(
-                                                dist='normal',
-                                                mu=0.0,
-                                                sigma=0.1,
-                                                log=True),
+                                                model='approximate_theta_E_for_SIS',
+                                                ),
                                  # Beta(a, b)
                                  e1 = dict(
                                            dist='beta',
@@ -143,55 +138,48 @@ bnn_omega = dict(
                  lens_light = dict(
                                   profile='SERSIC_ELLIPSE', # only available type now
                                   # Centered at lens mass
-                                  # Lognormal(mu, sigma^2)
                                   magnitude = dict(
-                                             dist='normal',
-                                             mu=15,
-                                             sigma=1,
-                                             lower=0.0,
-                                             log=False),
+                                                   model='FaberJackson',
+                                                   model_kwargs = dict(
+                                                                     fit_data='ETGs',
+                                                                     ),
+                                                   ),
+                                  R_sersic = dict(
+                                                  model='FundamentalPlane',
+                                                  model_kwargs = dict(
+                                                                    fit_data='SDSS',),
+                                                  ),
                                   n_sersic = dict(
                                                   dist='normal',
                                                   mu=1.25,
                                                   sigma=0.13,
                                                   log=True),
-                                  R_sersic = dict(
-                                                  dist='normal',
-                                                  mu=-0.35,
-                                                  sigma=0.3,
-                                                  log=True),
-                                  # Beta(a, b)
-                                  e1 = dict(
-                                            dist='beta',
-                                            a=4.0,
-                                            b=4.0,
-                                            lower=-0.9,
-                                            upper=0.9),
-                                  e2 = dict(
-                                            dist='beta',
-                                            a=4.0,
-                                            b=4.0,
-                                            lower=-0.9,
-                                            upper=0.9),
+                                  # axis ratio
+                                  q = dict(
+                                           model='AxisRatioRayleigh',
+                                           model_kwargs = dict(
+                                                             fit_data='SDSS'
+                                                             ),
+                                           ),
+                                  # ellipticity angle
+                                  phi = dict(
+                                             dist='generalized_normal',
+                                             mu=np.pi,
+                                             alpha=np.pi,
+                                             p=10.0,
+                                             lower=0.0,
+                                             upper=2.0*np.pi,
+                                             ),
                                   ),
 
                  src_light = dict(
-                                profile='SERSIC_ELLIPSE', # only available type now
-                                # Lognormal(mu, sigma^2)
+                                profile='SERSIC_ELLIPSE', # only available type now 
                                 magnitude = dict(
-                                             dist='normal',
-                                             mu=22,
-                                             sigma=1,
-                                             lower=0.0,
-                                             log=False),
+                                                 model='redshift_binned_luminosity_function',
+                                                 ),
                                 n_sersic = dict(
                                                 dist='normal',
                                                 mu=0.7,
-                                                sigma=0.4,
-                                                log=True),
-                                R_sersic = dict(
-                                                dist='normal',
-                                                mu=-0.7,
                                                 sigma=0.4,
                                                 log=True),
                                 # Normal(mu, sigma^2)
@@ -202,24 +190,27 @@ bnn_omega = dict(
                                          p=10.0,
                                          ),
                                 center_y = dict(
-                                         dist='generalized_normal',
-                                         mu=0.0,
-                                         alpha=0.03,
-                                         p=10.0,
+                                               dist='generalized_normal',
+                                               mu=0.0,
+                                               alpha=0.03,
+                                               p=10.0,      
+                                                ),
+                                R_sersic = dict(
+                                                model='size_from_luminosity_and_redshift_relation',
+                                                ),
+                                q = dict(
+                                         dist='sample_one_minus_rayleigh',
+                                         scale=0.3,
+                                         lower=0.2
                                          ),
-                                # Beta(a, b)
-                                e1 = dict(
-                                          dist='beta',
-                                          a=4.0,
-                                          b=4.0,
-                                          lower=-0.9,
-                                          upper=0.9),
-                                e2 = dict(
-                                          dist='beta',
-                                          a=4.0,
-                                          b=4.0,
-                                          lower=-0.9,
-                                          upper=0.9),
+                                phi = dict(
+                                           dist='generalized_normal',
+                                           mu=np.pi,
+                                           alpha=np.pi,
+                                           p=10.0,
+                                           lower=0.0,
+                                           upper=2.0*np.pi
+                                           ),
                                 ),
 
                  agn_light = dict(
