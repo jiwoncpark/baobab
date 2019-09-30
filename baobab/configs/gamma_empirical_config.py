@@ -6,10 +6,10 @@ seed = 1113 # random seed
 bnn_prior_class = 'EmpiricalBNNPrior'
 n_data = 200 # number of images to generate
 train_vs_val = 'train'
-out_dir = os.path.join('out_data', '{:s}_{:s}_{:s}_seed{:d}'.format(name,
-                                                                    train_vs_val,
-                                                                    bnn_prior_class,
-                                                                    seed))
+out_dir = os.path.join('{:s}_{:s}_{:s}_seed{:d}'.format(name,
+                                                        train_vs_val,
+                                                        bnn_prior_class,
+                                                        seed))
 components = ['lens_mass', 'external_shear', 'src_light']
 
 selection = dict(
