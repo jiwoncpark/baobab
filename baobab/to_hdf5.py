@@ -88,7 +88,7 @@ def main():
 
         # Read in image
         img_path = os.path.join(args.npy_dir, img_path_list[current_idx])
-        img = np.load(img_path).reshape(n_x, n_y, 1)
+        img = np.load(img_path).reshape(img_shape)
         # Change axis order for theano
         if format=='theano':
             img = np.rollaxis(img, 2)
