@@ -52,13 +52,34 @@ class TestBreakage(TestCase):
             if cfg_filename.endswith('_config.py'):
                 cfg_filepath = os.path.join(cfg_root, cfg_filename)
                 cfg = configs.Config.fromfile(cfg_filepath)
+                save_dir = os.path.join('out_data', cfg.out_dir)
                 try:
                     subprocess.check_output('generate {:s} --n_data 2'.format(cfg_filepath), shell=True)
                 except:
                     n_failures += 1
                 # Delete resulting data
-                if os.path.exists(cfg.out_dir):
-                    shutil.rmtree(cfg.out_dir)
+                if os.path.exists(save_dir):
+                    shutil.rmtree(save_dir)
+        self.assertTrue(n_failures==0) # FIXME: clumsy
+
+    def test_to_hdf5(self):
+        """Tests execution of `to_hdf5.py` script for all template config files
+         
+        """
+        from baobab import configs
+        cfg_filepath = configs.tdlmc_diagonal_config.__file__
+        cfg = configs.Config.fromfile(cfg_filepath)
+        subprocess.check_output('generate {:s} --n_data 5'.format(cfg_filepath), shell=True)
+        save_dir = os.path.join('out_data', cfg.out_dir)
+        n_failures = 0
+        for channel_format in ['tf', 'theano']:
+            try:
+                subprocess.check_output('to_hdf5 {:s} --format {:s}'.format(save_dir, channel_format), shell=True)
+            except:
+                n_failures += 1
+        # Delete resulting data
+        if os.path.exists(save_dir):
+            shutil.rmtree(save_dir)
         self.assertTrue(n_failures==0) # FIXME: clumsy
             
 if __name__ == '__main__':
