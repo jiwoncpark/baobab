@@ -40,6 +40,10 @@ class BaseBNNPrior(ABC):
             return self.sample_normal(**hyperparams)
         elif dist == 'generalized_normal':
             return self.sample_generalized_normal(**hyperparams)
+        elif dist == 'sample_one_minus_rayleigh':
+            return self.sample_one_minus_rayleigh(**hyperparams)
+        else:
+            raise NotImplementedError
 
     def eval_param_pdf(self, eval_at, hyperparams):
         """Assigns and evaluates the PDF 
@@ -53,6 +57,8 @@ class BaseBNNPrior(ABC):
             return self.eval_normal_pdf(eval_at, **hyperparams)
         elif dist == 'generalized_normal':
             return self.eval_generalized_normal_pdf(eval_at, **hyperparams)
+        else:
+            raise NotImplementedError
 
     def sample_one_minus_rayleigh(self, scale, lower):
         """Samples from a Rayleigh distribution and gets one minus the value,
@@ -72,7 +78,7 @@ class BaseBNNPrior(ABC):
 
         """
         q = 0.0
-        while q < truncate:
+        while q < lower:
             q = 1.0 - np.random.rayleigh(scale, size=None)
         return q
 
