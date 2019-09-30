@@ -5,6 +5,8 @@ numpy
 matplotlib
 ipykernel
 pandas
+h5py
+tables
 dynesty
 tqdm
 corner
