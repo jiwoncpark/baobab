@@ -1,5 +1,5 @@
-Configuring hyperparameters
-===========================
+baobab.configs package
+======================
 
 baobab.configs.parser module
 ----------------------------

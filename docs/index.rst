@@ -12,7 +12,4 @@ A major use case for Baobab is the generation of training and test sets for hier
 
    installation
    usage
-   configs
-   bnn_prior
-   generate
-   to_hdf5
+   baobab

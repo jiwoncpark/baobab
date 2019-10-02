@@ -1,12 +1,8 @@
-Sampling from the BNN prior
-===========================
-
-Subpackages
------------
+baobab.bnn_priors package
+=========================
 
 .. toctree::
-
-    
+   :maxdepth: 2
 
 baobab.bnn_priors.base_bnn_prior module
 ---------------------------------------
