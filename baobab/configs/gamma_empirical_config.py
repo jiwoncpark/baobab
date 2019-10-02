@@ -217,12 +217,12 @@ bnn_omega = dict(
                                  profile='LENSED_POSITION', # contains one of 'LENSED_POSITION' or 'SOURCE_POSITION'
                                  # Centered at host
                                  # Pre-magnification, image-plane amplitudes if 'LENSED_POSITION'
-                                 # Lognormal(mu, sigma^2)
                                  magnitude = dict(
-                                             dist='normal',
-                                             mu=21,
-                                             sigma=1,
-                                             lower=0.0,
-                                             log=False),
+                                                 model='AGNLuminosityFunction',
+                                                 model_kwargs = dict(
+                                                                     M_grid=np.arange(-30.0, -19.0, 0.2),
+                                                                     fit_data='combined',
+                                                                     ),
+                                                 ),
                                  ),
                  )

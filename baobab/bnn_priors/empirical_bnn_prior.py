@@ -34,8 +34,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         self._check_empirical_omega_validity(bnn_omega)
         for comp in bnn_omega:
             setattr(self, comp, bnn_omega[comp])
-        if 'agn_light' not in self.components:
-            self.agn_light = None
+        # TODO: AGN parameters are sampled even when it's not rendered on image (not in self.components)
 
         self._define_cosmology(self.cosmology)
         self._define_kinematics_models(self.kinematics)
@@ -101,6 +100,9 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         # src_light
         self.src_luminosity_model = getattr(parameter_models, src_light_cfg.magnitude.model)
         self.src_light_size_model = getattr(parameter_models, src_light_cfg.R_sersic.model)
+
+        # agn_light
+        self.agn_luminosity_model = getattr(parameter_models, agn_light_cfg.magnitude.model)(**agn_light_cfg.magnitude.model_kwargs).sample_agn_luminosity
 
     def sample_redshifts(self, redshifts_cfg):
         """Sample redshifts from the differential comoving volume,
@@ -319,6 +321,23 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         r_eff = R_eff * self.cosmo.arcsec_per_kpc_comoving(z_src).value # in arcsec
         return R_eff, r_eff
 
+    def get_agn_absolute_magnitude(self, z_src):
+        """Get the AGN absolute magnitude at 1450A, sampled from the luminosity function for its redshift bin
+
+        Parameters
+        ----------
+        z_src : float
+            the AGN redshift
+
+        Returns
+        -------
+        float
+            AGN absolute magnitude at 1450A
+
+        """
+        M_agn = self.agn_luminosity_model(z_src)
+        return M_agn
+
     def sample(self):
         """Gets kwargs of sampled parameters to be passed to lenstronomy
 
@@ -363,7 +382,12 @@ class EmpiricalBNNPrior(BaseBNNPrior):
                                    )
 
         # Sample AGN_light parameters
-        kwargs['agn_light'] = {}
+        if 'agn_light' in self.components:
+            abmag_agn = self.get_agn_absolute_magnitude(z_src)
+            apmag_agn = self.get_src_apparent_magnitude(abmag_agn, z_src) 
+            kwargs['agn_light'] = dict(
+                                       magnitude=apmag_agn,
+                                       )
 
         # Miscellaneous other parameters to export
         kwargs['misc'] = dict(

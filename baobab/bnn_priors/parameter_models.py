@@ -382,3 +382,141 @@ def size_from_luminosity_and_redshift_relation(z, M_V):
 	log_R_eff += scatter
 	R_eff = 10.0**log_R_eff
 	return R_eff
+
+class AGNLuminosityFunction:
+	"""Redshift-binned AGN luminosity function parameterized as a double power-law
+
+	"""
+
+	def __init__(self, M_grid, z_bins=None, alphas=None, betas=None, M_stars=None, fit_data=None):
+		"""
+		Parameters
+		----------
+		M_grid : array-like
+			grid of absolute magnitude at 1450A on which to evaluate the luminosity function
+		z_bins : array-like
+			redshift bins defined by their right edges. Default: None
+		alphas : array-like, same shape as `z_bins`
+			fits to alpha (bright-end slope of the double power-law luminosity function) corresponding element-wise to the `z_bins`. Default: None
+		betas : array-like, same shape as `z_bins`
+			fits to beta (faint-end slope of the double power-law luminosity function) corresponding element-wise to the `z_bins`. Default: None
+		M_stars : array-like, same shape as `z_bins`
+			fits to M_star (break magnitude) corresponding element-wise to the `z_bins`. Default: None
+		fit_data : str
+			sample on which alphas, betas, and M_stars were fit (one of ['combined']). Default: None
+
+		"""
+		if fit_data is None and (z_bins is None or alphas is None or betas is None or M_stars is None):
+			raise ValueError("Either all the fit parameters or fit_data must be specified.")
+		if not (fit_data is None or alphas is None or betas is None or M_stars is None):
+			raise ValueError("Cannot specify fit parameters when fit_data is specified.")
+
+		self.M_grid = M_grid
+		self.z_bins = z_bins
+		self.alphas = alphas
+		self.betas = betas
+		self.M_stars = M_stars
+
+		if fit_data == 'combined':
+			self._define_combined_fit_params()
+		else:
+			raise NotImplementedError
+
+		n_bins = len(self.z_bins)
+		if len(self.alphas) != n_bins:
+			raise ValueError("z_bins and alphas should have the same length.")
+		if len(self.betas) != n_bins:
+			raise ValueError("z_bins and betas should have the same length.")
+		if len(self.M_stars) != n_bins:
+			raise ValueError("z_bins and M_stars should have the same length.")
+
+
+	def _define_combined_fit_params(self):
+		r"""Set the parameters fit on the combined sample of more than >80,000 color-selected AGN from ~14 datasets
+
+		Note
+		----
+		The joint fit was done by [1]_ on the double power-law quasar luminosity function, e.g. [2]_. Note that the normalization (:math:`\phi^*`) is ignored because the luminosity function evaluated at the redshift bins is only used as a PMF from which to sample the luminosities, i.e. it's normalized to unity anyway.
+
+		References
+		----------
+		.. [1] Kulkarni, Girish, Gábor Worseck, and Joseph F. Hennawi. "Evolution of the AGN UV luminosity function from redshift 7.5." Monthly Notices of the Royal Astronomical Society 488.1 (2019): 1035-1065.
+
+		.. [2] Boyle, Brian John, et al. "The 2dF QSO Redshift Survey—I. The optical luminosity function of quasi-stellar objects." Monthly Notices of the Royal Astronomical Society 317.4 (2000): 1014-1022.
+
+		"""
+		self.z_bins = np.array([0.40, 0.60, 0.80, 1.00, 1.20,
+		                       1.40, 1.60, 1.80, 2.20, 2.40, 
+		                       2.50, 2.60, 2.70, 2.80, 2.90,
+		                       3.00, 3.10, 3.20, 3.30, 3.40,
+		                       3.50, 4.10, 4.70, 5.50, np.inf])
+		self.alphas = -np.array([2.74, 3.49, 3.55, 3.69, 4.24,
+		                        4.02, 4.35, 3.94, 4.26, 3.34,
+		                        3.61, 3.31, 3.13, 3.78, 3.61, 
+		                        5.01, 4.72, 4.39, 4.39, 4.76, 
+		                        3.72, 4.84, 4.19, 4.55, 5.00])
+		self.betas = -np.array([1.07, 1.55, 1.89, 1.88, 1.84, 
+		                       1.88, 1.87, 1.69, 1.98, 1.61, 
+		                       1.60, 1.38, 1.05, 1.34, 1.46, 
+		                       1.71, 1.70, 1.96, 1.93, 2.08, 
+		                       1.25, 2.07, 2.20, 2.31, 2.40])
+		self.M_stars = -np.array([21.30, 23.38, 24.21, 24.60, 25.24,
+		                         25.41, 25.77, 25.56, 26.35, 25.50,
+		                         25.86, 25.33, 25.16, 25.94, 26.22,
+		                         26.52, 26.48, 27.10, 27.19, 27.39,
+		                         26.65, 27.26, 27.37, 27.89, 29.19])
+
+	def get_double_power_law(self, alpha, beta, M_star):
+		"""Evaluate the double power law at the given grid of absolute magnitudes
+
+		Parameters
+		----------
+		alpha : float
+			bright-end slope of the double power-law luminosity function
+		beta : float
+			faint-end slope of the double power-law luminosity function
+		M_star : float
+			break magnitude
+
+		Note
+		----
+		Returned luminosity function is normalized to unity. See Note under `slope of the double power-law luminosity function`.
+
+		Returns
+		-------
+		array-like
+			the luminosity function evaluated at `self.M_grid` and normalized to unity
+
+		"""
+		denom = 10.0**(0.4*(alpha + 1.0)*(self.M_grid - M_star))
+		denom += 10.0**(0.4*(beta + 1.0)*(self.M_grid - M_star))
+		dn = 1.0/denom
+		dn /= np.sum(dn)
+		return dn
+
+	def sample_agn_luminosity(self, z):
+		"""Sample the AGN luminosity from the redshift-binned luminosity function
+
+		Parameters
+		----------
+		z : float
+			the AGN redshift
+
+		Returns
+		-------
+		float
+			sampled AGN luminosity at 1450A in mag
+		
+		"""
+		# Assign redshift bin
+		is_less_than_right_edge = (z < self.z_bins)
+		alpha = self.alphas[is_less_than_right_edge][0]
+		beta = self.betas[is_less_than_right_edge][0]
+		M_star = self.M_stars[is_less_than_right_edge][0]
+
+		# Evaluate function
+		pmf = self.get_double_power_law(alpha, beta, M_star)
+
+		# Sample luminosity
+		sampled_M = np.random.choice(self.M_grid, None, replace=True, p=pmf)
+		return sampled_M
