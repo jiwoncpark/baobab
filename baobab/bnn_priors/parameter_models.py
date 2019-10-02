@@ -339,8 +339,8 @@ def redshift_binned_luminosity_function(z, M_grid):
 	z_bins = np.array([0.2, 0.4, 0.6, 0.8, 1.2, 2.25, 3.4, 4.5, 5.5, 6.5, 7.5, np.inf])
 	alphas = np.array([-1.21, -1.19, -1.55, -1.60, -1.63, -1.49, -1.47, -1.56, -1.67, -2.02, -2.03, -2.36])
 	M_stars = np.array([-18.05, -18.38, -19.49, -19.84, -20.11, -20.33, -21.08, -20.73, -20.81, -21.13, -21.03, -20.89])
-	alpha = alphas[redshift < z_bins][0]
-	M_star = M_stars[redshift < z_bins][0]
+	alpha = alphas[z < z_bins][0]
+	M_star = M_stars[z < z_bins][0]
 
 	# Note phi_star is ignored as normalization
 	# Schechter kernel
