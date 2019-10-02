@@ -1,6 +1,13 @@
 Sampling from the BNN prior
 ===========================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    
+
 baobab.bnn_priors.base_bnn_prior module
 ---------------------------------------
 

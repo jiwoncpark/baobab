@@ -16,5 +16,3 @@ A major use case for Baobab is the generation of training and test sets for hier
    bnn_prior
    generate
    to_hdf5
-
-
