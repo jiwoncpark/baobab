@@ -23,6 +23,3 @@ Although the `n_data` (size of training set) value is specified in the config fi
 ::
 
 $generate my_config_collection/my_config.py 100
-
-
-Please message @jiwoncpark with any questions.
