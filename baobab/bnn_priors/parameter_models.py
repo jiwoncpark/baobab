@@ -44,13 +44,9 @@ class FaberJackson:
 
 		References
 		----------
-		.. [1] D’Onofrio, Mauro, et al. 
-		"On the Origin of the Fundamental Plane and Faber–Jackson Relations: Implications for the Star Formation Problem." 
-		The Astrophysical Journal 838.2 (2017): 163.
+		.. [1] D’Onofrio, Mauro, et al. "On the Origin of the Fundamental Plane and Faber–Jackson Relations: Implications for the Star Formation Problem." The Astrophysical Journal 838.2 (2017): 163.
 
-		.. [2] Nigoche-Netro, A., et al. 
-		"The Faber-Jackson relation for early-type galaxies: dependence on the magnitude range." 
-		Astronomy & Astrophysics 516 (2010): A96.
+		.. [2] Nigoche-Netro, A., et al. "The Faber-Jackson relation for early-type galaxies: dependence on the magnitude range." Astronomy & Astrophysics 516 (2010): A96.
 
 		"""
 		self.slope = 2.0
@@ -202,9 +198,7 @@ class FundamentalMassHyperplane:
 
 		References
 		----------
-		.. [1] Auger, M. W., et al. 
-		"The Sloan Lens ACS Survey. X. Stellar, dynamical, and total mass correlations of massive early-type galaxies." 
-		The Astrophysical Journal 724.1 (2010): 511.
+		.. [1] Auger, M. W., et al. "The Sloan Lens ACS Survey. X. Stellar, dynamical, and total mass correlations of massive early-type galaxies." The Astrophysical Journal 724.1 (2010): 511.
 
 		"""
 		self.a = -0.41
@@ -282,9 +276,7 @@ class AxisRatioRayleigh:
 
 		References
 		----------
-		.. [1] Collett, Thomas E. 
-		"The population of galaxy–galaxy strong lenses in forthcoming optical imaging surveys." 
-		The Astrophysical Journal 811.1 (2015): 20.
+		.. [1] Collett, Thomas E. "The population of galaxy–galaxy strong lenses in forthcoming optical imaging surveys." The Astrophysical Journal 811.1 (2015): 20.
 
 		"""
 		self.a = 5.7*1.e-4
@@ -312,12 +304,13 @@ class AxisRatioRayleigh:
 			q = 1.0 - np.random.rayleigh(scale, size=None)
 		return q
 
-def redshift_binned_luminosity_function(redshift, M_grid):
+def redshift_binned_luminosity_function(z, M_grid):
 	"""Sample FUV absolute magnitude from the redshift-binned luminosity function
 
 	Parameters
 	----------
-	redshift : float
+	z : float
+		galaxy redshift
 	M_grid : array-like
 		grid of FUV absolute magnitudes at which to evaluate luminosity function
 
@@ -329,17 +322,11 @@ def redshift_binned_luminosity_function(redshift, M_grid):
 
 	References
 	----------
-	.. [1] Arnouts, Stephane, et al. 
-	"The GALEX VIMOS-VLT Deep Survey* Measurement of the Evolution of the 1500 Å Luminosity Function." 
-	The Astrophysical Journal Letters 619.1 (2005): L43.
+	.. [1] Arnouts, Stephane, et al. "The GALEX VIMOS-VLT Deep Survey* Measurement of the Evolution of the 1500 Å Luminosity Function." The Astrophysical Journal Letters 619.1 (2005): L43.
 
-	.. [2] Finkelstein, Steven L., et al. 
-	"The evolution of the galaxy rest-frame ultraviolet luminosity function over the first two billion years." 
-	The Astrophysical Journal 810.1 (2015): 71.
+	.. [2] Finkelstein, Steven L., et al. "The evolution of the galaxy rest-frame ultraviolet luminosity function over the first two billion years." The Astrophysical Journal 810.1 (2015): 71.
 
-	.. [3] Kawamata, Ryota, et al. 
-	"Size–Luminosity Relations and UV Luminosity Functions at z= 6–9 Simultaneously Derived from the Complete Hubble Frontier Fields Data." 
-	The Astrophysical Journal 855.1 (2018): 4.
+	.. [3] Kawamata, Ryota, et al. "Size–Luminosity Relations and UV Luminosity Functions at z= 6–9 Simultaneously Derived from the Complete Hubble Frontier Fields Data." The Astrophysical Journal 855.1 (2018): 4.
 
 	Returns
 	-------
@@ -367,7 +354,7 @@ def size_from_luminosity_and_redshift_relation(z, M_V):
 	Parameters
 	----------
 	z : float
-		redshift
+		galaxy redshift
 	M_V : float
 		V-band absolute magnitude
 
@@ -378,17 +365,11 @@ def size_from_luminosity_and_redshift_relation(z, M_V):
 
 	References
 	----------
-	.. [1] Mosleh, Moein, et al. 
-	"The evolution of mass-size relation for Lyman break galaxies from z= 1 to z= 7." 
-	The Astrophysical Journal Letters 756.1 (2012): L12.
+	.. [1] Mosleh, Moein, et al. "The evolution of mass-size relation for Lyman break galaxies from z= 1 to z= 7." 	The Astrophysical Journal Letters 756.1 (2012): L12.
 
-	.. [2] Huang, Kuang-Han, et al. 
-	"The bivariate size-luminosity relations for Lyman break galaxies at z∼ 4-5." 
-	The Astrophysical Journal 765.1 (2013): 68.
+	.. [2] Huang, Kuang-Han, et al. "The bivariate size-luminosity relations for Lyman break galaxies at z∼ 4-5." The Astrophysical Journal 765.1 (2013): 68.
 
-	.. [3] Collett, Thomas E. 
-	"The population of galaxy–galaxy strong lenses in forthcoming optical imaging surveys." 
-	The Astrophysical Journal 811.1 (2015): 20.
+	.. [3] Collett, Thomas E. "The population of galaxy–galaxy strong lenses in forthcoming optical imaging surveys." The Astrophysical Journal 811.1 (2015): 20.
 
 	Returns
 	-------

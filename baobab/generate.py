@@ -45,7 +45,7 @@ from lenstronomy.Data.imaging_data import ImageData
 from lenstronomy.Data.psf import PSF
 
 def parse_args():
-    """Parses command-line arguments
+    """Parse command-line arguments
 
     """
     parser = argparse.ArgumentParser()
@@ -95,7 +95,7 @@ def get_PSF_models(psf_config, pixel_scale):
     return psf_models
 
 def amp_to_mag_extended(mag_kwargs_list, light_model, data_api):
-    """Converts the magnitude entries into amp (counts per second)
+    """Convert the magnitude entries into amp (counts per second)
     used by lenstronomy to render the image, for extended objects
 
     Parameters
@@ -114,6 +114,7 @@ def amp_to_mag_extended(mag_kwargs_list, light_model, data_api):
     -------
     list
         list of kwargs dictionaries with 'magnitude' replaced by 'amp'
+
     """
     amp_kwargs_list = copy.deepcopy(mag_kwargs_list)
     for i, mag_kwargs in enumerate(mag_kwargs_list):
@@ -126,7 +127,7 @@ def amp_to_mag_extended(mag_kwargs_list, light_model, data_api):
     return amp_kwargs_list
 
 def amp_to_mag_point(mag_kwargs_list, point_source_model, data_api):
-    """Converts the magnitude entries into amp (counts per second)
+    """Convert the magnitude entries into amp (counts per second)
     used by lenstronomy to render the image, for point sources
 
     See the docstring for `amp_to_mag_extended` for parameter descriptions.
@@ -145,7 +146,7 @@ def amp_to_mag_point(mag_kwargs_list, point_source_model, data_api):
     return amp_kwargs_list
 
 def get_unlensed_total_flux(kwargs_src_light_list, src_light_model, kwargs_ps_list=None, ps_model=None):
-    """Computes the total flux of unlensed objects
+    """Compute the total flux of unlensed objects
 
     Parameter
     ---------
@@ -158,6 +159,7 @@ def get_unlensed_total_flux(kwargs_src_light_list, src_light_model, kwargs_ps_li
     -------
     float
         the total unlensed flux
+
     """
     total_flux = 0.0
     for i, kwargs_src in enumerate(kwargs_src_light_list):
@@ -169,12 +171,13 @@ def get_unlensed_total_flux(kwargs_src_light_list, src_light_model, kwargs_ps_li
     return total_flux
         
 def get_lensed_total_flux(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps, image_model):
-    """Computes the total flux of the lensed image
+    """Compute the total flux of the lensed image
 
     Returns
     -------
     float
         the total lensed flux
+
     """
 
     lensed_src_image = image_model.image(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps, lens_light_add=False)

@@ -34,7 +34,7 @@ baobab.bnn_priors.empirical_bnn_prior module
     :show-inheritance:
 
 baobab.bnn_priors.kinematics_models module
------------------------------------------
+------------------------------------------
 
 .. automodule:: baobab.bnn_priors.kinematics_models
     :members:

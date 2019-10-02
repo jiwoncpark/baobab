@@ -26,6 +26,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             profile type and parameters of the lens mass
         src_light : dict
             profile type and parameters of the source light
+
         """
         super(EmpiricalBNNPrior, self).__init__()
 
@@ -56,7 +57,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         Parameters
         ----------
         cosmology_cfg : dict
-            Copy of cfg.bnn_omega.cosmology
+            Copy of `cfg.bnn_omega.cosmology`
 
         """
         self.cosmo = wCDM(**cosmology_cfg)
@@ -67,7 +68,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         Parameters
         ----------
         kinematics_cfg : dict
-            Copy of cfg.bnn_omega.kinematics
+            Copy of `cfg.bnn_omega.kinematics`
 
         """
         self.velocity_dispersion_function = getattr(kinematics_models, kinematics_cfg.velocity_dispersion.model)
@@ -79,13 +80,13 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         Parameters
         ----------
         lens_mass_cfg : dict
-            Copy of cfg.bnn_omega.lens_mass
+            Copy of `cfg.bnn_omega.lens_mass`
         lens_light_cfg : dict
-            Copy of cfg.bnn_omega.lens_light
+            Copy of `cfg.bnn_omega.lens_light`
         src_light_cfg : dict
-            Copy of cfg.bnn_omega.src_light
+            Copy of `cfg.bnn_omega.src_light`
         agn_light_cfg : dict
-            Copy of cfg.bnn_omega.agn_light
+            Copy of `cfg.bnn_omega.agn_light`
 
         """
         # lens_mass
@@ -108,7 +109,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         Parameters
         ----------
         redshifts_cfg : dict
-            Copy of cfg.bnn_omega.redshift
+            Copy of `cfg.bnn_omega.redshift`
 
         Returns
         -------
@@ -126,13 +127,13 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         return z_lens, z_src
 
     def sample_velocity_dispersion(self, vel_disp_cfg):
-        """ Sample velocity dispersion from the config-specified model,
+        """Sample velocity dispersion from the config-specified model,
         on a grid with the range and resolution specified in the config
 
         Parameters
         ----------
         vel_disp_cfg : dict
-            Copy of cfg.bnn_omega.kinematics.velocity_dispersion
+            Copy of `cfg.bnn_omega.kinematics.velocity_dispersion`
 
         Returns
         -------
@@ -156,14 +157,14 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             isotropic velocity dispersion, or an approximation to it, in km/s
         z_lens : float
             the lens redshift
-
         z_src : float
             the source redshift
 
         Note
         ----
         The computation is purely analytic.
-        .. math:: \theta_E = 4 \pi \frac{\sigma_V^2}{c^2} \frac{D_{ls}}{D_s}
+
+        .. math::\theta_E = 4 \pi \frac{\sigma_V^2}{c^2} \frac{D_{ls}}{D_s}
 
         Returns
         -------
@@ -328,7 +329,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             a dictionary of sampled parameters corresponding to the config-specified
             profile of that component
 
-            """
+        """
         kwargs = {}
         # Sample redshifts
         z_lens, z_src = self.sample_redshifts(redshifts_cfg=self.redshift)

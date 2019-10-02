@@ -10,12 +10,6 @@ def velocity_dispersion_function_CPV2007(vel_disp_grid):
     vel_disp_grid : array-like
         a grid of velocity dispersion values in km/s
 
-    Returns
-    -------
-    array-like, same shape as `vel_disp_grid`
-        the velocity dispersion function evaluated at `vel_disp_grid`
-        and normalized to unity
-
     Note
     ----
     The returned array is normalized to unity and we treat it as a PMF from which to sample
@@ -23,13 +17,14 @@ def velocity_dispersion_function_CPV2007(vel_disp_grid):
 
     References
     ----------
-    .. [1] Choi, Yun-Young, Changbom Park, and Michael S. Vogeley. 
-    "Internal and collective properties of galaxies in the Sloan Digital Sky Survey." 
-    The Astrophysical Journal 658.2 (2007): 884.
+    .. [1] Choi, Yun-Young, Changbom Park, and Michael S. Vogeley. "Internal and collective properties of galaxies in the Sloan Digital Sky Survey." The Astrophysical Journal 658.2 (2007): 884.
 
-    .. [2] Collett, Thomas E. 
-    "The population of galaxy–galaxy strong lenses in forthcoming optical imaging surveys." 
-    The Astrophysical Journal 811.1 (2015): 20.
+    .. [2] Collett, Thomas E. "The population of galaxy–galaxy strong lenses in forthcoming optical imaging surveys." The Astrophysical Journal 811.1 (2015): 20.
+
+    Returns
+    -------
+    array-like, same shape as `vel_disp_grid`
+        the velocity dispersion function evaluated at `vel_disp_grid` and normalized to unity
     
     """
     #h = true_H0/100.0
