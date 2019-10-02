@@ -77,7 +77,7 @@ class FundamentalPlane:
 	Luminosity is expressed as apparent magnitude in this form.
 
 	"""
-	def __init__(self, a=None, b=None, c=None, fit_data=None):
+	def __init__(self, a=None, b=None, c=None, delta_a=0.0, delta_b=0.0, fit_data=None):
 		"""
 		Parameters
 		----------
@@ -86,8 +86,11 @@ class FundamentalPlane:
 		b : float
 			linear slope on the V-band apparent magnitude, or m_V/mag
 		c : float
-			intercept, i.e. the log effective radius, or log(R_eff/kpc),
-			when vel_disp = m_V = 0
+			intercept, i.e. the log effective radius, or log(R_eff/kpc), when vel_disp = m_V = 0
+		delta_a : float
+			1-sigma random fitting errors on `a`. Default: 0.0
+		delta_b : float
+			1-sigma random fitting errors on 'b' Default: 0.0
 		fit_data : str
 			sample on which a, b, c were fit (one of ['SDSS']). Default: None
 
@@ -100,6 +103,9 @@ class FundamentalPlane:
 		self.a = a
 		self.b = b
 		self.c = c
+		self.delta_a = delta_a
+		self.delta_b = delta_b
+
 		if fit_data == 'SDSS':
 			self._define_SDSS_fit_params()
 		else:
@@ -123,6 +129,8 @@ class FundamentalPlane:
 		self.a = 1.4335
 		self.b = 0.3150 
 		self.c = -8.8979
+		self.delta_a = 0.02
+		self.delta_b = 0.01
 
 	def get_effective_radius(self, vel_disp, m_V):
 		"""Evaluate the size expected from the FP relation
@@ -141,10 +149,12 @@ class FundamentalPlane:
 			the effective radius in kpc
 
 		"""
-
-		log_R_eff = self.a*np.log10(vel_disp) + self.b*m_V + self.c
+		log_vel_disp = np.log10(vel_disp)
+		log_R_eff = self.a*log_vel_disp + self.b*m_V + self.c
 		R_eff = 10**log_R_eff
-		return R_eff
+		sig_scatter = (np.abs(log_vel_disp)*self.delta_a**2.0 + np.abs(m_V)*self.delta_b**2.0)**0.5
+		scatter = np.random.randn()*sig_scatter
+		return R_eff + scatter 
 
 class FundamentalMassHyperplane:
 	"""Represents bivariate relations (projections) within the Fundamental Mass Hyperplane (FMHP) relation 
