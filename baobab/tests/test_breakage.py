@@ -1,9 +1,9 @@
 import os, sys
 import shutil
 import subprocess
-from unittest import TestCase
+import unittest
 
-class TestBreakage(TestCase):
+class TestBreakage(unittest.TestCase):
     """A suite of tests alerting us for breakge, e.g. errors in
     instantiation of classes or execution of scripts
 
