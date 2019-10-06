@@ -249,8 +249,20 @@ def main():
     while current_idx < cfg.n_data:
         psf_model = psf_models[current_idx%n_psf]
         sample = bnn_prior.sample() # FIXME: sampling in batches
+        # Selections (except selection on total magnification, which comes later)
+        #TODO: this is getting longer so separate them
         if sample['lens_mass']['theta_E'] < cfg.selection.theta_E.min:
             continue
+        lens_mass_e = (sample['lens_mass']['e1']**2.0 + sample['lens_mass']['e2']**2.0)**0.5
+        if lens_mass_e > 1.0:
+            continue
+        src_light_e = (sample['src_light']['e1']**2.0 + sample['src_light']['e2']**2.0)**0.5
+        if src_light_e > 1.0:
+            continue
+        if 'lens_light' in cfg.components:
+            lens_light_e = (sample['lens_light']['e1']**2.0 + sample['lens_light']['e2']**2.0)**0.5
+            if lens_light_e > 1.0:
+                continue
 
         # Instantiate SimAPI (converts mag to amp and wraps around image model)
         kwargs_detector = util.merge_dicts(cfg.instrument, cfg.bandpass, cfg.observation)
