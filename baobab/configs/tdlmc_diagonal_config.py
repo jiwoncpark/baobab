@@ -35,7 +35,7 @@ observation = dict(
                   exposure_time=100.0, # exposure time per image (in seconds)
                   sky_brightness=20.1, # sky brightness (in magnitude per square arcseconds)
                   num_exposures=10, # number of exposures that are combined
-                  background_noise=0.25, # overrides exposure_time, sky_brightness, read_noise, num_exposures
+                  background_noise=0.2, # overrides exposure_time, sky_brightness, read_noise, num_exposures
                   )
 
 psf = dict(
@@ -75,7 +75,7 @@ bnn_omega = dict(
                                               log=True),
                                  theta_E = dict(
                                                 dist='normal',
-                                                mu=0.0,
+                                                mu=0.2,
                                                 sigma=0.1,
                                                 log=True),
                                  # Beta(a, b)
@@ -115,7 +115,7 @@ bnn_omega = dict(
                                   # Lognormal(mu, sigma^2)
                                   magnitude = dict(
                                              dist='normal',
-                                             mu=15,
+                                             mu=17,
                                              sigma=1,
                                              lower=0.0,
                                              log=False),
@@ -149,7 +149,7 @@ bnn_omega = dict(
                                 # Lognormal(mu, sigma^2)
                                 magnitude = dict(
                                              dist='normal',
-                                             mu=22,
+                                             mu=19,
                                              sigma=1,
                                              lower=0.0,
                                              log=False),
