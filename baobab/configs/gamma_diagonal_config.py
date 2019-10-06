@@ -35,7 +35,7 @@ observation = dict(
                   exposure_time=100.0, # exposure time per image (in seconds)
                   sky_brightness=20.1, # sky brightness (in magnitude per square arcseconds)
                   num_exposures=10, # number of exposures that are combined
-                  background_noise=None, # overrides exposure_time, sky_brightness, read_noise, num_exposures
+                  background_noise=0.1, # overrides exposure_time, sky_brightness, read_noise, num_exposures
                   )
 
 psf = dict(
@@ -149,7 +149,7 @@ bnn_omega = dict(
                                 # Lognormal(mu, sigma^2)
                                 magnitude = dict(
                                              dist='normal',
-                                             mu=22,
+                                             mu=15,
                                              sigma=1,
                                              lower=0.0,
                                              log=False),
@@ -203,28 +203,4 @@ bnn_omega = dict(
                                              lower=0.0,
                                              log=False),
                                  ),
-
-                 cosmo = dict(
-                             # Normal(mu, sigma^2)
-                             z_lens = dict(
-                                           dist='normal',
-                                           mu=1.5,
-                                           sigma=0.2,
-                                           lower=0.1,
-                                           upper=2.5),
-                             z_src = dict(
-                                          dist='normal',
-                                          mu=1.5,
-                                          sigma=0.2,
-                                          lower=-1,
-                                          upper=99),
-                             # Uniform
-                             H0 = dict(
-                                       lower=50.0,
-                                       upper=90.0),
-                             # Uniform (scaled by r_eff)
-                             r_ani = dict(
-                                          lower=0.5,
-                                          upper=5.0),
-                             ),
                  )
