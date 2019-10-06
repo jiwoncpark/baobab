@@ -2,11 +2,14 @@
 Installation
 ============
 
-0. You'll need a Fortran compiler, which you can get on a debian system by running
+0. You'll need a Fortran compiler and Fortran-compiled `fastell4py`, which you can get on a debian system by running
 
 ::
 
 $sudo apt-get install gfortran
+$git clone https://github.com/sibirrer/fastell4py.git <desired location>
+$cd <desired location>
+$python setup.py install --user
 
 1. Virtual environments are strongly recommended, to prevent dependencies with conflicting versions. Create a conda virtual environment and activate it:
 
