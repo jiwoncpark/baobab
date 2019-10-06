@@ -14,7 +14,7 @@ components = ['lens_mass', 'external_shear', 'src_light']
 
 selection = dict(
                  magnification=dict(
-                                    min=2.0
+                                    min=4.0
                                     ),
                  theta_E=dict(
                               min=0.5,
