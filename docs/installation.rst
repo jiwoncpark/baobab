@@ -32,7 +32,7 @@ $pip install -e .
 
 ::
 
-$pip install baobab
+$pip install pybaobab
 
 
 3. (Optional) To run the notebooks, add the Jupyter kernel.
