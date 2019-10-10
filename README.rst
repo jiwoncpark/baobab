@@ -11,9 +11,9 @@ Baobab
 
 Training data generator for hierarchically modeling strong lenses with Bayesian neural networks
 
-The Baobab package can generate images of strongly-lensed systems, given some configurable prior distributions over the parameters of the lens and light profiles as well as configurable assumptions about the instrument and observation conditions. It supports prior distributions ranging from artificially simple to empirical.
+The ``baobab`` package can generate images of strongly-lensed systems, given some configurable prior distributions over the parameters of the lens and light profiles as well as configurable assumptions about the instrument and observation conditions. It supports prior distributions ranging from artificially simple to empirical.
 
-A major use case for Baobab is the generation of training and test sets for hierarchical inference using Bayesian neural networks (BNNs). The idea is that Baobab will generate the training and test sets using different priors. A BNN trained on the training dataset learns not only the parameters of individual lens systems but also, implicitly, the hyperparameters describing the training set population (the training prior). Such hierarchical inference is crucial in scenarios where the training and test priors are different, so that techniques such as importance weighting can be employed to bridge the gap in the BNN response.
+A major use case for ``baobab`` is the generation of training and test sets for hierarchical inference using Bayesian neural networks (BNNs). The idea is that Baobab will generate the training and test sets using different priors. A BNN trained on the training dataset learns not only the parameters of individual lens systems but also, implicitly, the hyperparameters describing the training set population (the training prior). Such hierarchical inference is crucial in scenarios where the training and test priors are different, so that techniques such as importance weighting can be employed to bridge the gap in the BNN response.
 
 Installation
 ============
@@ -87,9 +87,9 @@ Feedback
 
 Please message @jiwoncpark with any questions.
 
-There is an ongoing `document <https://www.overleaf.com/read/pswdqwttjbjr>_` that details our BNN prior choice, written and maintained by Ji Won.
+There is an ongoing `document <https://www.overleaf.com/read/pswdqwttjbjr>`_ that details our BNN prior choice, written and maintained by Ji Won.
 
 Attribution
 ===========
 
-Baobab heavily uses ``lenstronomy``, a multi-purpose package for modeling and simulating strongly-lensed systems (see `source <https://github.com/sibirrer/lenstronomy>`_). When you use ``baobab`` for your project, please cite ``lenstronomy`` with `Birrer & Amara 2018 <https://arxiv.org/abs/1803.09746v1>`_.
+``baobab`` heavily uses ``lenstronomy``, a multi-purpose package for modeling and simulating strongly-lensed systems (see `source <https://github.com/sibirrer/lenstronomy>`_). When you use ``baobab`` for your project, please cite ``lenstronomy`` with `Birrer & Amara 2018 <https://arxiv.org/abs/1803.09746v1>`_.
