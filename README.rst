@@ -92,4 +92,4 @@ There is an ongoing `document <https://www.overleaf.com/read/pswdqwttjbjr>`_ tha
 Attribution
 ===========
 
-``baobab`` heavily uses ``lenstronomy``, a multi-purpose package for modeling and simulating strongly-lensed systems (see `source <https://github.com/sibirrer/lenstronomy>`_). When you use ``baobab`` for your project, please cite ``lenstronomy`` with `Birrer & Amara 2018 <https://arxiv.org/abs/1803.09746v1>`_.
+``baobab`` heavily uses ``lenstronomy``, a multi-purpose package for modeling and simulating strongly-lensed systems (see `source <https://github.com/sibirrer/lenstronomy>`_). When you use ``baobab`` for your project, please cite ``lenstronomy`` with `Birrer & Amara 2018 <https://arxiv.org/abs/1803.09746v1>`_ as well as Park et al. 2019 (in prep).
