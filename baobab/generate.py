@@ -238,7 +238,7 @@ def main():
         param_list += ['x_image_{:d}'.format(i) for i in range(4)]
         param_list += ['y_image_{:d}'.format(i) for i in range(4)]
         param_list += ['n_img']
-    param_list += ['img_filename', 'total_magnification']
+    param_list += ['img_filename', 'total_magnification', 'src_light_pos_offset_x', 'src_light_pos_offset_y']
     if cfg.bnn_prior_class == 'EmpiricalBNNPrior':
         param_list += ['z_lens', 'z_src', 'vel_disp_iso', 'R_eff_lens', 'R_eff_src', 'abmag_src']
     metadata = pd.DataFrame(columns=param_list)
@@ -349,6 +349,9 @@ def main():
                 meta['{:s}'.format(misc_name)] = misc_value
         meta['total_magnification'] = total_magnification
         meta['img_filename'] = img_filename
+        # Store source pos offset from lens center, which is what we draw
+        meta['src_light_pos_offset_x'] = meta['src_light_center_x'] - meta['lens_mass_center_x']
+        meta['src_light_pos_offset_y'] = meta['src_light_center_y'] - meta['lens_mass_center_y']
         metadata = metadata.append(meta, ignore_index=True)
 
         # Update progress
