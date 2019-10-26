@@ -328,7 +328,7 @@ def main():
         img += noise
 
         # Save image file
-        img_filename = 'X_{0:07d}.npy'.format(current_idx+1)
+        img_filename = 'X_{0:07d}.npy'.format(current_idx)
         img_path = os.path.join(save_dir, img_filename)
         np.save(img_path, img)
 
