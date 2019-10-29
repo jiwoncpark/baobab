@@ -193,7 +193,7 @@ def main():
     np.random.seed(cfg.seed)
     random.seed(cfg.seed)
 
-    save_dir = os.path.join('out_data', cfg.out_dir)
+    save_dir = cfg.out_dir
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
         print("Destination folder: {:s}".format(save_dir))

@@ -52,7 +52,7 @@ class TestBreakage(unittest.TestCase):
             if cfg_filename.endswith('_config.py'):
                 cfg_filepath = os.path.join(cfg_root, cfg_filename)
                 cfg = configs.Config.fromfile(cfg_filepath)
-                save_dir = os.path.join('out_data', cfg.out_dir)
+                save_dir = cfg.out_dir
                 try:
                     subprocess.check_output('generate {:s} --n_data 2'.format(cfg_filepath), shell=True)
                 except:
@@ -70,7 +70,7 @@ class TestBreakage(unittest.TestCase):
         cfg_filepath = configs.tdlmc_diagonal_config.__file__
         cfg = configs.Config.fromfile(cfg_filepath)
         subprocess.check_output('generate {:s} --n_data 5'.format(cfg_filepath), shell=True)
-        save_dir = os.path.join('out_data', cfg.out_dir)
+        save_dir = cfg.out_dir
         n_failures = 0
         for channel_format in ['tf', 'theano']:
             try:
