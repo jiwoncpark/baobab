@@ -46,6 +46,7 @@ class Config(object):
     References
     ----------
     This code was modified from `the mmcv implementation <https://github.com/open-mmlab/mmcv/blob/5b10dcd79f0f0e9d443c7071c8d798c1a92a6bc5/mmcv/utils/config.py#L49>`_
+    
     """
 
     @staticmethod
