@@ -4,6 +4,9 @@ import lenstronomy.Util.param_util as param_util
 from abc import ABC, abstractmethod
 
 class BaseBNNPrior(ABC):
+    """Abstract base class equipped with PDF evaluation and sampling utility functions for various lens/source macromodels
+
+    """
     def __init__(self):
         self.set_required_parameters()
 
@@ -28,6 +31,7 @@ class BaseBNNPrior(ABC):
         raise ValueError("{:s} must be specified in the config inside {:s} for {:s}".format(missing_key,
                                                                                              parent_config_key,
                                                                                              bnn_prior_class))
+    
     def sample_param(self, hyperparams):
         """Assigns a sampling distribution
 

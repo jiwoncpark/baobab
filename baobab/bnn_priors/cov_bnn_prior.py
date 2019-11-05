@@ -7,6 +7,10 @@ from .base_bnn_prior import BaseBNNPrior
 class CovBNNPrior(BaseBNNPrior):
     """BNN prior with marginally covariant parameters
 
+    Note
+    ----
+    This BNNPrior is cosmology-agnostic. For a version that's useful for H0 inference, see `CovCosmoBNNPrior`.
+
     """
     def __init__(self, bnn_omega, components):
         """

@@ -6,6 +6,10 @@ from .base_bnn_prior import BaseBNNPrior
 class DiagonalBNNPrior(BaseBNNPrior):
     """BNN prior with independent parameters
 
+    Note
+    ----
+    This BNNPrior is cosmology-agnostic. For a version that's useful for H0 inference, see `DiagonalCosmoBNNPrior`.
+
     """
     def __init__(self, bnn_omega, components):
         """
@@ -22,6 +26,7 @@ class DiagonalBNNPrior(BaseBNNPrior):
             profile type and parameters of the lens mass
         src_light : dict
             profile type and parameters of the source light
+            
         """
         super(DiagonalBNNPrior, self).__init__()
         self.components = components
@@ -40,7 +45,7 @@ class DiagonalBNNPrior(BaseBNNPrior):
             a dictionary of sampled parameters corresponding to the config-specified
             profile of that component
 
-            """
+        """
         kwargs = {}
         for comp in self.components: # e.g. 'lens mass'
             kwargs[comp] = {}
