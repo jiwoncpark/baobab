@@ -46,7 +46,8 @@ psf = dict(
            )
 
 numerics = dict(
-                supersampling_factor=1)
+                supersampling_factor=1
+                )
 
 image = dict(
              num_pix=100, # cutout pixel size
@@ -59,7 +60,8 @@ bnn_omega = dict(
                                   H0=70.0, # Hubble constant at z = 0, in [km/sec/Mpc]
                                   Om0=0.3, # Omega matter: density of non-relativistic matter in units of the critical density at z=0.
                                   Ode0=0.7, # Omega dark energy: density of dark energy in units of the critical density at z=0.
-                                  w0=-1.0), # Dark energy equation of state at all redshifts. This is pressure/density for dark energy in units where c=1. A cosmological constant has w0=-1.0.
+                                  w0=-1.0
+                                  ), # Dark energy equation of state at all redshifts. This is pressure/density for dark energy in units where c=1. A cosmological constant has w0=-1.0.
 
                  redshift = dict(
                                 model='differential_comoving_volume',
@@ -73,15 +75,16 @@ bnn_omega = dict(
 
                  kinematics = dict(
                                    # Grid of velocity dispersion to sample from
-                                   velocity_dispersion = dict(
-                                                              model = 'velocity_dispersion_function_CPV2007', # one of ['velocity_dispersion_function_CPV2007',] -- see docstring for details 
-                                                              grid = dict(
-                                                                         start=100.0, # km/s
-                                                                         stop=400.0, # km/s
-                                                                         step=10.0, # km/s
-                                                                         ),
-                                                              )
+                                   vel_disp = dict(
+                                                  model = 'vel_disp_function_CPV2007', # one of ['vel_disp_function_CPV2007',] -- see docstring for details 
+                                                  grid = dict(
+                                                             start=100.0, # km/s
+                                                             stop=400.0, # km/s
+                                                             step=10.0, # km/s
+                                                             ),
+                                                  ),
                                    ),
+
                  lens_mass = dict(
                                  profile='SPEMD', # only available type now
                                  # Normal(mu, sigma^2)

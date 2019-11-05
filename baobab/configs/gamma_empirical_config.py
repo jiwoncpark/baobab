@@ -73,8 +73,8 @@ bnn_omega = dict(
 
                  kinematics = dict(
                                    # Grid of velocity dispersion to sample from
-                                   velocity_dispersion = dict(
-                                                              model = 'velocity_dispersion_function_CPV2007', # one of ['velocity_dispersion_function_CPV2007',] -- see docstring for details 
+                                   vel_disp = dict(
+                                                              model = 'vel_disp_function_CPV2007', # one of ['vel_disp_function_CPV2007',] -- see docstring for details 
                                                               grid = dict(
                                                                          start=100.0, # km/s
                                                                          stop=400.0, # km/s
