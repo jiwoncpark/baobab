@@ -1,6 +1,6 @@
 import numpy as np
 
-def velocity_dispersion_function_CPV2007(vel_disp_grid):
+def vel_disp_function_CPV2007(vel_disp_grid):
     """Evaluate the velocity dispersion function from the fit on SDSS DR6
     by [1]_ on a provided grid and normalizes the result to unity, so it can 
     be used as a PMF from which to draw the velocity dispersion.

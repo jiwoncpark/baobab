@@ -1,14 +1,14 @@
 import numpy as np
 import scipy.stats as stats
-from astropy.cosmology import wCDM
 import astropy.units as u
 import lenstronomy.Util.param_util as param_util
 from lenstronomy.Cosmo.lens_cosmo import LensCosmo
 from .base_bnn_prior import BaseBNNPrior
+from .base_cosmo_bnn_prior import BaseCosmoBNNPrior
 from . import kinematics_models, parameter_models
 
-class EmpiricalBNNPrior(BaseBNNPrior):
-    """BNN prior with marginally covariant parameters
+class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
+    """BNN prior that encodes physical correlations between parameters
 
     """
     def __init__(self, bnn_omega, components):
@@ -20,46 +20,21 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         Attributes
         ----------
+        bnn_omega : dict
+            copy of `cfg.bnn_omega`
         components : list
             list of components, e.g. `lens_mass`
-        lens_mass : dict
-            profile type and parameters of the lens mass
-        src_light : dict
-            profile type and parameters of the source light
 
         """
-        super(EmpiricalBNNPrior, self).__init__()
+        BaseBNNPrior.__init__(self)
+        BaseCosmoBNNPrior.__init__(self, bnn_omega)
 
         self.components = components
-        self._check_empirical_omega_validity(bnn_omega)
         for comp in bnn_omega:
             setattr(self, comp, bnn_omega[comp])
         # TODO: AGN parameters are sampled even when it's not rendered on image (not in self.components)
-
-        self._define_cosmology(self.cosmology)
         self._define_kinematics_models(self.kinematics)
         self._define_parameter_models(self.lens_mass, self.lens_light, self.src_light, self.agn_light)
-
-    def _check_empirical_omega_validity(self, bnn_omega):
-        """Check whether the config file specified the hyperparameters for all the fields
-        required for `EmpiricalBNNPrior`, e.g. cosmology, redshift, galaxy kinematics
-
-        """
-        required_keys = ['cosmology', 'redshift', 'kinematics']
-        for possible_missing_key in required_keys:
-            if possible_missing_key not in bnn_omega:
-                self._raise_cfg_error(possible_missing_key, 'bnn_omega', cls.__name__)
-
-    def _define_cosmology(self, cosmology_cfg):
-        """Set the cosmology, with which to generate all the training samples, based on the config
-
-        Parameters
-        ----------
-        cosmology_cfg : dict
-            Copy of `cfg.bnn_omega.cosmology`
-
-        """
-        self.cosmo = wCDM(**cosmology_cfg)
 
     def _define_kinematics_models(self, kinematics_cfg):
         """Set the empirical models related to the kinematics, based on the config
@@ -70,7 +45,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
             Copy of `cfg.bnn_omega.kinematics`
 
         """
-        self.velocity_dispersion_function = getattr(kinematics_models, kinematics_cfg.velocity_dispersion.model)
+        self.vel_disp_function = getattr(kinematics_models, kinematics_cfg.vel_disp.model)
 
     def _define_parameter_models(self, lens_mass_cfg, lens_light_cfg, src_light_cfg, agn_light_cfg):
         """Set the empirical models, with which to generate all the training samples,
@@ -104,38 +79,14 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         # agn_light
         self.agn_luminosity_model = getattr(parameter_models, agn_light_cfg.magnitude.model)(**agn_light_cfg.magnitude.model_kwargs).sample_agn_luminosity
 
-    def sample_redshifts(self, redshifts_cfg):
-        """Sample redshifts from the differential comoving volume,
-        on a grid with the range and resolution specified in the config
-
-        Parameters
-        ----------
-        redshifts_cfg : dict
-            Copy of `cfg.bnn_omega.redshift`
-
-        Returns
-        -------
-        tuple
-            the tuple of floats that are the realized z_lens, z_src
-
-        """
-        z_grid = np.arange(**redshifts_cfg.grid)
-        dVol_dz = self.cosmo.differential_comoving_volume(z_grid).value
-        dVol_dz_normed = dVol_dz/np.sum(dVol_dz)
-        sampled_z = np.random.choice(z_grid, 2, replace=True, p=dVol_dz_normed)
-        z_lens = np.min(sampled_z)
-        z_src = np.max(sampled_z)
-
-        return z_lens, z_src
-
-    def sample_velocity_dispersion(self, vel_disp_cfg):
+    def sample_vel_disp(self, vel_disp_cfg):
         """Sample velocity dispersion from the config-specified model,
         on a grid with the range and resolution specified in the config
 
         Parameters
         ----------
         vel_disp_cfg : dict
-            Copy of `cfg.bnn_omega.kinematics.velocity_dispersion`
+            Copy of `cfg.bnn_omega.kinematics.vel_disp`
 
         Returns
         -------
@@ -144,13 +95,13 @@ class EmpiricalBNNPrior(BaseBNNPrior):
 
         """
         vel_disp_grid = np.arange(**vel_disp_cfg.grid)
-        dn = self.velocity_dispersion_function(vel_disp_grid)
+        dn = self.vel_disp_function(vel_disp_grid)
         dn_normed = dn/np.sum(dn)
         sampled_vel_disp = np.random.choice(vel_disp_grid, None, replace=True, p=dn_normed)
         return sampled_vel_disp
 
     def approximate_theta_E_for_SIS(self, vel_disp_iso, z_lens, z_src):
-        """Compute the Einstein radius for a given isotropic velocity dispersion
+        r"""Compute the Einstein radius for a given isotropic velocity dispersion
         assuming a singular isothermal sphere (SIS) mass profile
 
         Parameters
@@ -353,7 +304,7 @@ class EmpiricalBNNPrior(BaseBNNPrior):
         # Sample redshifts
         z_lens, z_src = self.sample_redshifts(redshifts_cfg=self.redshift)
         # Sample velocity dispersion
-        vel_disp_iso = self.sample_velocity_dispersion(vel_disp_cfg=self.kinematics.velocity_dispersion)
+        vel_disp_iso = self.sample_vel_disp(vel_disp_cfg=self.kinematics.vel_disp)
         # Sample lens_mass and lens_light parameters
         abmag_lens = self.get_lens_absolute_magnitude(vel_disp_iso)
         apmag_lens = self.get_lens_apparent_magnitude(abmag_lens, z_lens)
