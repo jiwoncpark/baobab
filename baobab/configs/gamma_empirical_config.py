@@ -199,7 +199,7 @@ bnn_omega = dict(
                                                 model='size_from_luminosity_and_redshift_relation',
                                                 ),
                                 q = dict(
-                                         dist='sample_one_minus_rayleigh',
+                                         dist='one_minus_rayleigh',
                                          scale=0.3,
                                          lower=0.2
                                          ),
