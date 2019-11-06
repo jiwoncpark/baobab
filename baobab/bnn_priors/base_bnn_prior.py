@@ -36,18 +36,8 @@ class BaseBNNPrior(ABC):
         """Assigns a sampling distribution
 
         """
-        # TODO: see if direct attribute call is quicker than string comparison
         dist = hyperparams.pop('dist')
-        if dist == 'beta':
-            return self.sample_beta(**hyperparams)
-        elif dist == 'normal':
-            return self.sample_normal(**hyperparams)
-        elif dist == 'generalized_normal':
-            return self.sample_generalized_normal(**hyperparams)
-        elif dist == 'sample_one_minus_rayleigh':
-            return self.sample_one_minus_rayleigh(**hyperparams)
-        else:
-            raise NotImplementedError
+        return getattr(self, 'sample_{:s}'.format(dist))(**hyperparams)
 
     def eval_param_pdf(self, eval_at, hyperparams):
         """Assigns and evaluates the PDF 
@@ -55,14 +45,34 @@ class BaseBNNPrior(ABC):
         """
         # TODO: see if direct attribute call is quicker than string comparison
         dist = hyperparams.pop('dist')
-        if dist == 'beta':
-            return self.eval_beta_pdf(eval_at, **hyperparams)
-        elif dist == 'normal':
-            return self.eval_normal_pdf(eval_at, **hyperparams)
-        elif dist == 'generalized_normal':
-            return self.eval_generalized_normal_pdf(eval_at, **hyperparams)
-        else:
-            raise NotImplementedError
+        return getattr(self, 'eval_{:s}_pdf'.format(dist))(**hyperparams)
+
+    def sample_uniform(self, lower, upper):
+        """Sample from a uniform distribution
+
+        Parameters
+        ----------
+        lower : float
+            min value
+        upper : float
+            max value
+
+        Returns
+        -------
+        float
+            uniform sample
+
+        """
+        u = np.random.rand()
+        sample = lower + (upper - lower)*u
+
+    def eval_uniform_pdf(self, eval_at, lower, upper):
+        """Evaluate the uniform PDF
+
+        See `sample_uniform` for parameter definitions.
+
+        """
+        return np.ones_like(eval_at)/(upper-lower)
 
     def sample_one_minus_rayleigh(self, scale, lower):
         """Samples from a Rayleigh distribution and gets one minus the value,
