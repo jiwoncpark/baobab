@@ -1,1 +1,1 @@
-from .configs.parser import Config
+from .configs.parser import BaobabConfig

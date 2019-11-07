@@ -25,7 +25,7 @@ import astropy.io.fits as pyfits
 sys.path.insert(0, '/home/jwp/stage/sl/lenstronomy')
 import lenstronomy
 # custom config class
-from baobab.configs import Config
+from baobab.configs import BaobabConfig
 # BNN prior class
 import baobab.bnn_priors as bnn_priors
 # Lenstronomy modules
@@ -186,7 +186,7 @@ def get_lensed_total_flux(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light,
 
 def main():
     args = parse_args()
-    cfg = Config.fromfile(args.config)
+    cfg = BaobabConfig.from_file(args.config)
     if args.n_data is not None:
         cfg.n_data = args.n_data
     # Seed for reproducibility
