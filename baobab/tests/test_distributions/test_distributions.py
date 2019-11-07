@@ -19,8 +19,8 @@ class TestDistributions(unittest.TestCase):
 
         """
         from baobab.bnn_priors import DiagonalBNNPrior
-        from baobab import configs
-        cfg = configs.Config.fromfile(configs.tdlmc_diagonal_config.__file__)
+        import baobab.configs as configs
+        cfg = configs.BaobabConfig.from_file(configs.tdlmc_diagonal_config.__file__)
         cls.cfg = cfg
         cls.diagonal_bnn_prior = DiagonalBNNPrior(cfg.bnn_omega, cfg.components)
         np.random.seed(123)
@@ -30,13 +30,14 @@ class TestDistributions(unittest.TestCase):
         """Test the generalized normal sampling
 
         """
+        from baobab.distributions import sample_generalized_normal
         mu = 0.0
         alpha = 0.5
         p = 10.0
         n_samples = 10**4
         sample = np.zeros((n_samples,))
         for i in range(n_samples):
-            sample[i] = self.diagonal_bnn_prior.sample_generalized_normal(mu=mu, alpha=alpha, p=p)
+            sample[i] = sample_generalized_normal(mu=mu, alpha=alpha, p=p)
         sample_mean = np.mean(sample)
         sample_var = np.var(sample)
         sample_skew = skew(sample)
