@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.stats as stats
+from addict import Dict
 import lenstronomy.Util.param_util as param_util
 from .base_bnn_prior import BaseBNNPrior
 
@@ -28,12 +29,10 @@ class DiagonalBNNPrior(BaseBNNPrior):
             profile type and parameters of the source light
             
         """
-        super(DiagonalBNNPrior, self).__init__()
-        self.components = components
-        for comp in bnn_omega:
-            if comp in self.components:
-                # e.g. self.lens_mass = cfg.bnn_omega.lens_mass
-                setattr(self, comp, bnn_omega[comp])
+        BaseBNNPrior.__init__(self, bnn_omega, components)
+        self.params_to_exclude = []
+        self.set_params_list(self.params_to_exclude)
+        self.set_comps_qphi_to_e1e2()
 
     def sample(self):
         """Gets kwargs of sampled parameters to be passed to lenstronomy
@@ -46,26 +45,21 @@ class DiagonalBNNPrior(BaseBNNPrior):
             profile of that component
 
         """
-        kwargs = {}
-        for comp in self.components: # e.g. 'lens mass'
-            kwargs[comp] = {}
-            comp_omega = getattr(self, comp).copy() # e.g. self.lens_mass
-            profile = comp_omega.pop('profile') # e.g. 'SPEMD'
-            profile_params = comp_omega.keys()
-            for param_name in profile_params: # e.g. 'theta_E'
-                hyperparams = comp_omega[param_name].copy()
-                kwargs[comp][param_name] = self.sample_param(hyperparams)
+        # Initialize nested dictionary of kwargs
+        kwargs = Dict()
+
+        # Realize samples
+        for comp, param_name in self.params_to_realize:
+            hyperparams = getattr(self, comp)[param_name].copy()
+            kwargs[comp][param_name] = self.sample_param(hyperparams)
 
         # Convert any q, phi into e1, e2 as required by lenstronomy
-        for comp in self.components: # e.g. 'lens_mass'
-            comp_omega = getattr(self, comp).copy() # e.g. self.lens_mass
-            profile = comp_omega.pop('profile') # e.g. 'SPEMD'
-            if ('e1' in self.params[profile]) and ('e1' not in kwargs[comp]):
-                q = kwargs[comp].pop('q')
-                phi = kwargs[comp].pop('phi')
-                e1, e2 = param_util.phi_q2_ellipticity(phi, q)
-                kwargs[comp]['e1'] = e1
-                kwargs[comp]['e2'] = e2
+        for comp in self.comps_qphi_to_e1e2: # e.g. 'lens_mass'
+            q = kwargs[comp].pop('q')
+            phi = kwargs[comp].pop('phi')
+            e1, e2 = param_util.phi_q2_ellipticity(phi, q)
+            kwargs[comp]['e1'] = e1
+            kwargs[comp]['e2'] = e2
 
         # Source pos is defined wrt the lens pos
         kwargs['src_light']['center_x'] += kwargs['lens_mass']['center_x']

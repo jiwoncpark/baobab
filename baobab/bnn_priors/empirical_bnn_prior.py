@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats as stats
 import astropy.units as u
+from addict import Dict
 import lenstronomy.Util.param_util as param_util
 from lenstronomy.Cosmo.lens_cosmo import LensCosmo
 from .base_bnn_prior import BaseBNNPrior
@@ -26,12 +27,17 @@ class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
             list of components, e.g. `lens_mass`
 
         """
-        BaseBNNPrior.__init__(self)
+        BaseBNNPrior.__init__(self, bnn_omega, components)
         BaseCosmoBNNPrior.__init__(self, bnn_omega)
 
-        self.components = components
-        for comp in bnn_omega:
-            setattr(self, comp, bnn_omega[comp])
+        self.params_to_exclude = [('lens_mass', 'theta_E'), ('lens_mass', 'gamma'),
+        ('lens_light', 'magnitude'), ('lens_light', 'R_sersic'), ('lens_light', 'q'),
+        ('src_light', 'magnitude'), ('src_light', 'R_sersic'),
+        ('agn_light', 'magnitude')
+        ]
+        self.set_params_list(self.params_to_exclude)
+        self.set_comps_qphi_to_e1e2()
+
         # TODO: AGN parameters are sampled even when it's not rendered on image (not in self.components)
         self._define_kinematics_models(self.kinematics)
         self._define_parameter_models(self.lens_mass, self.lens_light, self.src_light, self.agn_light)
@@ -300,7 +306,7 @@ class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
             profile of that component
 
         """
-        kwargs = {}
+        kwargs = Dict()
         # Sample redshifts
         z_lens, z_src = self.sample_redshifts(redshifts_cfg=self.redshift)
         # Sample velocity dispersion
@@ -353,25 +359,18 @@ class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
 
         # Sample remaining parameters, not constrained by the above empirical relations,
         # independently from their (marginally) diagonal BNN prior
-        for comp in self.components: # e.g. 'lens mass'
-            comp_omega = getattr(self, comp).copy() # e.g. self.lens_mass
-            profile = comp_omega.pop('profile') # e.g. 'SPEMD'
-            profile_params = comp_omega.keys()
-            for param_name in profile_params: # e.g. 'theta_E'
-                if param_name not in kwargs[comp]:
-                    hyperparams = comp_omega[param_name].copy()
-                    kwargs[comp][param_name] = self.sample_param(hyperparams)
+        for comp, param_name in self.params_to_realize:
+            hyperparams = getattr(self, comp)[param_name].copy()
+            kwargs[comp][param_name] = self.sample_param(hyperparams)
 
+        print(kwargs)
         # Convert any q, phi into e1, e2 as required by lenstronomy
-        for comp in self.components: # e.g. 'lens_mass'
-            comp_omega = getattr(self, comp).copy() # e.g. self.lens_mass
-            profile = comp_omega.pop('profile') # e.g. 'SPEMD'
-            if ('e1' in self.params[profile]) and ('e1' not in kwargs[comp]):
-                q = kwargs[comp].pop('q')
-                phi = kwargs[comp].pop('phi')
-                e1, e2 = param_util.phi_q2_ellipticity(phi, q)
-                kwargs[comp]['e1'] = e1
-                kwargs[comp]['e2'] = e2
+        for comp in self.comps_qphi_to_e1e2: # e.g. 'lens_mass'
+            q = kwargs[comp].pop('q')
+            phi = kwargs[comp].pop('phi')
+            e1, e2 = param_util.phi_q2_ellipticity(phi, q)
+            kwargs[comp]['e1'] = e1
+            kwargs[comp]['e2'] = e2
 
         # Source pos is defined wrt the lens pos
         kwargs['src_light']['center_x'] += kwargs['lens_mass']['center_x']

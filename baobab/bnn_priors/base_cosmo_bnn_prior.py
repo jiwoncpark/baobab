@@ -98,11 +98,11 @@ class BaseCosmoBNNPrior(ABC):
             the tuple of floats that are the realized z_lens, z_src
 
         """
-        z_lens = self.sample_param(**redshifts_cfg.z_lens)
-        z_src = self.sample_param(**redshifts_cfg.z_src)
+        z_lens = self.sample_param(redshifts_cfg.z_lens.copy())
+        z_src = self.sample_param(redshifts_cfg.z_src.copy())
         while z_lens > z_src:
-            z_lens = self.sample_param(**redshifts_cfg.z_lens)
-            z_src = self.sample_param(**redshifts_cfg.z_src)
+            z_lens = self.sample_param(redshifts_cfg.z_lens.copy())
+            z_src = self.sample_param(redshifts_cfg.z_src.copy())
         return z_lens, z_src
 
     def instantiate_lens_prop(self, kwargs_model_list, z_lens, z_src):

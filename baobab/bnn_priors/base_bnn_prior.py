@@ -5,8 +5,35 @@ class BaseBNNPrior(ABC):
     """Abstract base class equipped with PDF evaluation and sampling utility functions for various lens/source macromodels
 
     """
-    def __init__(self):
+    def __init__(self, bnn_omega, components):
+        self.components = components
+        for comp in bnn_omega:
+            setattr(self, comp, bnn_omega[comp])
         self.set_required_parameters()
+
+    def set_params_list(self, params_to_exclude):
+        """Set the list of tuples, each tuple specifying the component and parameter name, to be realized independently as well as the list of tuples to be converted from the q, phi convention to the e1, e2 convention
+
+        """
+        params_to_realize = []
+        for comp in self.components:
+            comp_omega = getattr(self, comp).copy()
+            profile = comp_omega.pop('profile') # e.g. 'SPEMD'
+            profile_params = comp_omega.keys()
+            for param_name in profile_params:
+                if (comp, param_name) not in params_to_exclude:
+                    params_to_realize.append((comp, param_name))
+        self.params_to_realize = params_to_realize
+
+    def set_comps_qphi_to_e1e2(self):
+        comps_qphi_to_e1e2 = []
+        for comp in self.components:
+            comp_omega = getattr(self, comp).copy()
+            profile = comp_omega.pop('profile') # e.g. 'SPEMD'
+            profile_params = comp_omega.keys()
+            if ('e1' in self.params[profile]) and ((comp, 'e1') not in self.params_to_realize):
+                comps_qphi_to_e1e2.append(comp)
+        self.comps_qphi_to_e1e2 = comps_qphi_to_e1e2
 
     def set_required_parameters(self):
         """Defines a dictionary of the list of parameters (value) corresponding to each profile (key).
