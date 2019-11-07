@@ -1,6 +1,40 @@
 import numpy as np
 from scipy.special import gamma
 import astropy.units as u
+from lenstronomy.Cosmo.lens_cosmo import LensCosmo
+
+__all__ = ['approximate_theta_E_for_SIS', 'FaberJackson', 'FundamentalPlane', 'FundamentalMassHyperplane', 'AxisRatioRayleigh', 'redshift_binned_luminosity_function', 'size_from_luminosity_and_redshift_relation', 'AGNLuminosityFunction']
+
+def approximate_theta_E_for_SIS(vel_disp_iso, z_lens, z_src, cosmo):
+    r"""Compute the Einstein radius for a given isotropic velocity dispersion
+    assuming a singular isothermal sphere (SIS) mass profile
+
+    Parameters
+    ----------
+    vel_disp_iso : float 
+        isotropic velocity dispersion, or an approximation to it, in km/s
+    z_lens : float
+        the lens redshift
+    z_src : float
+        the source redshift
+    cosmo : astropy.cosmology object
+    	the cosmology
+
+    Note
+    ----
+    The computation is purely analytic.
+
+    .. math::\theta_E = 4 \pi \frac{\sigma_V^2}{c^2} \frac{D_{ls}}{D_s}
+
+    Returns
+    -------
+    float
+        the Einstein radius for an SIS in arcsec
+
+    """
+    lens_cosmo = LensCosmo(z_lens, z_src, cosmo=cosmo)
+    theta_E_SIS = lens_cosmo.sis_sigma_v2theta_E(vel_disp_iso)
+    return theta_E_SIS
 
 class FaberJackson:
 	"""Represents the Faber-Jackson (FJ) relation between velocity dispersion and luminosity

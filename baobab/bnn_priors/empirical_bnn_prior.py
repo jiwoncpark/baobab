@@ -3,7 +3,6 @@ import scipy.stats as stats
 import astropy.units as u
 from addict import Dict
 import lenstronomy.Util.param_util as param_util
-from lenstronomy.Cosmo.lens_cosmo import LensCosmo
 from .base_bnn_prior import BaseBNNPrior
 from .base_cosmo_bnn_prior import BaseCosmoBNNPrior
 from . import kinematics_models, parameter_models
@@ -71,7 +70,7 @@ class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
         """
         # lens_mass
         self.gamma_model = getattr(parameter_models, lens_mass_cfg.gamma.model)(**lens_mass_cfg.gamma.model_kwargs).get_gamma
-        self.theta_E_model = self.approximate_theta_E_for_SIS
+        self.theta_E_model = getattr(parameter_models, lens_mass_cfg.theta_E.model)
 
         # lens_light
         self.lens_luminosity_model = getattr(parameter_models, lens_light_cfg.magnitude.model)(**lens_light_cfg.magnitude.model_kwargs).get_luminosity
@@ -105,35 +104,6 @@ class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
         dn_normed = dn/np.sum(dn)
         sampled_vel_disp = np.random.choice(vel_disp_grid, None, replace=True, p=dn_normed)
         return sampled_vel_disp
-
-    def approximate_theta_E_for_SIS(self, vel_disp_iso, z_lens, z_src):
-        r"""Compute the Einstein radius for a given isotropic velocity dispersion
-        assuming a singular isothermal sphere (SIS) mass profile
-
-        Parameters
-        ----------
-        vel_disp_iso : float 
-            isotropic velocity dispersion, or an approximation to it, in km/s
-        z_lens : float
-            the lens redshift
-        z_src : float
-            the source redshift
-
-        Note
-        ----
-        The computation is purely analytic.
-
-        .. math::\theta_E = 4 \pi \frac{\sigma_V^2}{c^2} \frac{D_{ls}}{D_s}
-
-        Returns
-        -------
-        float
-            the Einstein radius for an SIS in arcsec
-
-        """
-        lens_cosmo = LensCosmo(z_lens, z_src, cosmo=self.cosmo)
-        theta_E_SIS = lens_cosmo.sis_sigma_v2theta_E(vel_disp_iso)
-        return theta_E_SIS
 
     def get_lens_absolute_magnitude(self, vel_disp):
         """Get the lens absolute magnitude from the Faber-Jackson relation
@@ -314,7 +284,7 @@ class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
         # Sample lens_mass and lens_light parameters
         abmag_lens = self.get_lens_absolute_magnitude(vel_disp_iso)
         apmag_lens = self.get_lens_apparent_magnitude(abmag_lens, z_lens)
-        theta_E = self.theta_E_model(vel_disp_iso, z_lens, z_src)
+        theta_E = self.theta_E_model(vel_disp_iso, z_lens, z_src, self.cosmo)
         R_eff_lens, r_eff_lens = self.get_lens_size(vel_disp_iso, z_lens, apmag_lens)
         gamma = self.gamma_model(R_eff_lens)
         lens_light_q = self.lens_axis_ratio_model(vel_disp_iso) 
