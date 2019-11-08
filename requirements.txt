@@ -1,4 +1,4 @@
-lenstronomy
+git+https://github.com/sibirrer/lenstronomy.git@master
 astropy
 nose
 numpy
