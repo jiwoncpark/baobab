@@ -69,7 +69,7 @@ class BaseBNNPrior(ABC):
 
         """
         dist = hyperparams.pop('dist')
-        return getattr(baobab.distributions, 'eval_{:s}_pdf'.format(dist))(**hyperparams)
+        return getattr(baobab.distributions, 'eval_{:s}_pdf'.format(dist))(eval_at, **hyperparams)
 
 
     @abstractmethod
