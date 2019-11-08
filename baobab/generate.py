@@ -22,7 +22,6 @@ from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import astropy.io.fits as pyfits
-sys.path.insert(0, '/home/jwp/stage/sl/lenstronomy')
 import lenstronomy
 # custom config class
 from baobab.configs import BaobabConfig
