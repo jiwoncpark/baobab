@@ -333,7 +333,6 @@ class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
             hyperparams = getattr(self, comp)[param_name].copy()
             kwargs[comp][param_name] = self.sample_param(hyperparams)
 
-        print(kwargs)
         # Convert any q, phi into e1, e2 as required by lenstronomy
         for comp in self.comps_qphi_to_e1e2: # e.g. 'lens_mass'
             q = kwargs[comp].pop('q')
