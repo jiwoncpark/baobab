@@ -26,7 +26,7 @@ $conda activate baobab
 
 $git clone https://github.com/jiwoncpark/baobab.git
 $cd baobab
-$pip install -e .
+$pip install -e . -r requirements.txt
 
 **Option 2(b):** pip install the release version (only recommended if you're a user).
 
