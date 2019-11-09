@@ -325,6 +325,7 @@ def main():
         # Add noise
         noise = data_api.noise_for_model(img, background_noise=True, poisson_noise=True, seed=None)
         img += noise
+        img = np.maximum(0.0, img) # safeguard against negative pixel values
 
         # Save image file
         img_filename = 'X_{0:07d}.npy'.format(current_idx)
