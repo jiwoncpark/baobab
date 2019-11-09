@@ -10,12 +10,16 @@ cache:
     ccache: true
     pip: true
 
+before_install:
+  - pip install coveralls
+  - pip install python-coveralls
+
 install:
-    # Install SLRealizer dependencies
     - "pip install -e . -r requirements.txt"
 
 script:
-    - "python setup.py test"
+  - coverage run --source baobab setup.py test
 
 after_success:
-    - codecov
+  - codecov
+  - coveralls

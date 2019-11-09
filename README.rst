@@ -9,6 +9,10 @@ Baobab
         :target: https://pybaobab.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
+.. image:: https://coveralls.io/repos/github/jiwoncpark/baobab/badge.svg?branch=master
+        :target: https://coveralls.io/github/jiwoncpark/baobab?branch=master
+
+
 Training data generator for hierarchically modeling strong lenses with Bayesian neural networks
 
 The ``baobab`` package can generate images of strongly-lensed systems, given some configurable prior distributions over the parameters of the lens and light profiles as well as configurable assumptions about the instrument and observation conditions. It supports prior distributions ranging from artificially simple to empirical.
