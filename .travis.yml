@@ -12,7 +12,7 @@ cache:
 
 install:
     # Install SLRealizer dependencies
-    - "pip install -e ."
+    - "pip install -e . -r requirements.txt"
 
 script:
     - "python setup.py test"
