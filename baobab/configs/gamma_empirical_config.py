@@ -131,11 +131,12 @@ cfg.bnn_omega = dict(
                                                          log=True,),
                                        psi_ext = dict(
                                                      dist='generalized_normal',
-                                                     mu=np.pi,
-                                                     alpha=np.pi,
+                                                     mu=0.0,
+                                                     alpha=0.5*np.pi,
                                                      p=10.0,
-                                                     lower=0.0,
-                                                     upper=2.0*np.pi)
+                                                     lower=-0.5*np.pi,
+                                                     upper=0.5*np.pi
+                                                     ),
                                        ),
 
                  lens_light = dict(
