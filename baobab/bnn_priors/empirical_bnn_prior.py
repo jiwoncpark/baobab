@@ -345,6 +345,10 @@ class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
         kwargs['src_light']['center_x'] += kwargs['lens_mass']['center_x']
         kwargs['src_light']['center_y'] += kwargs['lens_mass']['center_y']
 
+        # Ext shear is defined wrt the lens center
+        kwargs['external_shear']['ra_0'] = kwargs['lens_mass']['center_x']
+        kwargs['external_shear']['dec_0'] = kwargs['lens_mass']['center_y']
+
         if 'lens_light' in self.components:
             # Lens light shares center with lens mass
             kwargs['lens_light']['center_x'] = kwargs['lens_mass']['center_x']
