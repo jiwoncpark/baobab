@@ -60,7 +60,7 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
                          dec_source=kwargs['src_light']['center_y']
                          )]
         true_td = lens_prop.time_delays(kwargs_lens, kwargs_ps, kappa_ext=kappa_ext)
-        measured_td = true_td + np.random.rand()*self.time_delays.error_sigma
+        measured_td = true_td + np.random.randn()*self.time_delays.error_sigma
         true_vd = lens_prop.velocity_dispersion(kwargs_lens, 
                                                     r_eff=kwargs['lens_light']['R_sersic'], 
                                                     R_slit=self.kinematics.aperture_size_x, 
@@ -69,7 +69,7 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
                                                     aniso_param=self.kinematics.aniso_param, 
                                                     num_evaluate=self.kinematics.num_evaluate, 
                                                     kappa_ext=kappa_ext)
-        measured_vd = true_vd + true_vd*np.random.rand()*self.kinematics.vel_disp_frac_err_sigma
+        measured_vd = true_vd + true_vd*np.random.randn()*self.kinematics.vel_disp_frac_err_sigma
         kwargs['misc'] = dict(
                               z_lens=z_lens,
                               z_src=z_src,

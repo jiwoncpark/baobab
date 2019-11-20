@@ -79,7 +79,7 @@ class BaseCosmoBNNPrior(ABC):
         z_grid = np.arange(**redshifts_cfg.grid)
         dVol_dz = self.cosmo.differential_comoving_volume(z_grid).value
         dVol_dz_normed = dVol_dz/np.sum(dVol_dz)
-        sampled_z = np.random.choice(z_grid, 2, replace=True, p=dVol_dz_normed)
+        sampled_z = np.random.choice(z_grid, 2, replace=False, p=dVol_dz_normed)
         z_lens = np.min(sampled_z)
         z_src = np.max(sampled_z)
         return z_lens, z_src
