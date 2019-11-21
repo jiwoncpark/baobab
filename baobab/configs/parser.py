@@ -1,5 +1,5 @@
 import os, sys
-from argparse import ArgumentParser
+import warnings
 from importlib import import_module
 from addict import Dict
 
@@ -16,6 +16,15 @@ class BaobabConfig:
         
         """
         self.__dict__ = Dict(user_cfg)
+        self.interpret_kinematics_cfg()
+
+    def interpret_kinematics_cfg(self):
+        """Validate the kinematics config
+
+        """
+        kinematics_cfg = self.bnn_omega.kinematics_cfg
+        if kinematics_cfg.anisotropy_model == 'analytic':
+            warnings.warn("Since velocity dispersion computation is analytic, any entry other than `sampling_number` in `kinematics.numerics_kwargs` will be ignored.")
 
     @classmethod
     def from_file(cls, user_cfg_path):
