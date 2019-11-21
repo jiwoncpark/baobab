@@ -87,11 +87,29 @@ cfg.bnn_omega = dict(
                  kinematics = dict(
                                    # Grid of velocity dispersion to sample from
                                    vel_disp_frac_err_sigma=0.05,
-                                   aniso_param=1.0, # r_ani = aniso_param*r_eff,
-                                   aperture_size_x=1.0, # arcsec
-                                   aperture_size_y=1.0, # arcsec
-                                   psf_fwhm_eff=0.6, # arcsec
-                                   num_evaluate=1000,
+                                   anisotropy_model='analytic',
+                                   kwargs_anisotropy=dict(
+                                                          r_ani=1.0
+                                                          ),
+                                   kwargs_aperture=dict(
+                                                        aperture_type='slit',
+                                                        center_ra=0.0,
+                                                        center_dec=0.0,
+                                                        width=1.0, # arcsec
+                                                        length=1.0, # arcsec
+                                                        angle=0.0,
+                                                        ),
+                                   kwargs_psf=dict(
+                                                  psf_type='GAUSSIAN',
+                                                  fwhm=0.6
+                                                  ),
+                                   kwargs_numerics=dict(
+                                                       sampling_number=1000,
+                                                       interpol_grid_num=1000,
+                                                       log_integration=True,
+                                                       max_integrate=100,
+                                                       min_integrate=0.001
+                                                       ),
                                    ),
                  time_delays = dict(
                                     error_sigma=0.25,
