@@ -1,9 +1,5 @@
 import numpy as np
 from astropy.cosmology import wCDM
-import lenstronomy.Util.param_util as param_util
-from lenstronomy.LensModel.lens_model import LensModel
-from lenstronomy.PointSource.point_source import PointSource
-from lenstronomy.Analysis.lens_properties import LensProp
 from abc import ABC, abstractmethod
 
 class BaseCosmoBNNPrior(ABC):
@@ -104,71 +100,3 @@ class BaseCosmoBNNPrior(ABC):
             z_lens = self.sample_param(redshifts_cfg.z_lens.copy())
             z_src = self.sample_param(redshifts_cfg.z_src.copy())
         return z_lens, z_src
-
-    def instantiate_lens_prop(self, kwargs_model_list, z_lens, z_src):
-        """Instantiate the LensProp class, used for getting time delays and velocity dispersions
-        
-        Parameters
-        ----------
-        kwargs_model_list : dict
-            type of lenstronomy-supported paramerizations for each component 
-        z_lens : float
-        z_src : float
-
-        Returns
-        -------
-        lenstronomy LensProp object
-
-        """
-        lens_prop = LensProp(z_lens, z_src, kwargs_model_list, self.cosmo)
-        return lens_prop
-
-    def get_true_vel_disp(self, lens_prop, kwargs_lens, r_eff, kappa_ext, kinematics_cfg):
-        """Infer the velocity dispersion given the lens model, using the spherical Jeans model
-        
-        Parameters
-        ----------
-        lens_prop : lenstronomy LensProp object
-        kwargs_lens : list of dict
-            the parameter values of the profiles listed in `kwargs_model_list['lens_model_list']`
-        r_eff : float
-            lens effective radius in arcsec
-        kinematics_cfg : dict
-            copy of `cfg.bnn_omega.kinematics`
-
-        Returns
-        -------
-        float
-            the inferred velocity dispersion in km/s
-
-        """
-        inferred_vd = lens_prop.velocity_dispersion(kwargs_lens,
-                                                    r_eff=r_eff,
-                                                    R_slit=kinematics_cfg.horizontal_aperture_size,
-                                                    dR_slit=kinematics_cfg.vertical_aperture_size,
-                                                    psf_fwhm=kinematics_cfg.psf_fwhm_eff,
-                                                    aniso_param=kinematics_cfg.aniso_param,
-                                                    num_evaluate=kinematics_cfg.num_evaluate,
-                                                    kappa_ext=kappa_ext
-                                                    )
-
-    def get_measured_vel_disp(self, true_vel_disp, vel_disp_err):
-        """Get the velocity dispersion with measurement error
-
-        Parameters
-        ----------
-        true_vel_disp : float
-            true value of the velocity dispersion in km/s
-        vel_disp_err : float
-            the measurement error on the velocity dispersion to apply, in km/s
-
-        Returns
-        -------
-        float
-            the measured velocity dispersion in km/s
-
-        """
-        return true_vel_disp + np.random.randn()*vel_disp_err
-
-    def get_measured_time_delays(self, ):
-        pass

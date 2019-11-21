@@ -1,5 +1,3 @@
-import numpy as np
-import scipy.stats as stats
 from addict import Dict
 import lenstronomy.Util.param_util as param_util
 from .base_bnn_prior import BaseBNNPrior
