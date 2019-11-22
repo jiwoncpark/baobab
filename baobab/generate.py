@@ -37,10 +37,7 @@ from lenstronomy.ImSim.image_model import ImageModel
 #from lenstronomy.SimulationAPI.sim_api import SimAPI
 from lenstronomy.SimulationAPI.data_api import DataAPI
 import lenstronomy.Util.util as util
-import lenstronomy.Util.simulation_util as sim_util
-import lenstronomy.Util.image_util as image_util
 from lenstronomy.Util import kernel_util
-from lenstronomy.Data.imaging_data import ImageData
 from lenstronomy.Data.psf import PSF
 
 def parse_args():
