@@ -71,25 +71,5 @@ class TestNoiseTorch(unittest.TestCase):
         self.assertEqual(numpy_sigma2['readout'], torch_sigma2['readout'])
         np.testing.assert_array_almost_equal(numpy_sigma2['poisson'], torch_sigma2['poisson'].numpy(), decimal=7)
 
-    def test_build_tf_dataset(self):
-        """Test whether tf.data.Dataset can be instantiated from tf.data.TFRecordDataset
-
-        """
-        tf_record_path = os.path.abspath('test_ADU')
-        batch_size = 2
-        n_epochs = 3
-        generate_simple_tf_record(tf_record_path, tf_y_names)
-        tf_dataset = tf.data.TFRecordDataset(tf_record_path).map(parse_example).repeat(n_epochs).shuffle(buffer_size=tf_data_size + 1).batch(batch_size, drop_remainder=True)
-        
-        images = [img for img, label in tf_dataset]
-        labels = [label for img, label in tf_dataset]
-        size = len(labels)
-        np.testing.assert_array_equal(images[0].shape, (batch_size, tf_img_size, tf_img_size, 1))
-        np.testing.assert_array_equal(labels[0].shape, (batch_size, len(tf_y_names)))
-        np.testing.assert_equal(size, (tf_data_size*n_epochs//2))
-        # Delete resulting data
-        if os.path.exists(tf_record_path):
-            os.remove(tf_record_path)
-
 if __name__ == '__main__':
     unittest.main()
