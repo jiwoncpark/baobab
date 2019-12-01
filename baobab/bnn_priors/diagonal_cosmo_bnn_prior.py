@@ -128,19 +128,23 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
                          )]
         true_td = td_cosmo.time_delays(kwargs_lens, kwargs_ps, kappa_ext=kappa_ext)
         measured_td = true_td + np.random.randn()*self.time_delays.error_sigma
-        true_vd = self.get_velocity_dispersion(
-                                               td_cosmo, 
-                                               kwargs_lens, 
-                                               kwargs_lens_light, 
-                                               self.kinematics.kwargs_anisotropy, 
-                                               self.kinematics.kwargs_aperture, 
-                                               self.kinematics.kwargs_psf, 
-                                               self.kinematics.anisotropy_model, 
-                                               kwargs['lens_light']['R_sersic'],
-                                               self.kinematics.kwargs_numerics,
-                                               kappa_ext
-                                               )
-        measured_vd = true_vd + true_vd*np.random.randn()*self.kinematics.vel_disp_frac_err_sigma
+        if self.kinematics.calculate_vel_disp:
+          true_vd = self.get_velocity_dispersion(
+                                                 td_cosmo, 
+                                                 kwargs_lens, 
+                                                 kwargs_lens_light, 
+                                                 self.kinematics.kwargs_anisotropy, 
+                                                 self.kinematics.kwargs_aperture, 
+                                                 self.kinematics.kwargs_psf, 
+                                                 self.kinematics.anisotropy_model, 
+                                                 kwargs['lens_light']['R_sersic'],
+                                                 self.kinematics.kwargs_numerics,
+                                                 kappa_ext
+                                                 )
+          measured_vd = true_vd + true_vd*np.random.randn()*self.kinematics.vel_disp_frac_err_sigma
+        else:
+          true_vd = -1
+          measured_vd = -1
         kwargs['misc'] = dict(
                               z_lens=z_lens,
                               z_src=z_src,

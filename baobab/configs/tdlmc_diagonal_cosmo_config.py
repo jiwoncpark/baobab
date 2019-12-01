@@ -85,7 +85,7 @@ cfg.bnn_omega = dict(
                             ),
                  # Hyperparameters and numerics for inferring the velocity dispersion for a given lens model
                  kinematics = dict(
-                                   # Grid of velocity dispersion to sample from
+                                   calculate_vel_disp=False,
                                    vel_disp_frac_err_sigma=0.05,
                                    anisotropy_model='analytic',
                                    kwargs_anisotropy=dict(
