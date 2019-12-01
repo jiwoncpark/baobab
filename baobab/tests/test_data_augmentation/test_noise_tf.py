@@ -15,7 +15,7 @@ class TestNoiseTF(unittest.TestCase):
         """
         np.random.seed(123)
         random.seed(123)
-        cls.img = np.random.randn(3, 3)*3.0 + 3.0
+        cls.img = np.random.randn(3, 3)*3.0 + 6.0
         cls.noise_kwargs = dict(
                                 pixel_scale=0.08,
                                 exposure_time=100.0,
@@ -32,34 +32,36 @@ class TestNoiseTF(unittest.TestCase):
                                 background_noise=None
                                 )
 
-    def test_lenstronomy_vs_torch_ADU(self):
+    def test_lenstronomy_vs_tf_ADU(self):
         """Compare the lenstronomy and tf noise variance for ADU units
 
         """
         numpy_sigma2 = get_noise_sigma2_lenstronomy(self.img, data_count_unit='ADU', **self.noise_kwargs)
-        img_torch_tensor = tf.cast(self.img, tf.float32)
+        img_tf_tensor = tf.cast(self.img, tf.float32)
         noise_model_tf = NoiseModelTF(**self.noise_kwargs)
         tf_sigma2 = {}
         tf_sigma2['sky'] = noise_model_tf.get_sky_noise_sigma2()
         tf_sigma2['readout'] = noise_model_tf.get_readout_noise_sigma2()
-        tf_sigma2['poisson'] = noise_model_tf.get_poisson_noise_sigma2(img_torch_tensor)
-        self.assertEqual(numpy_sigma2['sky'], tf_sigma2['sky'])
-        self.assertEqual(numpy_sigma2['readout'], tf_sigma2['readout'])
+        tf_sigma2['poisson'] = noise_model_tf.get_poisson_noise_sigma2(img_tf_tensor)
+        np.testing.assert_array_almost_equal(self.img, img_tf_tensor.numpy(), decimal=5)
+        np.testing.assert_equal(numpy_sigma2['sky'], tf_sigma2['sky'])
+        np.testing.assert_equal(numpy_sigma2['readout'], tf_sigma2['readout'])
         np.testing.assert_array_almost_equal(numpy_sigma2['poisson'], tf_sigma2['poisson'].numpy(), decimal=7)
 
-    def test_lenstronomy_vs_torch_electron(self):
+    def test_lenstronomy_vs_tf_electron(self):
         """Compare the lenstronomy and tf noise variance for electron units
 
         """
         numpy_sigma2 = get_noise_sigma2_lenstronomy(self.img, data_count_unit='e-', **self.noise_kwargs)
-        img_torch_tensor = tf.cast(self.img, tf.float32)
+        img_tf_tensor = tf.cast(self.img, tf.float32)
         noise_model_tf = NoiseModelTF(data_count_unit='e-', **self.noise_kwargs)
         tf_sigma2 = {}
         tf_sigma2['sky'] = noise_model_tf.get_sky_noise_sigma2()
         tf_sigma2['readout'] = noise_model_tf.get_readout_noise_sigma2()
-        tf_sigma2['poisson'] = noise_model_tf.get_poisson_noise_sigma2(img_torch_tensor)
-        self.assertEqual(numpy_sigma2['sky'], tf_sigma2['sky'])
-        self.assertEqual(numpy_sigma2['readout'], tf_sigma2['readout'])
+        tf_sigma2['poisson'] = noise_model_tf.get_poisson_noise_sigma2(img_tf_tensor)
+        np.testing.assert_array_almost_equal(self.img, img_tf_tensor.numpy(), decimal=5)
+        np.testing.assert_equal(numpy_sigma2['sky'], tf_sigma2['sky'])
+        np.testing.assert_equal(numpy_sigma2['readout'], tf_sigma2['readout'])
         np.testing.assert_array_almost_equal(numpy_sigma2['poisson'], tf_sigma2['poisson'].numpy(), decimal=7)
 
     def test_build_tf_dataset(self):
