@@ -40,3 +40,10 @@ $pip install pybaobab
 ::
 
 $python -m ipykernel install --user --name baobab --display-name "Python (baobab)"
+
+4. (Optional) To enable online data augmentation for machine learning, install the relevant dependencies.
+
+::
+
+$pip install torch torchvision
+$pip install tensorflow-gpu
