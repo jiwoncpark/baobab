@@ -1,8 +1,6 @@
 import copy
 import numpy as np
 # Lenstronomy modules
-import lenstronomy
-print("Lenstronomy path being used: {:s}".format(lenstronomy.__path__[0]))
 from lenstronomy.ImSim.image_model import ImageModel
 from baobab.sim_utils import amp_to_mag_extended, amp_to_mag_point, get_lensed_total_flux, get_unlensed_total_flux
 __all__ = ['generate_image']
@@ -22,10 +20,11 @@ def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model
 
     Returns
     -------
-    np.array
-        the image
+    tuple of (np.array, dict)
+        the image and its features
 
     """
+    img_features = dict()
     image_data = data_api.data_class
     kwargs_lens_mass = [sample['lens_mass'], sample['external_shear']]
     kwargs_src_light = [sample['src_light']]
@@ -47,6 +46,8 @@ def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model
         kwargs_ps = copy.deepcopy(kwargs_unlensed_amp_ps)
         for kw in kwargs_ps:
             kw.update(point_amp=kw['point_amp']*magnification)
+        img_features['x_image'] = x_image
+        img_features['y_image'] = y_image
     else:
         kwargs_unlensed_amp_ps = None
     # Add lens light metadata
@@ -62,17 +63,14 @@ def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model
     total_magnification = lensed_total_flux/unlensed_total_flux
     # Apply magnification cut
     if total_magnification < min_magnification:
-        return None
+        return None, None
     # Generate image for export
     img = image_model.image(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps)
     # Add noise
     noise = data_api.noise_for_model(img, background_noise=True, poisson_noise=True, seed=None)
     img += noise
     img = np.maximum(0.0, img) # safeguard against negative pixel values
-    # Save image features
-    img_features = dict()
+    # Save remaining image features
     img_features['total_magnification'] = total_magnification
-    img_features['x_image'] = x_image
-    img_features['y_image'] = y_image
 
     return img, img_features
