@@ -49,7 +49,7 @@ class TestDistributions(unittest.TestCase):
         exp_kurtosis = gamma(5/p) * gamma(1/p) / gamma(3/p)**2.0 - 3.0
         #exp_entropy = 1/p - np.log(p / (2 * alpha * gamma(1/p)))
         precision = 2
-        np.testing.assert_almost_equal(sample_mean, mu, precision)
+        np.testing.assert_almost_equal(sample_mean, exp_mean, precision)
         np.testing.assert_almost_equal(sample_var, exp_var, precision)
         np.testing.assert_almost_equal(sample_skew, exp_skew, precision)
         np.testing.assert_almost_equal(sample_kurtosis, exp_kurtosis, precision)
