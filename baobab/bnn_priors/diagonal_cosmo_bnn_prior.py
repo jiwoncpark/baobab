@@ -31,6 +31,10 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
         self.params_to_exclude = []
         self.set_params_list(self.params_to_exclude)
         self.set_comps_qphi_to_e1e2()
+        if self.kinematics.calculate_vel_disp or self.time_delays.calculate_time_delays:
+            self.get_cosmography_observables = True
+        else:
+            self.get_cosmography_observables = False
         self.get_velocity_dispersion = getattr(self, 'velocity_dispersion_analytic') if self.kinematics.anisotropy_model == 'analytic' else getattr(self, 'velocity_dispersion_numerical')
 
     def velocity_dispersion_analytic(self, td_cosmo_object, kwargs_lens, kwargs_lens_light, kwargs_anisotropy, kwargs_aperture, kwargs_psf, anisotropy_model, r_eff, kwargs_numerics, kappa_ext):
@@ -63,7 +67,6 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
             the sigma of the velocity dispersion
             
         """
-
         module = getattr(td_cosmo_object, 'velocity_dispersion_analytical')
         vel_disp = module(
                           theta_E=kwargs_lens[0]['theta_E'],
@@ -102,11 +105,23 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
                           )
         return vel_disp
 
-    def sample(self):
-        kwargs = DiagonalBNNPrior.sample(self)
-        H0 = self.cosmology.H0
-        z_lens, z_src = self.sample_redshifts(self.redshift.copy())
-        kappa_ext = self.sample_param(self.LOS.kappa_ext.copy())
+    def get_cosmo_observables(self, kwargs, z_lens, z_src, kappa_ext):
+        """Calculate the central estimates of the observables for cosmography, i.e. the velocity dispersion and time delays, with and without noise realization
+
+        Parameters
+        ----------
+        kwargs : dict
+            the realized kwargs
+        z_lens : float
+        z_src : float
+        kappa_ext : float
+
+        Returns
+        -------
+        dict
+            the computed central estimates of velocity dispersion and time delays with and without noise realization
+
+        """
         td_cosmo = TDCosmography(z_lens, z_src, self.kwargs_model, cosmo_fiducial=self.cosmo)
         kwargs_lens_mass = dict(
                                 theta_E=kwargs['lens_mass']['theta_E'],
@@ -122,37 +137,51 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
                                 )
         kwargs_lens = [kwargs_lens_mass, kwargs_ext_shear] # FIXME: hardcoded for SPEMD
         kwargs_lens_light = [kwargs['lens_light']]
-        kwargs_ps = [dict(
-                         ra_source=kwargs['src_light']['center_x'],
-                         dec_source=kwargs['src_light']['center_y']
-                         )]
-        true_td = td_cosmo.time_delays(kwargs_lens, kwargs_ps, kappa_ext=kappa_ext)
-        measured_td = true_td + np.random.randn()*self.time_delays.error_sigma
-        if self.kinematics.calculate_vel_disp:
-          true_vd = self.get_velocity_dispersion(
-                                                 td_cosmo, 
-                                                 kwargs_lens, 
-                                                 kwargs_lens_light, 
-                                                 self.kinematics.kwargs_anisotropy, 
-                                                 self.kinematics.kwargs_aperture, 
-                                                 self.kinematics.kwargs_psf, 
-                                                 self.kinematics.anisotropy_model, 
-                                                 kwargs['lens_light']['R_sersic'],
-                                                 self.kinematics.kwargs_numerics,
-                                                 kappa_ext
-                                                 )
-          measured_vd = true_vd + true_vd*np.random.randn()*self.kinematics.vel_disp_frac_err_sigma
+        kwargs_ps = [dict(ra_source=kwargs['src_light']['center_x'],
+                          dec_source=kwargs['src_light']['center_y'])]
+        # Time delays
+        if self.time_delays.calculate_time_delays:
+            true_td = td_cosmo.time_delays(kwargs_lens, kwargs_ps, kappa_ext=kappa_ext)
+            measured_td = true_td + np.random.randn()*self.time_delays.error_sigma
         else:
-          true_vd = -1
-          measured_vd = -1
+            true_td = -1
+            measured_td = -1
+        # Velocity dispersion
+        if self.kinematics.calculate_vel_disp:
+            true_vd = self.get_velocity_dispersion(
+                                               td_cosmo, 
+                                               kwargs_lens, 
+                                               kwargs_lens_light, 
+                                               self.kinematics.kwargs_anisotropy, 
+                                               self.kinematics.kwargs_aperture, 
+                                               self.kinematics.kwargs_psf, 
+                                               self.kinematics.anisotropy_model, 
+                                               kwargs['lens_light']['R_sersic'],
+                                               self.kinematics.kwargs_numerics,
+                                               kappa_ext
+                                               )
+            measured_vd = true_vd + true_vd*np.random.randn()*self.kinematics.vel_disp_frac_err_sigma
+        else:
+            true_vd = -1
+            measured_vd = -1
+        obs = dict(true_td=true_td,
+                   measured_td=measured_td,
+                   true_vd=true_vd,
+                   measured_vd=measured_vd)
+        return obs
+
+    def sample(self):
+        kwargs = DiagonalBNNPrior.sample(self)
+        H0 = self.cosmology.H0
+        z_lens, z_src = self.sample_redshifts(self.redshift.copy())
+        kappa_ext = self.sample_param(self.LOS.kappa_ext.copy())
         kwargs['misc'] = dict(
-                              z_lens=z_lens,
-                              z_src=z_src,
-                              measured_vd=measured_vd,
-                              true_vd=true_vd,
-                              measured_td=measured_td,
-                              true_td=true_td,
-                              kappa_ext=kappa_ext,
-                              H0=H0,
-                              )
+                             z_lens=z_lens,
+                             z_src=z_src,
+                             kappa_ext=kappa_ext,
+                             H0=H0,
+                             )
+        if self.get_cosmography_observables:
+            cosmo_obs = self.get_cosmo_observables(kwargs, z_lens, z_src, kappa_ext)
+            kwargs['misc'].update(cosmo_obs)
         return kwargs
