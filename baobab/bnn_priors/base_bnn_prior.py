@@ -75,6 +75,7 @@ class BaseBNNPrior(ABC):
         """Assigns a sampling distribution
 
         """
+        hyperparams = hyperparams.copy()
         dist = hyperparams.pop('dist')
         return getattr(baobab.distributions, 'sample_{:s}'.format(dist))(**hyperparams)
 
@@ -82,9 +83,9 @@ class BaseBNNPrior(ABC):
         """Assigns and evaluates the PDF 
 
         """
+        hyperparams = hyperparams.copy()
         dist = hyperparams.pop('dist')
         return getattr(baobab.distributions, 'eval_{:s}_pdf'.format(dist))(eval_at, **hyperparams)
-
 
     @abstractmethod
     def sample(self):
