@@ -61,7 +61,9 @@ def main():
     save_dir = cfg.out_dir
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-        print("Destination folder: {:s}".format(save_dir))
+        print("Destination folder path: {:s}".format(save_dir))
+        print("Log path: {:s}".format(cfg.log_path))
+        cfg.export_log()
     else:
         raise OSError("Destination folder already exists.")
     # Instantiate PSF models
@@ -87,6 +89,7 @@ def main():
     bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components)
     # Initialize empty metadata dataframe
     metadata = pd.DataFrame()
+    metadata_path = os.path.join(save_dir, 'metadata.csv')
     current_idx = 0 # running idx of dataset
     pbar = tqdm(total=cfg.n_data)
     while current_idx < cfg.n_data:
@@ -137,20 +140,18 @@ def main():
         meta['total_magnification'] = img_features['total_magnification']
         meta['img_filename'] = img_filename
         metadata = metadata.append(meta, ignore_index=True)
+
+        # Export metadata every checkpoint interval
+        if (current_idx + 1)% cfg.checkpoint_interval == 0:
+            # Sort columns lexicographically
+            metadata = metadata.reindex(sorted(metadata.columns), axis=1)
+            metadata.to_csv(metadata_path, index=None)
+
         # Update progress
         current_idx += 1
         pbar.update(1)
     pbar.close()
-
-    # Store source pos offset from lens center, which is what we draw
-    metadata['src_light_pos_offset_x'] = metadata['src_light_center_x'] - metadata['lens_mass_center_x']
-    metadata['src_light_pos_offset_y'] = metadata['src_light_center_y'] - metadata['lens_mass_center_y']
-
-    # Sort columns lexicographically
-    metadata = metadata.reindex(sorted(metadata.columns), axis=1)
-    metadata_path = os.path.join(save_dir, 'metadata.csv')
-    metadata.to_csv(metadata_path, index=None)
     print("Labels include: ", metadata.columns.values)
-
+    
 if __name__ == '__main__':
     main()

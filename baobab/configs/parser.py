@@ -1,7 +1,9 @@
 import os, sys
+from datetime import datetime
 import warnings
 from importlib import import_module
 from addict import Dict
+import json
 
 class BaobabConfig:
     """Nested dictionary representing the configuration for Baobab data generation
@@ -16,7 +18,22 @@ class BaobabConfig:
         
         """
         self.__dict__ = Dict(user_cfg)
+        if not hasattr(self, 'out_dir'):
+            # Default out_dir path if not specified
+            self.out_dir = os.path.join(os.getcwd(), '{:s}_{:s}_prior={:s}_seed={:d}'.format(self.name, self.train_vs_val, self.bnn_prior_class, self.seed))
+        self.out_dir = os.path.abspath(self.out_dir)
+        self.checkpoint_interval = max(100, self.n_data // 10)
         self.interpret_kinematics_cfg()
+        self.log_filename = datetime.now().strftime("log_%m-%d-%Y_%H:%M_baobab.json")
+        self.log_path = os.path.join(os.getcwd(), self.log_filename)
+
+    def export_log(self):
+        """Export the baobab log to the current working directory
+
+        """
+        with open(self.log_path, 'w') as f:
+            json.dump(self.__dict__, f)
+            print("Exporting baobab log to {:s}".format(self.log_path))
 
     def interpret_kinematics_cfg(self):
         """Validate the kinematics config
