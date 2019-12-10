@@ -25,7 +25,7 @@ class BaobabConfig:
         self.checkpoint_interval = max(100, self.n_data // 10)
         self.interpret_kinematics_cfg()
         self.log_filename = datetime.now().strftime("log_%m-%d-%Y_%H:%M_baobab.json")
-        self.log_path = os.path.join(os.getcwd(), self.log_filename)
+        self.log_path = os.path.join(self.out_dir, self.log_filename)
 
     def export_log(self):
         """Export the baobab log to the current working directory
