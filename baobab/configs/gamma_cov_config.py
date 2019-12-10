@@ -216,9 +216,9 @@ cfg.bnn_omega = dict(
                                                 True,
                                                 ],
                                                 # The mean vector
-                                                mu=np.array([0.7, 1.25]),
+                                                mu=[0.7, 1.25],
                                                 # The covariance matrix (must be PSD and symmetric numpy array)
-                                                cov_mat=np.array([[0.1, 0.03], [0.03, 0.4]]),
+                                                cov_mat=[[0.1, 0.03], [0.03, 0.4]],
                                                 lower=None,
                                                 upper=None,
                                                  ),

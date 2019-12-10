@@ -1,6 +1,4 @@
-import warnings
 import numpy as np
-import scipy.stats as stats
 from addict import Dict
 import lenstronomy.Util.param_util as param_util
 from .base_bnn_prior import BaseBNNPrior
@@ -51,7 +49,7 @@ class CovBNNPrior(BaseBNNPrior):
         if cov_omega['is_log'] is not None:
             if len(cov_omega['is_log']) != n_cov_params:
                 raise ValueError("is_log value in cov_omega should have same length as number of cov params in cov_params_list, {:d}, but instead found {:d}".format(n_cov_params, len(cov_omega['is_log'])))
-        if not np.array_equal(cov_omega['cov_mat'].shape, [n_cov_params, n_cov_params]):
+        if not np.array_equal(np.array(cov_omega['cov_mat']).shape, [n_cov_params, n_cov_params]):
             raise ValueError("cov_mat value in cov_omega should have shape [n_cov_params, n_cov_params]")
 
     def sample(self):

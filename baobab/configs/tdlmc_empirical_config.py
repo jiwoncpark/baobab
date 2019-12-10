@@ -222,7 +222,7 @@ cfg.bnn_omega = dict(
                                  magnitude = dict(
                                                  model='AGNLuminosityFunction',
                                                  model_kwargs = dict(
-                                                                     M_grid=np.arange(-30.0, -19.0, 0.2),
+                                                                     M_grid=np.arange(-30.0, -19.0, 0.2).tolist(),
                                                                      fit_data='combined',
                                                                      ),
                                                  ),
