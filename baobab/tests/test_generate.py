@@ -1,8 +1,8 @@
-import os, sys
+import os
 import shutil
 import subprocess
 import unittest
-import numpy as np
+import glob
 
 def test_generate():
     """Tests execution of `generate.py` script for all template config files
@@ -23,6 +23,7 @@ def test_generate():
             # Delete resulting data
             if os.path.exists(save_dir):
                 shutil.rmtree(save_dir)
+
     assert n_failures == 0 # FIXME: clumsy
             
 if __name__ == '__main__':

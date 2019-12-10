@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 import argparse
 import h5py
+from addict import Dict
 from tqdm import tqdm
 
 def parse_args():
@@ -39,7 +40,7 @@ def parse_args():
     args = parser.parse_args()
     # sys.argv rerouting for setuptools entry point
     if args is None:
-        args = SimpleNamespace()
+        args = Dict()
         args.npy_dir = sys.argv[0]
         args.format = sys.argv[1]
 
