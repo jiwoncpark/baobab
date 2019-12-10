@@ -1,4 +1,3 @@
-import os, sys
 import numpy as np
 from addict import Dict
 
@@ -9,10 +8,6 @@ cfg.seed = 1113 # random seed
 cfg.bnn_prior_class = 'CovBNNPrior'
 cfg.n_data = 200 # number of images to generate
 cfg.train_vs_val = 'train'
-cfg.out_dir = os.path.join('{:s}_{:s}_{:s}_seed{:d}'.format(cfg.name,
-                                                        cfg.train_vs_val,
-                                                        cfg.bnn_prior_class,
-                                                        cfg.seed))
 cfg.components = ['lens_mass', 'external_shear', 'src_light', 'lens_light', 'agn_light']
 
 cfg.selection = dict(

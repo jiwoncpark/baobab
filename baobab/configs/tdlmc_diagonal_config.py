@@ -1,4 +1,3 @@
-import os, sys
 import numpy as np
 from addict import Dict
 
@@ -9,10 +8,6 @@ cfg.seed = 1113 # random seed
 cfg.bnn_prior_class = 'DiagonalBNNPrior'
 cfg.n_data = 200 # number of images to generate
 cfg.train_vs_val = 'train'
-cfg.out_dir = os.path.join('{:s}_{:s}_{:s}_seed{:d}'.format(cfg.name,
-                                                        cfg.train_vs_val,
-                                                        cfg.bnn_prior_class,
-                                                        cfg.seed))
 cfg.components = ['lens_mass', 'external_shear', 'src_light', 'lens_light', 'agn_light']
 
 cfg.selection = dict(
@@ -57,46 +52,6 @@ cfg.image = dict(
              )
 
 cfg.bnn_omega = dict(
-                 # Inference hyperparameters defining the cosmology
-                 cosmology = dict(
-                                  H0=74.151, # Hubble constant at z = 0, in [km/sec/Mpc]
-                                  Om0=0.27, # Omega matter: density of non-relativistic matter in units of the critical density at z=0.
-                                  Ode0=0.73, # Omega dark energy: density of dark energy in units of the critical density at z=0.
-                                  w0=-1.0
-                                  ), # Dark energy equation of state at all redshifts. This is pressure/density for dark energy in units where c=1. A cosmological constant has w0=-1.0.
-                 # Hyperparameters of lens and source redshifts
-                 redshift = dict(
-                                model='differential_comoving_volume',
-                                # Grid of redshift to sample from
-                                grid = dict(
-                                            start=0.5, # min redshift
-                                            stop=4.0, # max redshift
-                                            step=0.1, # resolution of the z_grid
-                                            ),
-                                ),
-                 # Hyperparameters of line-of-sight structure
-                 LOS = dict(
-                            kappa_ext = dict(
-                                            dist='normal', # one of ['normal', 'beta']
-                                            mu=0.0,
-                                            sigma=0.025,
-                                            log=False
-                                             ),
-                            ),
-                 # Hyperparameters and numerics for inferring the velocity dispersion for a given lens model
-                 kinematics = dict(
-                                   # Grid of velocity dispersion to sample from
-                                   vel_disp_frac_err_sigma=0.05,
-                                   aniso_param=1.0, # r_ani = aniso_param*r_eff,
-                                   aperture_size_x=1.0, # arcsec
-                                   aperture_size_y=1.0, # arcsec
-                                   psf_fwhm_eff=0.6, # arcsec
-                                   num_evaluate=1000,
-                                   ),
-                 time_delays = dict(
-                                    error_sigma=0.25,
-                                    #frac_error_sigma=0.1,
-                                    ),
                  lens_mass = dict(
                                  profile='SPEMD', # only available type now
                                  # Normal(mu, sigma^2)
