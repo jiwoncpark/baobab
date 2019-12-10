@@ -18,9 +18,7 @@ class BaseCosmoBNNPrior(ABC):
         """Convenience function for raising errors related to config values
 
         """
-        raise ValueError("{:s} must be specified in the config inside {:s} for {:s}".format(missing_key,
-                                                                                             parent_config_key,
-                                                                                             bnn_prior_class))
+        raise ValueError("{:s} must be specified in the config inside {:s} for {:s}".format(missing_key, parent_config_key, bnn_prior_class))
 
     def _check_cosmology_config_validity(self, bnn_omega):
         """Check whether the config file specified the hyperparameters for all the fields
@@ -96,7 +94,7 @@ class BaseCosmoBNNPrior(ABC):
         """
         z_lens = self.sample_param(redshifts_cfg.z_lens.copy())
         z_src = self.sample_param(redshifts_cfg.z_src.copy())
-        while z_lens > z_src:
+        while z_src < z_lens + redshifts_cfg.min_diff:
             z_lens = self.sample_param(redshifts_cfg.z_lens.copy())
             z_src = self.sample_param(redshifts_cfg.z_src.copy())
         return z_lens, z_src
