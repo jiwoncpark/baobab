@@ -15,7 +15,7 @@ before_install:
   - sudo apt-get -y install python3-pip
   - python3 --version
   - sudo -H pip3 install --upgrade pip
-  - sudo -H pip3 install setuptools libhdf5-serial-dev
+  - sudo -H pip3 install setuptools python-h5py
   - sudo -H pip3 install python-coveralls
   - sudo -H pip3 install tensorflow
   - sudo -H pip3 install torch==1.3.1+cpu torchvision==0.4.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
