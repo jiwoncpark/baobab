@@ -11,7 +11,9 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y install python3-pip libhdf5-dev libhdf5-serial-dev
   - python3 --version
+  - which python3
   - pip3 --version
+  - which pip3
   - sudo -H pip3 install --upgrade pip
   - sudo -H pip3 install setuptools
   - sudo -H pip3 install python-coveralls
@@ -19,7 +21,6 @@ before_install:
   - sudo -H pip3 install torch==1.3.1+cpu torchvision==0.4.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 install:
-    - pip3 freeze
     - sudo -H pip3 install -e . -r requirements.txt
     - sudo -H pip3 install -U scipy pandas matplotlib astropy
     - df -h
