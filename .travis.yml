@@ -12,7 +12,7 @@ cache:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get -y install python3-pip python-h5py
+  - sudo apt-get -y install python3-pip libhdf5-dev libhdf5-serial-dev
   - python3 --version
   - sudo -H pip3 install --upgrade pip
   - sudo -H pip3 install setuptools
