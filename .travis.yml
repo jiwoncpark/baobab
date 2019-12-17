@@ -1,4 +1,7 @@
-language: minimal
+language: python
+
+python:
+    - '3.6'
 
 compiler:
     - g++
@@ -8,39 +11,16 @@ cache:
     pip: true
 
 before_install:
-  - sudo apt-get update
-  - sudo apt-get -qq -y install python3-pip libhdf5-dev libhdf5-serial-dev
-  - sudo -H pip3 install --upgrade pip
-  - sudo -H pip3 install -q setuptools
-  - sudo -H pip3 install -q python-coveralls
-  - sudo -H pip3 install -q -U pyasn1>=0.4.6
-  - sudo -H pip3 install -q tensorflow --progress-bar off
-  - sudo -H pip3 install -q torch --progress-bar off
-  - python3 --version
-  - which python3
-  - pip3 --version
-  - which pip3
+  - which pip
+  - pip install -q coveralls
+  - pip install -q python-coveralls
+  - pip install -q tensorflow
+  - pip install -q torch 
 
 install:
-    - sudo -H pip3 install -e . -r requirements.txt
-    - sudo -H pip3 install -U scipy pandas matplotlib astropy
-    - python3 -c "import tensorflow as tf;print(tf.reduce_sum(tf.random.normal([1000, 1000])))"
-    - python3 -c "import torch"
-    - python3 -c "import scipy"
-    - python3 -c "import unittest"
-    - python3 -c "import shutil"
-    - python3 -c "import numpy as np;print(np.zeros((3, 2)))"
-    - pwd
-    - df -h
+  - pip install -e . -r requirements.txt
 
 script:
-  - python3 baobab/tests/test_generate.py
-  - python3 baobab/tests/test_to_hdf5.py
-  - python3 baobab/tests/test_bnn_priors/test_cov_bnn_prior.py
-  - python3 baobab/tests/test_data_augmentation/test_noise_tf.py
-  - python3 baobab/tests/test_distributions/test_distributions.py
-  - python3 baobab/tests/test_sim_utils/test_selection_utils.py
-  - which coverage
   - coverage run -m unittest discover
 
 after_success:
