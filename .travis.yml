@@ -11,10 +11,10 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y install python3-pip libhdf5-dev libhdf5-serial-dev
   - sudo -H pip3 install --upgrade pip
-  - sudo -H pip3 install setuptools
-  - sudo -H pip3 install python-coveralls
-  - sudo -H pip3 install tensorflow
-  - sudo -H pip3 install torch
+  - sudo -H pip3 install -q setuptools
+  - sudo -H pip3 install -q python-coveralls
+  - sudo -H pip3 install -q tensorflow --progress-bar off
+  - sudo -H pip3 install -q torch --progress-bar off
   - python3 --version
   - which python3
   - pip3 --version
