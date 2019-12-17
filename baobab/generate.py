@@ -14,11 +14,11 @@ To run this script, pass in the desired config file as argument::
 import os, sys
 import random
 import argparse
+import gc
 from types import SimpleNamespace
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
-
 # Lenstronomy modules
 import lenstronomy
 print("Lenstronomy path being used: {:s}".format(lenstronomy.__path__[0]))
@@ -31,7 +31,7 @@ import lenstronomy.Util.util as util
 # Baobab modules
 from baobab.configs import BaobabConfig
 import baobab.bnn_priors as bnn_priors
-from baobab.sim_utils import get_PSF_models, generate_image
+from baobab.sim_utils import get_PSF_models, generate_image, Selection
 
 def parse_args():
     """Parse command-line arguments
@@ -85,6 +85,8 @@ def main():
     if 'agn_light' in cfg.components:
         kwargs_model['point_source_model_list'] = [cfg.bnn_omega.agn_light.profile]
         ps_model = PointSource(point_source_type_list=kwargs_model['point_source_model_list'], fixed_magnification_list=[False])
+    # Instantiate Selection object
+    selection = Selection(cfg.selection, cfg.components)
     # Initialize BNN prior
     bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components)
     # Initialize empty metadata dataframe
@@ -94,20 +96,9 @@ def main():
     pbar = tqdm(total=cfg.n_data)
     while current_idx < cfg.n_data:
         sample = bnn_prior.sample() # FIXME: sampling in batches
-        # Selections (except selection on total magnification, which comes later)
-        #TODO: this is getting longer so separate them
-        if sample['lens_mass']['theta_E'] < cfg.selection.theta_E.min:
+        # Selections on sampled parameters
+        if selection.reject_initial(sample):
             continue
-        lens_mass_e = (sample['lens_mass']['e1']**2.0 + sample['lens_mass']['e2']**2.0)**0.5
-        if lens_mass_e > 1.0:
-            continue
-        src_light_e = (sample['src_light']['e1']**2.0 + sample['src_light']['e2']**2.0)**0.5
-        if src_light_e > 1.0:
-            continue
-        if 'lens_light' in cfg.components:
-            lens_light_e = (sample['lens_light']['e1']**2.0 + sample['lens_light']['e2']**2.0)**0.5
-            if lens_light_e > 1.0:
-                continue
         psf_model = psf_models[current_idx%n_psf]
         # Detector and observation conditions
         kwargs_detector = util.merge_dicts(cfg.instrument, cfg.bandpass, cfg.observation)
@@ -140,16 +131,28 @@ def main():
         meta['total_magnification'] = img_features['total_magnification']
         meta['img_filename'] = img_filename
         metadata = metadata.append(meta, ignore_index=True)
-
-        # Export metadata every checkpoint interval
-        if (current_idx + 1)% cfg.checkpoint_interval == 0:
+        # Export metadata.csv for the first time
+        if current_idx == 0:
             # Sort columns lexicographically
             metadata = metadata.reindex(sorted(metadata.columns), axis=1)
+            # Export to csv
             metadata.to_csv(metadata_path, index=None)
+            # Initialize empty dataframe for next checkpoint chunk
+            metadata = pd.DataFrame()
+            gc.collect()
 
+        # Export metadata every checkpoint interval
+        if (current_idx + 1)%cfg.checkpoint_interval == 0:
+            # Export to csv
+            metadata.to_csv(metadata_path, index=None, mode='a', header=None)
+            # Initialize empty dataframe for next checkpoint chunk
+            metadata = pd.DataFrame()
+            gc.collect()
         # Update progress
         current_idx += 1
         pbar.update(1)
+    # Export to csv
+    metadata.to_csv(metadata_path, index=None, mode='a', header=None)
     pbar.close()
     print("Labels include: ", metadata.columns.values)
     
