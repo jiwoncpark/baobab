@@ -1,9 +1,7 @@
 git+https://github.com/sibirrer/lenstronomy.git@master
 astropy
-nose
 numpy
 matplotlib
-ipykernel
 pandas
 h5py
 tables
