@@ -14,13 +14,13 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y install python3-pip
   - pip3 install --upgrade pip
-  - pip3 install setuptools --user
-  - pip3 install python-coveralls --user
-  - pip3 install tensorflow --user
-  - pip3 install torch==1.3.1+cpu torchvision==0.4.2+cpu -f https://download.pytorch.org/whl/torch_stable.html --user
+  - sudo pip3 install setuptools
+  - sudo pip3 install python-coveralls
+  - sudo pip3 install tensorflow
+  - sudo pip3 install torch==1.3.1+cpu torchvision==0.4.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 install:
-    - "pip3 install -e . -r requirements.txt --user"
+    - sudo pip3 install -e . -r requirements.txt
     - df -h
 
 script:
