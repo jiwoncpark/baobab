@@ -1,8 +1,7 @@
-import os, sys
+import os
 import shutil
 import subprocess
 import unittest
-import numpy as np
 
 def test_to_hdf5():
     """Tests execution of `to_hdf5.py` script for all template config files

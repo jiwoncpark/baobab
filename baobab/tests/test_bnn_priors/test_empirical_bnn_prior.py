@@ -1,8 +1,4 @@
-import os, sys
-import shutil
-import subprocess
 import unittest
-import numpy as np
 
 class TestEmpiricalBNNPrior(unittest.TestCase):
     """A suite of tests alerting us for breakge, e.g. errors in

@@ -1,10 +1,7 @@
-import os, sys
-import shutil
-import subprocess
 import random
 import numpy as np
 import unittest
-from scipy.stats import kurtosis, skew, entropy
+from scipy.stats import kurtosis, skew
 from scipy.special import gamma
 
 class TestDistributions(unittest.TestCase):

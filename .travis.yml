@@ -30,9 +30,13 @@ install:
     - python3 -c "import unittest"
     - python3 -c "import shutil"
     - python3 -c "import numpy as np;print(np.zeros((3, 2)))"
+    - pwd
     - df -h
 
 script:
+  - python3 baobab/tests/test_generate.py
+  - python3 baobab/tests/test_to_hdf5.py
+  - which coverage
   - coverage run -m unittest discover
 
 after_success:
