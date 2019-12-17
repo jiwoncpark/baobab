@@ -14,7 +14,7 @@ before_install:
   - sudo -H pip3 install setuptools
   - sudo -H pip3 install python-coveralls
   - sudo -H pip3 install tensorflow
-  - sudo -H pip3 install torch==1.3.1+cpu torchvision==0.4.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
+  - sudo -H pip3 install torch
   - python3 --version
   - which python3
   - pip3 --version
@@ -23,6 +23,12 @@ before_install:
 install:
     - sudo -H pip3 install -e . -r requirements.txt
     - sudo -H pip3 install -U scipy pandas matplotlib astropy
+    - python3 -c "import tensorflow as tf;print(tf.reduce_sum(tf.random.normal([1000, 1000])))"
+    - python3 -c "import torch"
+    - python3 -c "import scipy"
+    - python3 -c "import unittest"
+    - python3 -c "import shutil"
+    - python3 -c "import numpy as np;print(np.zeros((3, 2)))"
     - df -h
 
 script:
