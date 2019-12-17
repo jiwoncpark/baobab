@@ -1,4 +1,4 @@
-language: python
+language: minimal
 
 python:
     - '3.6'
@@ -11,13 +11,13 @@ cache:
     pip: true
 
 before_install:
-  - pip install coveralls
   - pip install python-coveralls
   - pip install https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-2.0.0-cp36-cp36m-manylinux2010_x86_64.whl
   - pip3 install torch==1.3.1+cpu torchvision==0.4.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 install:
     - "pip install -e . -r requirements.txt"
+    - df -h
 
 script:
   - coverage run -m unittest discover
