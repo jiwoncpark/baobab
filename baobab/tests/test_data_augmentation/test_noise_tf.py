@@ -13,6 +13,7 @@ class TestNoiseTF(unittest.TestCase):
         """Seed randomness
 
         """
+        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         np.random.seed(123)
         random.seed(123)
         cls.img = np.random.randn(3, 3)*3.0 + 6.0
@@ -68,7 +69,6 @@ class TestNoiseTF(unittest.TestCase):
         """Test whether tf.data.Dataset can be instantiated from tf.data.TFRecordDataset with the data augmentation (noise addition) mapping
 
         """
-        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         tf_record_path = os.path.abspath('test_ADU')
         batch_size = 2
         n_epochs = 3

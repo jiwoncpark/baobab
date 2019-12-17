@@ -22,7 +22,7 @@ install:
   - df -h
 
 script:
-  - coverage run -m unittest discover
+  - coverage run -m unittest discover -s baobab/tests
 
 after_success:
   - codecov
