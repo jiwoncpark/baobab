@@ -13,6 +13,8 @@ cache:
 before_install:
   - pip install coveralls
   - pip install python-coveralls
+  - pip install tensorflow
+  - pip install torch
 
 install:
     - "pip install -e . -r requirements.txt"

@@ -19,7 +19,6 @@ setup(
       entry_points={
       'console_scripts': ['generate=baobab.generate:main', 'to_hdf5=baobab.to_hdf5:main'],
       },
-      tests_require=['torch', 'tensorflow'],
       classifiers=['Development Status :: 4 - Beta',
       'License :: OSI Approved :: BSD License',
       'Intended Audience :: Developers',
