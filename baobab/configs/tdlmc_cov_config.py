@@ -9,14 +9,11 @@ cfg.bnn_prior_class = 'CovBNNPrior'
 cfg.n_data = 200 # number of images to generate
 cfg.train_vs_val = 'train'
 cfg.components = ['lens_mass', 'external_shear', 'src_light', 'lens_light', 'agn_light']
-
 cfg.selection = dict(
                  magnification=dict(
                                     min=2.0
                                     ),
-                 theta_E=dict(
-                              min=0.5,
-                              ),
+                 initial=["lambda x: x['lens_mass']['theta_E'] > 0.5",]
                  )
 
 cfg.instrument = dict(

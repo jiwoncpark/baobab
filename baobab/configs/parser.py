@@ -22,7 +22,8 @@ class BaobabConfig:
             # Default out_dir path if not specified
             self.out_dir = os.path.join(os.getcwd(), '{:s}_{:s}_prior={:s}_seed={:d}'.format(self.name, self.train_vs_val, self.bnn_prior_class, self.seed))
         self.out_dir = os.path.abspath(self.out_dir)
-        self.checkpoint_interval = max(100, self.n_data // 100)
+        if not hasattr(self, 'checkpoint_interval'):
+            self.checkpoint_interval = max(100, self.n_data // 100)
         self.interpret_kinematics_cfg()
         self.log_filename = datetime.now().strftime("log_%m-%d-%Y_%H:%M_baobab.json")
         self.log_path = os.path.join(self.out_dir, self.log_filename)

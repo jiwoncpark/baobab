@@ -9,14 +9,13 @@ cfg.bnn_prior_class = 'DiagonalBNNPrior'
 cfg.n_data = 200 # number of images to generate
 cfg.train_vs_val = 'train'
 cfg.components = ['lens_mass', 'external_shear', 'src_light', 'lens_light', 'agn_light']
+cfg.checkpoint_interval = 2
 
 cfg.selection = dict(
                  magnification=dict(
                                     min=2.0
                                     ),
-                 theta_E=dict(
-                              min=0.5,
-                              ),
+                 initial=["lambda x: x['lens_mass']['theta_E'] > 0.5",]
                  )
 
 cfg.instrument = dict(
@@ -131,9 +130,10 @@ cfg.bnn_omega = dict(
                                   # Beta(a, b)
                                   q = dict(
                                            dist='normal',
-                                           mu= 0.746,
-                                           sigma=0.001,
+                                           mu= 0.5,
+                                           sigma=0.5,
                                            log=False,
+                                           lower=0.0,
                                            ),
                                   phi = dict(
                                             dist='normal',

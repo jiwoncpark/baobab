@@ -14,9 +14,7 @@ cfg.selection = dict(
                  magnification=dict(
                                     min=2.0
                                     ),
-                 theta_E=dict(
-                              min=0.5,
-                              ),
+                 initial=["lambda x: x['lens_mass']['theta_E'] > 0.5",]
                  )
 
 cfg.instrument = dict(

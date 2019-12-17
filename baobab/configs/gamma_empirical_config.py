@@ -12,11 +12,9 @@ cfg.components = ['lens_mass', 'external_shear', 'src_light']
 
 cfg.selection = dict(
                  magnification=dict(
-                                    min=4.0
+                                    min=2.0
                                     ),
-                 theta_E=dict(
-                              min=0.5,
-                              ),
+                 initial=["lambda x: x['lens_mass']['theta_E'] > 0.5",]
                  )
 
 cfg.instrument = dict(
