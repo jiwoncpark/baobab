@@ -20,7 +20,7 @@ setup(
       'console_scripts': ['generate=baobab.generate:main', 'to_hdf5=baobab.to_hdf5:main'],
       },
       test_suite='nose.collector',
-      tests_require=['nose', 'torch', 'tensorflow'],
+      tests_require=['nose', 'torch==1.3.1', 'tensorflow==2.0'],
       classifiers=['Development Status :: 4 - Beta',
       'License :: OSI Approved :: BSD License',
       'Intended Audience :: Developers',

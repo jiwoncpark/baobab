@@ -7,7 +7,7 @@ compiler:
     - g++
    
 cache:
-    ccache: true
+    ccache: false
     pip: true
 
 before_install:
