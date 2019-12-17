@@ -10,15 +10,15 @@ cache:
 before_install:
   - sudo apt-get update
   - sudo apt-get -y install python3-pip libhdf5-dev libhdf5-serial-dev
-  - python3 --version
-  - which python3
-  - pip3 --version
-  - which pip3
   - sudo -H pip3 install --upgrade pip
   - sudo -H pip3 install setuptools
   - sudo -H pip3 install python-coveralls
   - sudo -H pip3 install tensorflow
   - sudo -H pip3 install torch==1.3.1+cpu torchvision==0.4.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
+  - python3 --version
+  - which python3
+  - pip3 --version
+  - which pip3
 
 install:
     - sudo -H pip3 install -e . -r requirements.txt
