@@ -154,7 +154,6 @@ def main():
     # Export to csv
     metadata.to_csv(metadata_path, index=None, mode='a', header=None)
     pbar.close()
-    print("Labels include: ", metadata.columns.values)
     
 if __name__ == '__main__':
     main()
