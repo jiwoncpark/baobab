@@ -1,32 +1,32 @@
+import inspect
 import numpy as np
 import scipy.stats as stats
 
-__all__ = ['sample_uniform', 'eval_uniform_pdf', 
-'sample_normal', 'eval_normal_pdf', 
-'sample_beta', 'eval_beta_pdf', 
-'sample_generalized_normal', 'eval_generalized_normal_pdf', 
-'sample_multivar_normal', 
-'sample_one_minus_rayleigh'
-]
+dist_names = ['uniform', 'normal', 'beta', 'generalized_normal',]
+__all__ = ['sample_{:s}'.format(d) for d in dist_names] 
+__all__ += ['sample_multivar_normal','sample_one_minus_rayleigh']
+__all__ += ['eval_{:s}_pdf'.format(d) for d in dist_names]
+__all__ += ['hyperparams']
 
 def sample_uniform(lower, upper):
-        """Sample from a uniform distribution
+    """Sample from a uniform distribution
 
-        Parameters
-        ----------
-        lower : float
-            min value
-        upper : float
-            max value
+    Parameters
+    ----------
+    lower : float
+        min value
+    upper : float
+        max value
 
-        Returns
-        -------
-        float
-            uniform sample
+    Returns
+    -------
+    float
+        uniform sample
 
-        """
-        u = np.random.rand()
-        sample = lower + (upper - lower)*u
+    """
+    u = np.random.rand()
+    sample = lower + (upper - lower)*u
+    return sample
 
 def eval_uniform_pdf(eval_at, lower, upper):
     """Evaluate the uniform PDF
@@ -231,3 +231,9 @@ def eval_generalized_normal_pdf(eval_at, mu=0.0, alpha=1.0, p=10.0, lower=-np.in
     accept_norm = generalized_normal.cdf(upper) - generalized_normal.cdf(lower)
     normed_eval_pdf = unnormed_eval_pdf/accept_norm
     return normed_eval_pdf
+
+# Define the dictionary of distributions and their ordered list of hyperparams 
+hyperparams = {}
+for dist_name in dist_names:
+    sampling_f = globals()['sample_{:s}'.format(dist_name)]
+    hyperparams[dist_name] = inspect.getargspec(sampling_f).args
