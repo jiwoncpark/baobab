@@ -55,23 +55,23 @@ cfg.bnn_omega = dict(
                                           dist='normal', # one of ['normal', 'beta']
                                           mu=0.0,
                                           sigma=1.e-7,
-                                          log=False),
+                                          ),
                                  center_y = dict(
                                           dist='normal',
                                           mu=0.0,
                                           sigma=1.e-7,
-                                          log=False),
+                                          ),
                                  # Lognormal(mu, sigma^2)
                                  gamma = dict(
-                                              dist='normal',
+                                              dist='lognormal',
                                               mu=0.7,
                                               sigma=0.02,
-                                              log=True),
+                                              ),
                                  theta_E = dict(
-                                                dist='normal',
+                                                dist='lognormal',
                                                 mu=0.0,
                                                 sigma=0.1,
-                                                log=True),
+                                                ),
                                  # Beta(a, b)
                                  e1 = dict(
                                            dist='beta',
@@ -90,10 +90,10 @@ cfg.bnn_omega = dict(
                  external_shear = dict(
                                        profile='SHEAR_GAMMA_PSI',
                                        gamma_ext = dict(
-                                                         dist='normal',
+                                                         dist='lognormal',
                                                          mu=-2.73, # See overleaf doc
-                                                         sigma=1.05,
-                                                         log=True,),
+                                                         sigma=1.05
+                                                         ),
                                        psi_ext = dict(
                                                      dist='generalized_normal',
                                                      mu=0.0,
@@ -113,17 +113,17 @@ cfg.bnn_omega = dict(
                                              mu=15,
                                              sigma=1,
                                              lower=0.0,
-                                             log=False),
+                                             ),
                                   n_sersic = dict(
-                                                  dist='normal',
+                                                  dist='lognormal',
                                                   mu=1.25,
                                                   sigma=0.13,
-                                                  log=True),
+                                                  ),
                                   R_sersic = dict(
-                                                  dist='normal',
+                                                  dist='lognormal',
                                                   mu=-0.35,
                                                   sigma=0.3,
-                                                  log=True),
+                                                  ),
                                   # Beta(a, b)
                                   e1 = dict(
                                             dist='beta',
@@ -147,17 +147,17 @@ cfg.bnn_omega = dict(
                                              mu=22,
                                              sigma=1,
                                              lower=0.0,
-                                             log=False),
+                                             ),
                                 n_sersic = dict(
-                                                dist='normal',
+                                                dist='lognormal',
                                                 mu=0.7,
                                                 sigma=0.4,
-                                                log=True),
+                                                ),
                                 R_sersic = dict(
-                                                dist='normal',
+                                                dist='lognormal',
                                                 mu=-0.7,
                                                 sigma=0.4,
-                                                log=True),
+                                                ),
                                 # Normal(mu, sigma^2)
                                 center_x = dict(
                                          dist='generalized_normal',
@@ -196,7 +196,7 @@ cfg.bnn_omega = dict(
                                              mu=21,
                                              sigma=1,
                                              lower=0.0,
-                                             log=False),
+                                             ),
                                  ),
                  cov_info = dict(
                                 # List of 2-tuples specifying which params are correlated 

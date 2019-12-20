@@ -64,14 +64,12 @@ cfg.bnn_omega = dict(
                                             dist='normal',
                                             mu=0.5,
                                             sigma=0.2,
-                                            log=False,
                                             lower=0.0
                                             ),
                                 z_src=dict(
                                            dist='normal',
                                            mu=2.0,
                                            sigma=0.4,
-                                           log=False,
                                            lower=0.0
                                            ),
                                 min_diff=1.0,
@@ -82,7 +80,6 @@ cfg.bnn_omega = dict(
                                             dist='normal', # one of ['normal', 'beta']
                                             mu=0.0,
                                             sigma=0.025,
-                                            log=False
                                              ),
                             ),
                  # Hyperparameters and numerics for inferring the velocity dispersion for a given lens model
@@ -125,23 +122,23 @@ cfg.bnn_omega = dict(
                                           dist='normal', # one of ['normal', 'beta']
                                           mu=0.0,
                                           sigma=1.e-7,
-                                          log=False),
+                                          ),
                                  center_y = dict(
                                           dist='normal',
                                           mu=0.0,
                                           sigma=1.e-7,
-                                          log=False),
+                                          ),
                                  # Lognormal(mu, sigma^2)
                                  gamma = dict(
                                               dist='normal',
                                               mu=2.0,
                                               sigma=0.1,
-                                              log=False),
+                                              ),
                                  theta_E = dict(
                                                 dist='normal',
                                                 mu=1.1,
                                                 sigma=0.05,
-                                                log=False),
+                                                ),
                                  # Beta(a, b)
                                  q = dict(
                                            dist='generalized_normal',
@@ -195,12 +192,11 @@ cfg.bnn_omega = dict(
                                                   dist='normal',
                                                   mu=3.0,
                                                   sigma=0.55,
-                                                  log=False),
+                                                  ),
                                   R_sersic = dict(
                                                   dist='normal',
                                                   mu=0.8,
                                                   sigma=0.15,
-                                                  log=False,
                                                   lower=0.0,
                                                   ),
                                   # Beta(a, b)
@@ -208,7 +204,6 @@ cfg.bnn_omega = dict(
                                            dist='normal',
                                            mu= 0.85,
                                            sigma=0.1,
-                                           log=False,
                                            upper=1.0,
                                            ),
                                   phi = dict(
@@ -228,18 +223,18 @@ cfg.bnn_omega = dict(
                                              dist='normal',
                                              mu=21.0,
                                              sigma=0.7,
-                                             log=False),
+                                             ),
                                 n_sersic = dict(
                                                 dist='normal',
                                                 mu=3.0,
                                                 sigma=0.5,
                                                 lower=0.0,
-                                                log=False),
+                                                ),
                                 R_sersic = dict(
                                                 dist='normal',
                                                 mu=0.35,
                                                 sigma=0.03,
-                                                log=False,
+                                                
                                                 lower=0.0,
                                                 ),
                                 # Normal(mu, sigma^2)
@@ -259,7 +254,6 @@ cfg.bnn_omega = dict(
                                          dist='normal',
                                          mu= 0.6,
                                          sigma=0.15,
-                                         log=False,
                                          upper=1.0,
                                          lower=0.3,
                                          ),
@@ -283,7 +277,6 @@ cfg.bnn_omega = dict(
                                              mu=21.25,
                                              sigma=0.7,
                                              lower=0.0,
-                                             log=False
                                              ),
                                  ),
                  )

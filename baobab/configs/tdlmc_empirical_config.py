@@ -87,12 +87,12 @@ cfg.bnn_omega = dict(
                                           dist='normal', # one of ['normal', 'beta']
                                           mu=0.0,
                                           sigma=1.e-7,
-                                          log=False),
+                                          ),
                                  center_y = dict(
                                           dist='normal',
                                           mu=0.0,
                                           sigma=1.e-7,
-                                          log=False),
+                                          ),
                                  gamma = dict(
                                               model='FundamentalMassHyperplane',
                                               model_kwargs = dict(
@@ -120,10 +120,10 @@ cfg.bnn_omega = dict(
                  external_shear = dict(
                                        profile='SHEAR_GAMMA_PSI',
                                        gamma_ext = dict(
-                                                         dist='normal',
+                                                         dist='lognormal',
                                                          mu=-2.73, # See overleaf doc
                                                          sigma=1.05,
-                                                         log=True,),
+                                                         ),
                                        psi_ext = dict(
                                                      dist='generalized_normal',
                                                      mu=0.0,
@@ -149,10 +149,10 @@ cfg.bnn_omega = dict(
                                                                     fit_data='SDSS',),
                                                   ),
                                   n_sersic = dict(
-                                                  dist='normal',
+                                                  dist='lognormal',
                                                   mu=1.25,
                                                   sigma=0.13,
-                                                  log=True),
+                                                  ),
                                   # axis ratio
                                   q = dict(
                                            model='AxisRatioRayleigh',
@@ -177,10 +177,10 @@ cfg.bnn_omega = dict(
                                                  model='redshift_binned_luminosity_function',
                                                  ),
                                 n_sersic = dict(
-                                                dist='normal',
+                                                dist='lognormal',
                                                 mu=0.7,
                                                 sigma=0.4,
-                                                log=True),
+                                                ),
                                 # Normal(mu, sigma^2)
                                 center_x = dict(
                                          dist='generalized_normal',

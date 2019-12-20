@@ -69,13 +69,13 @@ cfg.bnn_omega = dict(
                  kinematics = dict(
                                    # Grid of velocity dispersion to sample from
                                    vel_disp = dict(
-                                                              model = 'vel_disp_function_CPV2007', # one of ['vel_disp_function_CPV2007',] -- see docstring for details 
-                                                              grid = dict(
-                                                                         start=100.0, # km/s
-                                                                         stop=400.0, # km/s
-                                                                         step=10.0, # km/s
-                                                                         ),
-                                                              )
+                                                  model = 'vel_disp_function_CPV2007', # one of ['vel_disp_function_CPV2007',] -- see docstring for details 
+                                                  grid = dict(
+                                                             start=100.0, # km/s
+                                                             stop=400.0, # km/s
+                                                             step=10.0, # km/s
+                                                             ),
+                                                  )
                                    ),
                  lens_mass = dict(
                                  profile='SPEMD', # only available type now
@@ -84,12 +84,12 @@ cfg.bnn_omega = dict(
                                           dist='normal', # one of ['normal', 'beta']
                                           mu=0.0,
                                           sigma=1.e-7,
-                                          log=False),
+                                          ),
                                  center_y = dict(
                                           dist='normal',
                                           mu=0.0,
                                           sigma=1.e-7,
-                                          log=False),
+                                          ),
                                  gamma = dict(
                                               model='FundamentalMassHyperplane',
                                               model_kwargs = dict(
@@ -117,10 +117,10 @@ cfg.bnn_omega = dict(
                  external_shear = dict(
                                        profile='SHEAR_GAMMA_PSI',
                                        gamma_ext = dict(
-                                                         dist='normal',
+                                                         dist='lognormal',
                                                          mu=-2.73, # See overleaf doc
                                                          sigma=1.05,
-                                                         log=True,),
+                                                         ),
                                        psi_ext = dict(
                                                      dist='generalized_normal',
                                                      mu=0.0,
@@ -149,7 +149,7 @@ cfg.bnn_omega = dict(
                                                   dist='normal',
                                                   mu=1.25,
                                                   sigma=0.13,
-                                                  log=True),
+                                                  ),
                                   # axis ratio
                                   q = dict(
                                            model='AxisRatioRayleigh',
@@ -177,7 +177,7 @@ cfg.bnn_omega = dict(
                                                 dist='normal',
                                                 mu=0.7,
                                                 sigma=0.4,
-                                                log=True),
+                                                ),
                                 # Normal(mu, sigma^2)
                                 center_x = dict(
                                          dist='generalized_normal',

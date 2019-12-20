@@ -57,35 +57,33 @@ cfg.bnn_omega = dict(
                                           dist='normal', # one of ['normal', 'beta']
                                           mu=0.0,
                                           sigma=1.e-6,
-                                          log=False),
+                                          ),
                                  center_y = dict(
                                           dist='normal',
                                           mu=0.0,
                                           sigma=1.e-6,
-                                          log=False),
+                                          ),
                                  # Lognormal(mu, sigma^2)
                                  gamma = dict(
                                               dist='normal',
                                               mu=1.935,
                                               sigma=0.001,
-                                              log=False),
+                                              ),
                                  theta_E = dict(
                                                 dist='normal',
                                                 mu=1.082,
                                                 sigma=0.001,
-                                                log=False),
+                                                ),
                                  # Beta(a, b)
                                  q = dict(
                                            dist='normal',
                                            mu=0.869,
                                            sigma=0.001,
-                                           log=False,
                                            ),
                                  phi = dict(
                                            dist='normal',
                                            mu= 0.708,
                                            sigma=0.001,
-                                           log=False,
                                            ),
                                  ),
 
@@ -95,14 +93,13 @@ cfg.bnn_omega = dict(
                                                          dist='normal',
                                                          mu=0.008, # See overleaf doc
                                                          sigma=0.001,
-                                                         log=False,),
+                                                         ),
                                        psi_ext = dict(
                                                      dist='normal',
                                                      mu=0.7853,
                                                      sigma=0.001,
                                                      lower=0,
                                                      upper=np.pi,
-                                                     log=False
                                                      )
                                        ),
 
@@ -114,31 +111,29 @@ cfg.bnn_omega = dict(
                                              dist='normal',
                                              mu=17.325,
                                              sigma=0.001,
-                                             log=False),
+                                             ),
                                   n_sersic = dict(
                                                   dist='normal',
                                                   mu=2.683,
                                                   sigma=0.001,
-                                                  log=False),
+                                                  ),
                                   R_sersic = dict(
                                                   dist='normal',
                                                   mu=0.949,
                                                   sigma=0.001,
-                                                  log=False
+                                                  
                                                   ),
                                   # Beta(a, b)
                                   q = dict(
                                            dist='normal',
                                            mu= 0.5,
                                            sigma=0.5,
-                                           log=False,
                                            lower=0.0,
                                            ),
                                   phi = dict(
                                             dist='normal',
                                            mu= 0.658,
                                            sigma=0.001,
-                                           log=False,
                                            ),
                                   ),
 
@@ -149,42 +144,39 @@ cfg.bnn_omega = dict(
                                              dist='normal',
                                              mu=20.407,
                                              sigma=0.001,
-                                             log=False),
+                                             ),
                                 n_sersic = dict(
-                                                dist='normal',
+                                                dist='lognormal',
                                                 mu=0.7,
                                                 sigma=0.4,
-                                                log=True),
+                                                ),
                                 R_sersic = dict(
                                                 dist='normal',
                                                 mu=0.4,
                                                 sigma=0.01,
-                                                log=False
                                                 ),
                                 # Normal(mu, sigma^2)
                                 center_x = dict(
                                          dist='normal',
                                                 mu=0.035,
                                                 sigma=0.001,
-                                                log=False
+                                                
                                                 ),
                                 center_y = dict(
                                          dist='normal',
                                                 mu=-0.025,
                                                 sigma=0.001,
-                                                log=False
+                                                
                                                 ),
                                 q = dict(
                                            dist='normal',
                                            mu=0.869,
                                            sigma=0.001,
-                                           log=False,
                                            ),
                                  phi = dict(
                                            dist='normal',
                                            mu= 0.708,
                                            sigma=0.001,
-                                           log=False,
                                            ),
                                 ),
 
@@ -198,7 +190,6 @@ cfg.bnn_omega = dict(
                                              mu=21,
                                              sigma=1,
                                              lower=0.0,
-                                             log=False
                                              ),
                                  ),
                  )
