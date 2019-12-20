@@ -67,9 +67,7 @@ class BaseBNNPrior(ABC):
         """Convenience function for raising errors related to config values
 
         """
-        raise ValueError("{:s} must be specified in the config inside {:s} for {:s}".format(missing_key,
-                                                                                             parent_config_key,
-                                                                                             bnn_prior_class))
+        raise ValueError("{:s} must be specified in the config inside {:s} for {:s}".format(missing_key, parent_config_key, bnn_prior_class))
 
     def sample_param(self, hyperparams):
         """Assigns a sampling distribution
