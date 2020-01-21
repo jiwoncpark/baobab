@@ -167,7 +167,7 @@ class NoiseModelTF:
             the noise map in cps
 
         """
-        return tf.random.normal(img.shape)*self.get_noise_sigma2(img)**0.5
+        return tf.random.normal(tf.shape(img))*self.get_noise_sigma2(img)**0.5
 
     def add_noise(self, img):
         """Get the total random noise map due to the combined effects of sky, readout, and Poisson flux noise
