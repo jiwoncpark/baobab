@@ -88,7 +88,7 @@ cfg.bnn_omega = dict(
                                    vel_disp_frac_err_sigma=0.05,
                                    anisotropy_model='analytic',
                                    kwargs_anisotropy=dict(
-                                                          r_ani=1.0
+                                                          aniso_param=1.0
                                                           ),
                                    kwargs_aperture=dict(
                                                         aperture_type='slit',

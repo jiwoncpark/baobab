@@ -3,6 +3,7 @@ import numpy as np
 import unittest
 from scipy.stats import kurtosis, skew
 from scipy.special import gamma
+import baobab.distributions as bb_dist
 
 class TestDistributions(unittest.TestCase):
     """A suite of tests verifying that the input PDFs and the sample distributions
@@ -27,14 +28,13 @@ class TestDistributions(unittest.TestCase):
         """Test the generalized normal sampling
 
         """
-        from baobab.distributions import sample_generalized_normal
         mu = 0.0
         alpha = 0.5
         p = 10.0
         n_samples = 10**4
         sample = np.zeros((n_samples,))
         for i in range(n_samples):
-            sample[i] = sample_generalized_normal(mu=mu, alpha=alpha, p=p)
+            sample[i] = bb_dist.sample_generalized_normal(mu=mu, alpha=alpha, p=p)
         sample_mean = np.mean(sample)
         sample_var = np.var(sample)
         sample_skew = skew(sample)
@@ -51,6 +51,8 @@ class TestDistributions(unittest.TestCase):
         np.testing.assert_almost_equal(sample_skew, exp_skew, precision)
         np.testing.assert_almost_equal(sample_kurtosis, exp_kurtosis, precision)
         #np.testing.assert_almost_equal(sample_entropy, exp_entropy, precision)
+
+    
 
 if __name__ == '__main__':
     unittest.main()

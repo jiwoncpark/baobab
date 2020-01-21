@@ -2,6 +2,7 @@ import numpy as np
 from lenstronomy.Analysis.td_cosmography import TDCosmography
 from .diagonal_bnn_prior import DiagonalBNNPrior
 from .base_cosmo_bnn_prior import BaseCosmoBNNPrior
+import baobab.sim_utils.kinematics_utils as kinematics_utils
 
 class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
     """BNN prior with independent parameters
@@ -35,75 +36,7 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
             self.get_cosmography_observables = True
         else:
             self.get_cosmography_observables = False
-        self.get_velocity_dispersion = getattr(self, 'velocity_dispersion_analytic') if self.kinematics.anisotropy_model == 'analytic' else getattr(self, 'velocity_dispersion_numerical')
-
-    def velocity_dispersion_analytic(self, td_cosmo_object, kwargs_lens, kwargs_lens_light, kwargs_anisotropy, kwargs_aperture, kwargs_psf, anisotropy_model, r_eff, kwargs_numerics, kappa_ext):
-        """Get the LOS velocity dispersion of the lens within a square slit of given width and length and seeing with the given FWHM. The computation is analytic as it assumes a Hernquist light profiel and a spherical power-law lens model at the first position.
-
-        Parameters
-        ----------
-        td_cosmo_object : `lenstronomy.Analysis.TDCosmography` object
-            tool with which to compute the velocity dispersion
-        kwargs_lens : list of dict
-            lens mass parameters
-        kwargs_lens_light : list of dict
-            lens light parameters
-        kwargs_anisotropy : dict
-            anisotropy parameters such as `r_ani`
-        kwargs_aperture : dict
-            aperture geometry
-        kwargs_psf : dict
-            seeing conditions
-        anisotropy_model : str
-            `analytic` if using this module, else the model to evaluate numerically, e.g. `OsipkovMerritt`
-        r_eff : float
-            rough estimate of the half-light radius of the lens light
-        kwargs_numerics : dict
-            numerical solver config
-
-        Returns
-        -------
-        float
-            the sigma of the velocity dispersion
-            
-        """
-        module = getattr(td_cosmo_object, 'velocity_dispersion_analytical')
-        vel_disp = module(
-                          theta_E=kwargs_lens[0]['theta_E'],
-                          gamma=kwargs_lens[0]['gamma'],
-                          r_ani=kwargs_anisotropy['r_ani'],
-                          r_eff=r_eff,
-                          kwargs_aperture=kwargs_aperture,
-                          kwargs_psf=kwargs_psf,
-                          num_evaluate=kwargs_numerics['sampling_number'],
-                          kappa_ext=kappa_ext,
-                          )
-        return vel_disp
-
-    def velocity_dispersion_numerical(self, td_cosmo_object, kwargs_lens, kwargs_lens_light, kwargs_anisotropy, kwargs_aperture, kwargs_psf, anisotropy_model, r_eff, kwargs_numerics, kappa_ext):
-        """Get the velocity dispersion using a numerical model
-
-        See `velocity_dispersion_analytic` for the parameter description.
-
-        """
-        module = getattr(td_cosmo_object, 'velocity_dispersion_numerical')
-        vel_disp = module(
-                          kwargs_lens=kwargs_lens,
-                          kwargs_lens_light=kwargs_lens_light,
-                          kwargs_anisotropy=kwargs_anisotropy,
-                          kwargs_aperture=kwargs_aperture,
-                          kwargs_psf=kwargs_psf,
-                          MGE_light=False,
-                          kwargs_mge_light=False,
-                          MGE_mass=False,
-                          kwargs_mge_mass=False,
-                          Hernquist_approx=False,
-                          anisotropy_model=anisotropy_model,
-                          r_eff=r_eff,
-                          kwargs_numerics=kwargs_numerics,
-                          kappa_ext=kappa_ext,
-                          )
-        return vel_disp
+        self.get_velocity_dispersion = getattr(kinematics_utils, 'velocity_dispersion_analytic') if self.kinematics.anisotropy_model == 'analytic' else getattr(kinematics_utils, 'velocity_dispersion_numerical')
 
     def get_cosmo_observables(self, kwargs, z_lens, z_src, kappa_ext):
         """Calculate the central estimates of the observables for cosmography, i.e. the velocity dispersion and time delays, with and without noise realization
@@ -134,6 +67,8 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
         kwargs_ext_shear = dict(
                                 gamma_ext=kwargs['external_shear']['gamma_ext'],
                                 psi_ext=kwargs['external_shear']['psi_ext'],
+                                ra_0=kwargs['external_shear']['ra_0'],
+                                dec_0=kwargs['external_shear']['dec_0'],
                                 )
         kwargs_lens = [kwargs_lens_mass, kwargs_ext_shear] # FIXME: hardcoded for SPEMD
         kwargs_lens_light = [kwargs['lens_light']]
@@ -142,32 +77,27 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
         # Time delays
         if self.time_delays.calculate_time_delays:
             true_td = td_cosmo.time_delays(kwargs_lens, kwargs_ps, kappa_ext=kappa_ext)
-            measured_td = true_td + np.random.randn()*self.time_delays.error_sigma
         else:
             true_td = -1
-            measured_td = -1
         # Velocity dispersion
         if self.kinematics.calculate_vel_disp:
             true_vd = self.get_velocity_dispersion(
-                                               td_cosmo, 
-                                               kwargs_lens, 
-                                               kwargs_lens_light, 
-                                               self.kinematics.kwargs_anisotropy, 
-                                               self.kinematics.kwargs_aperture, 
-                                               self.kinematics.kwargs_psf, 
-                                               self.kinematics.anisotropy_model, 
-                                               kwargs['lens_light']['R_sersic'],
-                                               self.kinematics.kwargs_numerics,
-                                               kappa_ext
-                                               )
-            measured_vd = true_vd + true_vd*np.random.randn()*self.kinematics.vel_disp_frac_err_sigma
+                                                   td_cosmo, 
+                                                   kwargs_lens, 
+                                                   kwargs_lens_light, 
+                                                   self.kinematics.kwargs_anisotropy, 
+                                                   self.kinematics.kwargs_aperture, 
+                                                   self.kinematics.kwargs_psf, 
+                                                   self.kinematics.anisotropy_model, 
+                                                   kwargs['lens_light']['R_sersic'],
+                                                   self.kinematics.kwargs_numerics,
+                                                   kappa_ext,
+                                                   )
         else:
             true_vd = -1
-            measured_vd = -1
         obs = dict(true_td=true_td,
-                   measured_td=measured_td,
                    true_vd=true_vd,
-                   measured_vd=measured_vd)
+                   )
         return obs
 
     def sample(self):
