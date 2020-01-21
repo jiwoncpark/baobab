@@ -63,7 +63,7 @@ class BaobabConfig:
         user_cfg = getattr(user_cfg_script, 'cfg')
         return cls(user_cfg)
 
-    def get_noise_kwargs():
+    def get_noise_kwargs(self):
         """
         Return the noise kwargs defined in the babobab config, e.g. for passing to the noise model for online data augmentation
 
