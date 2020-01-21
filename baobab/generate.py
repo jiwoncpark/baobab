@@ -118,16 +118,30 @@ def main():
         meta = {}
         for comp in cfg.components:
             for param_name, param_value in sample[comp].items():
-                meta['{:s}_{:s}'.format(comp, param_name)] = param_value
-        if 'agn_light' in cfg.components:
-            n_img = len(img_features['x_image'])
-            for i in range(n_img):
-                meta['x_image_{:d}'.format(i)] = img_features['x_image'][i]
-                meta['y_image_{:d}'.format(i)] = img_features['y_image'][i]
-                meta['n_img'] = n_img
+                meta['{:s}_{:s}'.format(comp, param_name)] = param_value  
+        #if cfg.bnn_prior_class in ['DiagonalCosmoBNNPrior']:
+        #    if cfg.bnn_omega.time_delays.calculate_time_delays:
+        #        # Order time delays in increasing dec
+        #        unordered_td = sample['misc']['true_td'] # np array
+        #        increasing_dec_i = np.argsort(img_features['y_image'])
+        #        td = unordered_td[increasing_dec_i]
+        #        td = td[1:] - td[0] # take BCD - A
+        #        sample['misc']['true_td'] = list(td)
+        #        img_features['x_image'] = img_features['x_image'][increasing_dec_i]
+        #        img_features['y_image'] = img_features['y_image'][increasing_dec_i]
         if cfg.bnn_prior_class in ['EmpiricalBNNPrior', 'DiagonalCosmoBNNPrior']:
             for misc_name, misc_value in sample['misc'].items():
                 meta['{:s}'.format(misc_name)] = misc_value
+        if 'agn_light' in cfg.components:
+            x_image = np.zeros(4)
+            y_image = np.zeros(4)
+            n_img = len(img_features['x_image'])
+            meta['n_img'] = n_img
+            x_image[:n_img] = img_features['x_image']
+            y_image[:n_img] = img_features['y_image']
+            for i in range(4):
+                meta['x_image_{:d}'.format(i)] = x_image[i]
+                meta['y_image_{:d}'.format(i)] = y_image[i]
         meta['total_magnification'] = img_features['total_magnification']
         meta['img_filename'] = img_filename
         metadata = metadata.append(meta, ignore_index=True)
