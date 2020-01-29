@@ -145,6 +145,8 @@ def eval_lognormal_pdf(eval_at, mu, sigma, lower=-np.inf, upper=np.inf):
     eval_unnormed_pdf = dist.pdf(eval_at)
     accept_norm = dist.cdf(upper) - dist.cdf(lower)
     eval_normed_pdf = eval_unnormed_pdf/accept_norm
+    eval_unnormed_pdf[eval_at<lower] = 0
+    eval_unnormed_pdf[eval_at>upper] = 0
     return eval_normed_pdf
 
 def eval_lognormal_logpdf(eval_at, mu, sigma, lower=-np.inf, upper=np.inf):
@@ -157,6 +159,8 @@ def eval_lognormal_logpdf(eval_at, mu, sigma, lower=-np.inf, upper=np.inf):
     eval_unnormed_logpdf = dist.logpdf(eval_at)
     accept_norm = dist.cdf(upper) - dist.cdf(lower)
     eval_normed_logpdf = eval_unnormed_logpdf - np.log(accept_norm)
+    eval_unnormed_logpdf[eval_at<lower] = -np.inf
+    eval_unnormed_logpdf[eval_at>upper] = -np.inf
     return eval_normed_logpdf
 
 def sample_multivar_normal(mu, cov_mat, is_log=None, lower=-np.inf, upper=np.inf):
