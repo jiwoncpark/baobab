@@ -295,6 +295,8 @@ def eval_generalized_normal_pdf(eval_at, mu=0.0, alpha=1.0, p=10.0, lower=-np.in
     """
     generalized_normal = stats.gennorm(beta=p, loc=mu, scale=alpha)
     unnormed_eval_pdf = generalized_normal.pdf(eval_at)
+    unnormed_eval_pdf[eval_at<lower] = 0
+    unnormed_eval_pdf[eval_at>upper] = 0
     accept_norm = generalized_normal.cdf(upper) - generalized_normal.cdf(lower)
     normed_eval_pdf = unnormed_eval_pdf/accept_norm
     return normed_eval_pdf
@@ -307,6 +309,8 @@ def eval_generalized_normal_logpdf(eval_at, mu=0.0, alpha=1.0, p=10.0, lower=-np
     """
     generalized_normal = stats.gennorm(beta=p, loc=mu, scale=alpha)
     unnormed_eval_logpdf = generalized_normal.logpdf(eval_at)
+    unnormed_eval_logpdf[eval_at<lower] = -np.inf
+    unnormed_eval_logpdf[eval_at>upper] = -np.inf
     accept_norm = generalized_normal.cdf(upper) - generalized_normal.cdf(lower)
     normed_eval_logpdf = unnormed_eval_logpdf - np.log(accept_norm)
     return normed_eval_logpdf
