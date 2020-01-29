@@ -7,6 +7,7 @@ __all__ = ['sample_{:s}'.format(d) for d in dist_names]
 __all__ += ['sample_multivar_normal','sample_one_minus_rayleigh']
 __all__ += ['eval_{:s}_pdf'.format(d) for d in dist_names]
 __all__ += ['eval_{:s}_logpdf'.format(d) for d in dist_names]
+__all__ += ['eval_{:s}_logpdf_approx'.format(d) for d in dist_names]
 __all__ += ['hyperparams']
 
 def sample_uniform(lower, upper):
@@ -35,7 +36,10 @@ def eval_uniform_pdf(eval_at, lower, upper):
     See `sample_uniform` for parameter definitions.
 
     """
-    return np.ones_like(eval_at)/(upper-lower)
+    normed_eval_pdf = np.ones_like(eval_at)/(upper-lower)
+    normed_eval_pdf[eval_at<lower] = 0
+    normed_eval_pdf[eval_at>upper] = 0
+    return normed_eval_pdf
 
 def eval_uniform_logpdf(eval_at, lower, upper):
     """Evaluate the uniform log PDF
@@ -43,7 +47,21 @@ def eval_uniform_logpdf(eval_at, lower, upper):
     See `sample_uniform` for parameter definitions.
 
     """
-    return -np.log(upper-lower)
+    normed_eval_logpdf = np.zeros_like(eval_at)-np.log(upper-lower)
+    normed_eval_logpdf[eval_at<lower] = -np.inf
+    normed_eval_logpdf[eval_at>upper] = -np.inf
+    return normed_eval_logpdf
+
+def eval_uniform_logpdf_approx(eval_at, lower, upper):
+    """Evaluate the uniform log PDF without -np.inf
+
+    See `sample_uniform` for parameter definitions.
+
+    """
+    normed_eval_logpdf = np.zeros_like(eval_at)-np.log(upper-lower)
+    normed_eval_logpdf[eval_at<lower] -= np.abs(eval_at[eval_at<lower]-lower) + 1000
+    normed_eval_logpdf[eval_at>upper] -= np.abs(eval_at[eval_at>upper]-upper) + 1000
+    return normed_eval_logpdf
 
 def sample_one_minus_rayleigh(scale, lower):
     """Samples from a Rayleigh distribution and gets one minus the value,
@@ -135,6 +153,19 @@ def eval_normal_logpdf(eval_at, mu, sigma, lower=-np.inf, upper=np.inf):
     eval_pdf = dist.logpdf(eval_at)
     return eval_pdf
 
+def eval_normal_logpdf_approx(eval_at, mu, sigma, lower=-np.inf, upper=np.inf):
+    """Evaluate the normal pdf, optionally truncated without -np.inf
+
+    See `sample_normal` for parameter definitions.
+
+    """
+    dist = stats.norm(loc=mu, scale=sigma)
+    eval_pdf = dist.logpdf(eval_at)
+    accept_norm = dist.cdf(upper) - dist.cdf(lower)
+    eval_pdf[eval_at<lower] -= 1000
+    eval_pdf[eval_at>upper] -= 1000
+    return eval_pdf - np.log(accept_norm)
+
 def eval_lognormal_pdf(eval_at, mu, sigma, lower=-np.inf, upper=np.inf):
     """Evaluate the normal pdf, optionally truncated
 
@@ -161,6 +192,20 @@ def eval_lognormal_logpdf(eval_at, mu, sigma, lower=-np.inf, upper=np.inf):
     eval_normed_logpdf = eval_unnormed_logpdf - np.log(accept_norm)
     eval_unnormed_logpdf[eval_at<lower] = -np.inf
     eval_unnormed_logpdf[eval_at>upper] = -np.inf
+    return eval_normed_logpdf
+
+def eval_lognormal_logpdf_approx(eval_at, mu, sigma, lower=-np.inf, upper=np.inf):
+    """Evaluate the normal pdf, optionally truncated without -np.inf
+
+    See `sample_normal` for parameter definitions.
+
+    """
+    dist = stats.lognorm(scale=np.exp(mu), s=sigma, loc=0.0)
+    eval_unnormed_logpdf = dist.logpdf(eval_at)
+    accept_norm = dist.cdf(upper) - dist.cdf(lower)
+    eval_normed_logpdf = eval_unnormed_logpdf - np.log(accept_norm)
+    eval_unnormed_logpdf[eval_at<lower] -= 1000
+    eval_unnormed_logpdf[eval_at>upper] -= 1000
     return eval_normed_logpdf
 
 def sample_multivar_normal(mu, cov_mat, is_log=None, lower=-np.inf, upper=np.inf):
@@ -252,6 +297,23 @@ def eval_beta_logpdf(eval_at, a, b, lower=0.0, upper=1.0):
     eval_pdf = dist.logpdf(eval_at)
     return eval_pdf
 
+def eval_beta_logpdf_approx(eval_at, a, b, lower=0.0, upper=1.0):
+    """Evaluate the beta pdf, scaled/shifted without -np.inf
+
+    See `sample_beta` for parameter definitions.
+
+    """
+    epsilon = 1e-9
+    dist = stats.beta(a=a, b=b, loc=lower, scale=upper-lower)
+    eval_pdf = dist.logpdf(eval_at)
+
+    # Eliminate -np.inf
+    stitch_upper = dist.logpdf(upper-epsilon)
+    stitch_lower = dist.logpdf(lower+epsilon)
+    eval_pdf[eval_at<(lower+epsilon)] = stitch_lower - np.abs(eval_at[eval_at<(lower+epsilon)] - lower - epsilon)
+    eval_pdf[eval_at>(upper-epsilon)] = stitch_upper - np.abs(eval_at[eval_at>(upper-epsilon)] - upper + epsilon)
+    return eval_pdf
+
 def sample_generalized_normal(mu=0.0, alpha=1.0, p=10.0, lower=-np.inf, upper=np.inf):
     """Samples from a generalized normal distribution, optionally truncated
 
@@ -315,6 +377,20 @@ def eval_generalized_normal_logpdf(eval_at, mu=0.0, alpha=1.0, p=10.0, lower=-np
     unnormed_eval_logpdf = generalized_normal.logpdf(eval_at)
     unnormed_eval_logpdf[eval_at<lower] = -np.inf
     unnormed_eval_logpdf[eval_at>upper] = -np.inf
+    accept_norm = generalized_normal.cdf(upper) - generalized_normal.cdf(lower)
+    normed_eval_logpdf = unnormed_eval_logpdf - np.log(accept_norm)
+    return normed_eval_logpdf
+
+def eval_generalized_normal_logpdf_approx(eval_at, mu=0.0, alpha=1.0, p=10.0, lower=-np.inf, upper=np.inf):
+    """Evaluate the generalized normal pdf, scaled/shifted
+
+    See `sample_generalized_normal` for parameter definitions.
+
+    """
+    generalized_normal = stats.gennorm(beta=p, loc=mu, scale=alpha)
+    unnormed_eval_logpdf = generalized_normal.logpdf(eval_at)
+    unnormed_eval_logpdf[eval_at<lower] -= 1000
+    unnormed_eval_logpdf[eval_at>upper] -= 1000
     accept_norm = generalized_normal.cdf(upper) - generalized_normal.cdf(lower)
     normed_eval_logpdf = unnormed_eval_logpdf - np.log(accept_norm)
     return normed_eval_logpdf
