@@ -2,9 +2,9 @@ import astropy.io.fits as pyfits
 from pkg_resources import resource_filename
 from lenstronomy.Util import kernel_util
 from lenstronomy.Data.psf import PSF
-__all__ = ['get_PSF_models']
+__all__ = ['instantiate_PSF_models', 'get_PSF_model']
 
-def get_PSF_models(psf_config, pixel_scale):
+def instantiate_PSF_models(psf_config, pixel_scale):
     """Instantiate PSF models by reading in template PSF maps
 
     Parameters
@@ -20,8 +20,8 @@ def get_PSF_models(psf_config, pixel_scale):
         list of lenstronomy PSF instances
         
     """ 
-    psf_models = []
     if psf_config['type'] == 'PIXEL':
+        psf_models = []
         if psf_config['which_psf_maps'] is None:
             # Instantiate PSF with all available PSF maps
             #FIXME: equate psf_id with psf_i since seed number is meaningless
@@ -35,6 +35,30 @@ def get_PSF_models(psf_config, pixel_scale):
             kernel_cut = kernel_util.cut_psf(psf_map, psf_config['kernel_size'])
             kwargs_psf = {'psf_type': 'PIXEL', 'pixel_size': pixel_scale, 'kernel_point_source': kernel_cut}
             psf_models.append(PSF(**kwargs_psf))
+            return psf_models
+    elif psf_config['type'] == 'GAUSSIAN':
+        kwargs_psf = {'psf_type': 'GAUSSIAN', 'fwhm': psf_config['PSF_FWHM'], 'pixel_size': pixel_scale}
+        psf_model = PSF(**kwargs_psf)
+        return [psf_model]
     else:
-        raise NotImplementedError
-    return psf_models
+        psf_model = PSF(psf_type='NONE')
+        return [psf_model]
+
+def get_PSF_model(psf_models, n_psf, current_idx):
+    """Get a single PSF model from the model(s) previously instantiated
+    
+    Parameters
+    ----------
+    psf_model : list
+        list of PSF model(s)
+    n_psf : int
+        number of PSF model(s)
+    current_idx : int
+
+    Returns
+    -------
+    lenstronomy.PSF instance
+        a single PSF model
+
+    """
+    return psf_models[current_idx%n_psf]
