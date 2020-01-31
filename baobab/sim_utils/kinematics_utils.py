@@ -1,6 +1,6 @@
 __all__ = ['velocity_dispersion_analytic', 'velocity_dispersion_numerical']
 
-def velocity_dispersion_analytic(td_cosmo_object, kwargs_lens, kwargs_lens_light, r_ani, kwargs_aperture, kwargs_psf, anisotropy_model, r_eff, kwargs_numerics, kappa_ext):
+def velocity_dispersion_analytic(td_cosmo_object, kwargs_lens, kwargs_lens_light, kwargs_anisotropy, kwargs_aperture, kwargs_psf, anisotropy_model, r_eff, kwargs_numerics, kappa_ext):
     """Get the LOS velocity dispersion of the lens within a square slit of given width and length and seeing with the given FWHM. The computation is analytic as it assumes a Hernquist light profiel and a spherical power-law lens model at the first position.
 
     Parameters
@@ -34,7 +34,7 @@ def velocity_dispersion_analytic(td_cosmo_object, kwargs_lens, kwargs_lens_light
     vel_disp = module(
                       theta_E=kwargs_lens[0]['theta_E'],
                       gamma=kwargs_lens[0]['gamma'],
-                      r_ani=r_ani,
+                      r_ani=kwargs_anisotropy['aniso_param']*r_eff,
                       r_eff=r_eff,
                       kwargs_aperture=kwargs_aperture,
                       kwargs_psf=kwargs_psf,

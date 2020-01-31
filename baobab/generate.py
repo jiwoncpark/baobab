@@ -31,7 +31,7 @@ import lenstronomy.Util.util as util
 # Baobab modules
 from baobab.configs import BaobabConfig
 import baobab.bnn_priors as bnn_priors
-from baobab.sim_utils import get_PSF_models, generate_image, Selection
+from baobab.sim_utils import instantiate_PSF_models, get_PSF_model, generate_image, Selection
 
 def parse_args():
     """Parse command-line arguments
@@ -67,7 +67,7 @@ def main():
     else:
         raise OSError("Destination folder already exists.")
     # Instantiate PSF models
-    psf_models = get_PSF_models(cfg.psf, cfg.instrument.pixel_scale)
+    psf_models = instantiate_PSF_models(cfg.psf, cfg.instrument.pixel_scale)
     n_psf = len(psf_models)
     # Instantiate density models
     kwargs_model = dict(
@@ -99,7 +99,7 @@ def main():
         # Selections on sampled parameters
         if selection.reject_initial(sample):
             continue
-        psf_model = psf_models[current_idx%n_psf]
+        psf_model = get_PSF_model(psf_models, n_psf, current_idx)
         # Detector and observation conditions
         kwargs_detector = util.merge_dicts(cfg.instrument, cfg.bandpass, cfg.observation)
         kwargs_detector.update(seeing=cfg.psf.fwhm,

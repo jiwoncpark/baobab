@@ -95,7 +95,7 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
                                                    )
         else:
             true_vd = -1
-        obs = dict(true_td=true_td,
+        obs = dict(true_td=true_td.tolist(),
                    true_vd=true_vd,
                    )
         return obs
