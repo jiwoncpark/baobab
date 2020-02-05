@@ -107,7 +107,7 @@ def main():
                                kernel_point_source=psf_model)
         data_api = DataAPI(cfg.image.num_pix, **kwargs_detector)
         # Generate the image
-        img, img_features = generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model, lens_eq_solver, cfg.instrument.pixel_scale, cfg.image.num_pix, cfg.components, cfg.numerics, min_magnification=cfg.selection.magnification.min, lens_light_model=lens_light_model, ps_model=ps_model)
+        img, img_features = generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model, lens_eq_solver, cfg.instrument.pixel_scale, cfg.image.num_pix, cfg.components, cfg.numerics, min_magnification=cfg.selection.magnification.min, lens_light_model=lens_light_model, ps_model=ps_model, add_noise=cfg.add_noise)
         if img is None: # couldn't make the magnification cut
             continue
         # Save image file
