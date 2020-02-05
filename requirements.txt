@@ -10,3 +10,4 @@ tqdm
 corner
 mpmath
 addict
+numba
