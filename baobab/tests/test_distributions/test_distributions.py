@@ -106,6 +106,37 @@ class TestDistributions(unittest.TestCase):
         # assert greater because of the accept_norm
         np.testing.assert_array_less(lpdf-1000,lpdf_approx)
 
+    def test_eval_lognormal_logpdf_approx(self):
+        # For a specific mu, sigma, upper, and lower, test that the log pdf
+        # approximation gives the correct values inside the bounds, and then
+        # suppressed values outside the bounds.
+        mu = 1
+        sigma = 5
+        lower = 1
+        upper = 10
+
+        # Test within the bounds
+        eval_at = np.linspace(1,10,100)
+        lpdf_approx = bb_dist.eval_lognormal_logpdf_approx(eval_at,mu,sigma,lower,upper)
+        lpdf = bb_dist.eval_lognormal_logpdf(eval_at,mu,sigma,lower,upper)
+        precision = 5
+        np.testing.assert_almost_equal(lpdf_approx, lpdf, precision)
+
+        # Test outside the bounds
+        eval_at = np.linspace(0.0000001,0.9999,100)
+        lpdf_approx = bb_dist.eval_lognormal_logpdf_approx(eval_at,mu,sigma,lower,upper)
+        lpdf = bb_dist.eval_lognormal_logpdf(eval_at,mu,sigma)
+        np.testing.assert_array_less(lpdf_approx, lpdf)
+        # assert greater because of the accept_norm
+        np.testing.assert_array_less(lpdf-1000,lpdf_approx)
+
+        eval_at = np.linspace(10.0001,20,100)
+        lpdf_approx = bb_dist.eval_lognormal_logpdf_approx(eval_at,mu,sigma,lower,upper)
+        lpdf = bb_dist.eval_lognormal_logpdf(eval_at,mu,sigma)
+        np.testing.assert_array_less(lpdf_approx, lpdf)
+        # assert greater because of the accept_norm
+        np.testing.assert_array_less(lpdf-1000,lpdf_approx)
+
     def test_eval_beta_logpdf_approx(self):
         # For a specific parameters est that the log pdf
         # approximation gives the correct values inside the bounds, and then
@@ -138,9 +169,37 @@ class TestDistributions(unittest.TestCase):
         # For a specific parameters test that the log pdf
         # approximation gives the correct values inside the bounds, and then
         # suppressed values outside the bounds.
-        mu = 1
+        mu = 0
         alpha = 1
-        p = 10
+        p = 10.0
+        lower = -1.5
+        upper = 1.5
+
+        # Test within the bounds
+        eval_at = np.linspace(-1.5,1.5,100)
+        lpdf_approx = bb_dist.eval_generalized_normal_logpdf_approx(eval_at,mu,alpha,p,lower,upper)
+        lpdf = bb_dist.eval_generalized_normal_logpdf(eval_at,mu,alpha,p,lower,upper)
+        precision = 5
+        np.testing.assert_almost_equal(lpdf_approx, lpdf, precision)
+
+        # Test outside the bounds
+        eval_at = np.linspace(-2,-1.5001,100)
+        lpdf_approx = bb_dist.eval_generalized_normal_logpdf_approx(eval_at,mu,alpha,p,lower,upper)
+        lpdf = bb_dist.eval_generalized_normal_logpdf(eval_at,mu,alpha,p)
+        np.testing.assert_array_less(lpdf_approx, lpdf)
+        # assert greater because of the accept_norm
+        np.testing.assert_almost_equal(lpdf-1000,lpdf_approx,precision)
+
+        eval_at = np.linspace(1.5001,2,100)
+        lpdf_approx = bb_dist.eval_generalized_normal_logpdf_approx(eval_at,mu,alpha,p,lower,upper)
+        lpdf = bb_dist.eval_generalized_normal_logpdf(eval_at,mu,alpha,p)
+        np.testing.assert_array_less(lpdf_approx, lpdf)
+        # assert greater because of the accept_norm
+        np.testing.assert_almost_equal(lpdf-1000,lpdf_approx,precision)
+
+        mu = 0
+        alpha = 1
+        p = 10.0
         lower = -10
         upper = 10
 
@@ -151,20 +210,19 @@ class TestDistributions(unittest.TestCase):
         precision = 5
         np.testing.assert_almost_equal(lpdf_approx, lpdf, precision)
 
-        # Test outside the bounds
-        eval_at = np.linspace(-20,-10.0001,100)
-        lpdf_approx = bb_dist.eval_generalized_normal_logpdf_approx(eval_at,mu,alpha,p,lower,upper)
-        lpdf = bb_dist.eval_generalized_normal_logpdf(eval_at,mu,alpha,p)
-        np.testing.assert_array_less(lpdf_approx, lpdf)
-        # assert greater because of the accept_norm
-        np.testing.assert_almost_equal(lpdf-1000,lpdf_approx,precision)
+        mu = 0.01
+        alpha = 1
+        p = 10.0
+        # Test it at the border of the cutoff
+        lower = -np.power(59.999999999,1/p)*alpha+mu
+        upper = np.power(59.999999999,1/p)*alpha+mu
 
-        eval_at = np.linspace(10.0001,20,100)
+        # Test within the bounds
+        eval_at = np.linspace(lower,upper,100)
         lpdf_approx = bb_dist.eval_generalized_normal_logpdf_approx(eval_at,mu,alpha,p,lower,upper)
-        lpdf = bb_dist.eval_generalized_normal_logpdf(eval_at,mu,alpha,p)
-        np.testing.assert_array_less(lpdf_approx, lpdf)
-        # assert greater because of the accept_norm
-        np.testing.assert_almost_equal(lpdf-1000,lpdf_approx,precision)
+        lpdf = bb_dist.eval_generalized_normal_logpdf(eval_at,mu,alpha,p,lower,upper)
+        precision = 5
+        np.testing.assert_almost_equal(lpdf_approx, lpdf, precision)
 
 
 if __name__ == '__main__':
