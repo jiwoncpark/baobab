@@ -5,7 +5,7 @@ from lenstronomy.ImSim.image_model import ImageModel
 from baobab.sim_utils import amp_to_mag_extended, amp_to_mag_point, get_lensed_total_flux, get_unlensed_total_flux
 __all__ = ['generate_image', 'generate_image_amp']
 
-def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model, lens_eq_solver, pixel_scale, num_pix, components, kwargs_numerics, min_magnification=0.0, lens_light_model=None, ps_model=None, add_noise=False):
+def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model, lens_eq_solver, pixel_scale, num_pix, components, kwargs_numerics, min_magnification=0.0, lens_light_model=None, ps_model=None):
     """Generate an image from provided model and model parameters
 
     Parameters
@@ -66,9 +66,9 @@ def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model
     # Generate image for export
     img = image_model.image(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps)
     # Add noise
-    if add_noise:
-        noise = data_api.noise_for_model(img, background_noise=True, poisson_noise=True, seed=None)
-        img += noise
+    #if add_noise:
+    #    noise = data_api.noise_for_model(img, background_noise=True, poisson_noise=True, seed=None)
+    #    img += noise
     img = np.maximum(0.0, img) # safeguard against negative pixel values
     # Save remaining image features
     img_features['total_magnification'] = total_magnification
