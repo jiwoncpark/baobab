@@ -39,7 +39,7 @@ class BaseCosmoBNNPrior(ABC):
             Copy of `cfg.bnn_omega.cosmology`
 
         """
-        self.cosmo = wCDM(**cosmology_cfg)
+        self.cosmo = FlatLambdaCDM(**cosmology_cfg)
 
     def sample_param(self, hyperparams):
         """Assigns a sampling distribution
