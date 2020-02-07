@@ -230,7 +230,7 @@ def _lognorm_cdf(bound,mu,sigma):
     return 0.5*erf((np.log(bound)-mu)/(np.sqrt(2)*sigma))
 
 @numba.njit
-def eval_lognormal_logpdf_approx(eval_at, mu, sigma, lower=-np.inf, upper=np.inf):
+def eval_lognormal_logpdf_approx(eval_at, mu, sigma, lower=0, upper=np.inf):
     """Evaluate the normal pdf, optionally truncated without -np.inf
 
     See `sample_normal` for parameter definitions.
@@ -240,6 +240,10 @@ def eval_lognormal_logpdf_approx(eval_at, mu, sigma, lower=-np.inf, upper=np.inf
     norm = -np.log(sigma) - np.log(eval_at) - np.log(2*np.pi)/2
     eval_unnormed_logpdf = -np.square(np.log(eval_at)-mu)/(2*sigma**2)
     eval_unnormed_logpdf += norm
+
+    # Stop cdf from crashing if lower bound is below 0
+    if lower<0:
+        lower=0
 
     accept_norm = _lognorm_cdf(upper,mu,sigma) - _lognorm_cdf(lower,mu,sigma)
     eval_normed_logpdf = eval_unnormed_logpdf - np.log(accept_norm)
