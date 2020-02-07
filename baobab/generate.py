@@ -100,7 +100,7 @@ def main():
         if selection.reject_initial(sample):
             continue
         psf_model = get_PSF_model(psf_models, n_psf, current_idx)
-        # Detector and observation conditions
+        # Instantiate the image maker data_api with detector and observation conditions 
         kwargs_detector = util.merge_dicts(cfg.instrument, cfg.bandpass, cfg.observation)
         kwargs_detector.update(seeing=cfg.psf.fwhm,
                                psf_type=cfg.psf.type,
