@@ -2,7 +2,8 @@ import random
 import unittest
 import numpy as np
 import torch
-from baobab.data_augmentation import get_noise_sigma2_lenstronomy, NoiseModelTorch
+from baobab.data_augmentation.noise_torch import NoiseModelTorch
+from baobab.data_augmentation import get_noise_sigma2_lenstronomy
 
 class TestNoiseTorch(unittest.TestCase):
 
