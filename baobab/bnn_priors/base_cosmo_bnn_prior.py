@@ -1,5 +1,5 @@
 import numpy as np
-from astropy.cosmology import wCDM
+from astropy.cosmology import FlatLambdaCDM
 from abc import ABC, abstractmethod
 
 class BaseCosmoBNNPrior(ABC):
