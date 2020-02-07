@@ -28,15 +28,11 @@ cfg.bandpass = dict(
 
 cfg.observation = dict(
                   exposure_time=100.0, # exposure time per image (in seconds)
-                  sky_brightness=20.1, # sky brightness (in magnitude per square arcseconds)
-                  num_exposures=10, # number of exposures that are combined
-                  background_noise=0.25, # overrides exposure_time, sky_brightness, read_noise, num_exposures
                   )
 
 cfg.psf = dict(
            type='PIXEL', # string, type of PSF ('GAUSSIAN' and 'PIXEL' supported)
            kernel_size=91, # dimension of provided PSF kernel, only valid when profile='PIXEL'
-           fwhm=0.1, # # full width at half maximum of the PSF (if not specific psf_model is specified)
            which_psf_maps=None, # None if rotate among all available PSF maps, else seed number of the map to generate all images with that map
            )
 
@@ -54,10 +50,7 @@ cfg.bnn_omega = dict(
                  cosmology = dict(
                                   H0=70.0, # Hubble constant at z = 0, in [km/sec/Mpc]
                                   Om0=0.3, # Omega matter: density of non-relativistic matter in units of the critical density at z=0.
-                                  Ode0=0.7, # Omega dark energy: density of dark energy in units of the critical density at z=0.
-                                  w0=-1.0
-                                  ), # Dark energy equation of state at all redshifts. This is pressure/density for dark energy in units where c=1. A cosmological constant has w0=-1.0.
-
+                                  ), 
                  redshift = dict(
                                 model='differential_comoving_volume',
                                 # Grid of redshift to sample from

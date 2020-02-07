@@ -29,15 +29,11 @@ cfg.bandpass = dict(
 
 cfg.observation = dict(
                   exposure_time=100.0, # exposure time per image (in seconds)
-                  sky_brightness=20.1, # sky brightness (in magnitude per square arcseconds)
-                  num_exposures=10, # number of exposures that are combined
-                  background_noise=0.2, # overrides exposure_time, sky_brightness, read_noise, num_exposures
                   )
 
 cfg.psf = dict(
            type='PIXEL', # string, type of PSF ('GAUSSIAN' and 'PIXEL' supported)
            kernel_size=91, # dimension of provided PSF kernel, only valid when profile='PIXEL'
-           fwhm=0.1, # # full width at half maximum of the PSF (if not specific psf_model is specified)
            which_psf_maps=None, # None if rotate among all available PSF maps, else seed number of the map to generate all images with that map
            )
 

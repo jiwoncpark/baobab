@@ -30,7 +30,6 @@ cfg.observation = dict(
                   exposure_time=9600.0, # exposure time per image (in seconds)
                   #sky_brightness=20.1, # sky brightness (in magnitude per square arcseconds)
                   #num_exposures=10, # number of exposures that are combined
-                  background_noise=0.0, # overrides exposure_time, sky_brightness, read_noise, num_exposures
                   )
 
 cfg.psf = dict(
@@ -53,9 +52,7 @@ cfg.bnn_omega = dict(
                  cosmology = dict(
                                   H0=74.151, # Hubble constant at z = 0, in [km/sec/Mpc]
                                   Om0=0.27, # Omega matter: density of non-relativistic matter in units of the critical density at z=0.
-                                  Ode0=0.73, # Omega dark energy: density of dark energy in units of the critical density at z=0.
-                                  w0=-1.0
-                                  ), # Dark energy equation of state at all redshifts. This is pressure/density for dark energy in units where c=1. A cosmological constant has w0=-1.0.
+                                  ),
                  # Hyperparameters of lens and source redshifts
                  redshift = dict(
                                 model='independent_dist',
