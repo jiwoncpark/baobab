@@ -108,7 +108,7 @@ class NoiseModelTF:
             variance of the background noise, in cps^2
 
         """
-        return self.background**2.0
+        return self.background_noise**2.0
 
     def get_background_noise_sigma2_composite(self):
         """Get the variance in background noise from the sky brightness and read noise
