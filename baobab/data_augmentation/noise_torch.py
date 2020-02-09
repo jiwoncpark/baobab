@@ -58,18 +58,18 @@ class NoiseModelTorch:
         self.background_noise = background_noise
 
         #FIXME: seeing, psf_type, kernel_point_source, and truncation do not seem to be used at all.
-        
-        self.readout_noise = read_noise
-        if self.data_count_unit == 'ADU':
-            self.readout_noise /= self.ccd_gain
+        if self.background_noise is None:
+            self.readout_noise = read_noise
+            if self.data_count_unit == 'ADU':
+                self.readout_noise /= self.ccd_gain
 
-        self.sky_brightness = data_util.magnitude2cps(self.sky_brightness, self.magnitude_zero_point)
-        if self.data_count_unit == 'e-':
-            self.sky_brightness *= self.ccd_gain
+            self.sky_brightness = data_util.magnitude2cps(self.sky_brightness, self.magnitude_zero_point)
+            if self.data_count_unit == 'e-':
+                self.sky_brightness *= self.ccd_gain
 
-        self.exposure_time_tot = self.num_exposures * self.exposure_time
-        self.readout_noise_tot = self.num_exposures * self.readout_noise**2.0
-        self.sky_per_pixel = self.sky_brightness * pixel_scale**2.0
+            self.exposure_time_tot = self.num_exposures * self.exposure_time
+            self.readout_noise_tot = self.num_exposures * self.readout_noise**2.0
+            self.sky_per_pixel = self.sky_brightness * pixel_scale**2.0
 
         self.get_background_noise_sigma2 = getattr(self, 'get_background_noise_sigma2_composite') if self.background_noise is None else getattr(self, 'get_background_noise_sigma2_simple')
         
@@ -108,7 +108,7 @@ class NoiseModelTorch:
             variance of the background noise, in cps^2
 
         """
-        return self.background**2.0
+        return self.background_noise**2.0
 
     def get_background_noise_sigma2_composite(self):
         """Get the variance in background noise from the sky brightness and read noise
