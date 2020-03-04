@@ -52,6 +52,9 @@ def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model
             kw.update(point_amp=kw['point_amp']*magnification)
         img_features['x_image'] = x_image
         img_features['y_image'] = y_image
+        if len(x_image) != len(np.trim_zeros(sample['misc']['true_td'], 'b')):
+            # Depending on the numerics of the time delay calculation and image finder, the number of images may not agree. Reject these examples.
+            return None, None
     else:
         kwargs_unlensed_amp_ps = None
     # Add lens light metadata
@@ -112,9 +115,12 @@ def generate_image_simple(sample, psf_model, data_api, lens_mass_model, src_ligh
         x_image, y_image = lens_eq_solver.findBrightImage(sample['src_light']['center_x'],
                                                           sample['src_light']['center_y'],
                                                           kwargs_lens_mass,
+                                                          min_distance=0.01, # default is 0.01 but td_cosmography default is 0.05
                                                           numImages=4,
-                                                          min_distance=pixel_scale, 
-                                                          search_window=num_pix*pixel_scale)
+                                                          search_window=num_pix*pixel_scale, #num_pix*pixel_scale, # default is 5 for both this and td_cosmography
+                                                          num_iter_max=100, # default is 10 but td_cosmography default is 100
+                                                          precision_limit=10**(-10) # default for both this and td_cosmography
+                                                          )
         magnification = np.abs(lens_mass_model.magnification(x_image, y_image, kwargs=kwargs_lens_mass))
         unlensed_mag = sample['agn_light']['magnitude'] # unlensed agn mag
         kwargs_unlensed_mag_ps = [{'ra_image': x_image, 'dec_image': y_image, 'magnitude': unlensed_mag}] # note unlensed magnitude
