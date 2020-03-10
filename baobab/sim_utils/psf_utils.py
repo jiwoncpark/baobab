@@ -35,7 +35,7 @@ def instantiate_PSF_models(psf_config, pixel_scale):
             kernel_cut = kernel_util.cut_psf(psf_map, psf_config['kernel_size'])
             kwargs_psf = {'psf_type': 'PIXEL', 'pixel_size': pixel_scale, 'kernel_point_source': kernel_cut}
             psf_models.append(PSF(**kwargs_psf))
-            return psf_models
+        return psf_models
     elif psf_config['type'] == 'GAUSSIAN':
         kwargs_psf = {'psf_type': 'GAUSSIAN', 'fwhm': psf_config['PSF_FWHM'], 'pixel_size': pixel_scale}
         psf_model = PSF(**kwargs_psf)

@@ -69,6 +69,7 @@ def main():
     # Instantiate PSF models
     psf_models = instantiate_PSF_models(cfg.psf, cfg.instrument.pixel_scale)
     n_psf = len(psf_models)
+    print(n_psf)
     # Instantiate density models
     kwargs_model = dict(
                     lens_model_list=[cfg.bnn_omega.lens_mass.profile, cfg.bnn_omega.external_shear.profile],
