@@ -5,7 +5,7 @@ from lenstronomy.ImSim.image_model import ImageModel
 from baobab.sim_utils import amp_to_mag_extended, amp_to_mag_point, get_lensed_total_flux, get_unlensed_total_flux
 __all__ = ['generate_image', 'generate_image_simple']
 
-def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model, lens_eq_solver, pixel_scale, num_pix, components, kwargs_numerics, min_magnification=0.0, lens_light_model=None, ps_model=None):
+def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model, lens_eq_solver, pixel_scale, num_pix, components, kwargs_numerics, min_magnification=0.0, lens_light_model=None, ps_model=None, reject_unmatching_td=True):
     """Generate an image from provided model and model parameters
 
     Parameters
@@ -52,9 +52,10 @@ def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model
             kw.update(point_amp=kw['point_amp']*magnification)
         img_features['x_image'] = x_image
         img_features['y_image'] = y_image
-        if len(x_image) != len(np.trim_zeros(sample['misc']['true_td'], 'b')):
-            # Depending on the numerics of the time delay calculation and image finder, the number of images may not agree. Reject these examples.
-            return None, None
+        if reject_unmatching_td:
+            if len(x_image) != len(np.trim_zeros(sample['misc']['true_td'], 'b')):
+                # Depending on the numerics of the time delay calculation and image finder, the number of images may not agree. Reject these examples.
+                return None, None
     else:
         kwargs_unlensed_amp_ps = None
     # Add lens light metadata
