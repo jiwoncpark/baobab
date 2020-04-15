@@ -266,11 +266,10 @@ class FundamentalMassHyperplane:
 
 		"""
 		log_R_eff = np.log10(R_eff)
-		gamma_minus_2 = log_R_eff*self.a + self.b
-		gamma = gamma_minus_2 + 2.0
-		gamma_sig = (self.intrinsic_scatter**2.0 + np.abs(log_R_eff)*self.delta_a**2.0 + self.delta_b**2.0)**0.5
-		scatter = np.random.randn()*gamma_sig
-		return gamma + scatter
+		a = self.a + np.random.randn()*self.delta_a
+		b = self.b + np.random.randn()*self.delta_b
+		gam_minus_2 = log_R_eff*a + b
+		return gam_minus_2 + 2.0
 
 class AxisRatioRayleigh:
 	"""Represents various scaling relations that the axis ratio can follow with 
