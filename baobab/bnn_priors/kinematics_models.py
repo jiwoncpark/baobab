@@ -24,12 +24,12 @@ def vel_disp_function_CPV2007(vel_disp_grid):
     Returns
     -------
     array-like, same shape as `vel_disp_grid`
-        the velocity dispersion function evaluated at `vel_disp_grid` and normalized to unity
+        the velocity dispersion function evaluated at `vel_disp_grid`
     
     """
     #h = true_H0/100.0
     #phi_star = 8.0*1.e-3
-    sig_star = 161.0
+    sig_star = 161.0 # km/s
     alpha = 2.32
     beta = 2.67
     #beta_over_gamma = 2.43827086163172 # beta/gamma(alpha/beta) for alpha=2.32, beta=2.67

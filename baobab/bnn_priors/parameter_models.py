@@ -111,7 +111,7 @@ class FundamentalPlane:
 	Luminosity is expressed as apparent magnitude in this form.
 
 	"""
-	def __init__(self, a=None, b=None, c=None, delta_a=0.0, delta_b=0.0, fit_data=None):
+	def __init__(self, a=None, b=None, c=None, intrinsic_scatter=0.0, fit_data=None):
 		"""
 		Parameters
 		----------
@@ -121,10 +121,6 @@ class FundamentalPlane:
 			linear slope on the V-band apparent magnitude, or m_V/mag
 		c : float
 			intercept, i.e. the log effective radius, or log(R_eff/kpc), when vel_disp = m_V = 0
-		delta_a : float
-			1-sigma random fitting errors on `a`. Default: 0.0
-		delta_b : float
-			1-sigma random fitting errors on 'b' Default: 0.0
 		fit_data : str
 			sample on which a, b, c were fit (one of ['SDSS']). Default: None
 
@@ -137,8 +133,7 @@ class FundamentalPlane:
 		self.a = a
 		self.b = b
 		self.c = c
-		self.delta_a = delta_a
-		self.delta_b = delta_b
+		self.intrinsic_scatter = 0.0
 
 		if fit_data == 'SDSS':
 			self._define_SDSS_fit_params()
@@ -163,8 +158,9 @@ class FundamentalPlane:
 		self.a = 1.4335
 		self.b = 0.3150 
 		self.c = -8.8979
-		self.delta_a = 0.02
-		self.delta_b = 0.01
+		self.intrinsic_scatter = 0.0578
+		#self.delta_a = 0.02
+		#self.delta_b = 0.01
 
 	def get_effective_radius(self, vel_disp, m_V):
 		"""Evaluate the size expected from the FP relation
@@ -184,10 +180,7 @@ class FundamentalPlane:
 
 		"""
 		log_vel_disp = np.log10(vel_disp)
-		a = self.a + np.random.randn()*self.delta_a
-		b = self.b + np.random.randn()*self.delta_b
-		c = self.c
-		log_R_eff = a*log_vel_disp + b*m_V + c
+		log_R_eff = self.a*log_vel_disp + self.b*m_V + self.c + np.random.randn()*self.intrinsic_scatter
 		R_eff = 10**log_R_eff
 		return R_eff
 
@@ -198,7 +191,7 @@ class FundamentalMassHyperplane:
 	Only the relation between the power-law mass slope (gamma) and effective radius is currently supported.
 
 	"""
-	def __init__(self, a=None, b=None, delta_a=0.0, delta_b=0.0, intrinsic_scatter=0.0, fit_data=None):
+	def __init__(self, a=None, b=None, intrinsic_scatter=0.0, fit_data=None):
 		"""
 		Parameters
 		----------
@@ -207,10 +200,6 @@ class FundamentalMassHyperplane:
 		b : float
 			the intercept of the log(gamma) vs. log(R_eff/kpc) relation, i.e.
 			the value of log(gamma) at R_eff = 1 kpc
-		delta_a : float
-			1-sigma fit error on the slope. Default: 0
-		delta_b : float
-			1-sigma fit error on the intercept. Default: 0
 		intrinsic_scatter : float
 			1-sigma intrinsic scatter, i.e. error on the log(R_eff/kpc) measurements. Default: 0
 		fit_data : str
@@ -224,8 +213,6 @@ class FundamentalMassHyperplane:
 
 		self.a = a
 		self.b = b
-		self.delta_a = delta_a
-		self.delta_b = delta_b
 		self.intrinsic_scatter = intrinsic_scatter
 
 		if fit_data == 'SLACS':
@@ -249,8 +236,8 @@ class FundamentalMassHyperplane:
 		# Fit params from R_eff
 		self.a = -0.41
 		self.b = 0.39
-		self.delta_a = 0.12
-		self.delta_b = 0.10
+		#self.delta_a = 0.12
+		#self.delta_b = 0.10
 		self.intrinsic_scatter = 0.14
 		# Fit params from vel_disp
 		self.a_v = 0.07
@@ -272,9 +259,7 @@ class FundamentalMassHyperplane:
 
 		"""
 		log_R_eff = np.log10(R_eff)
-		a = self.a #+ np.random.randn()*self.delta_a
-		b = self.b #+ np.random.randn()*self.delta_b
-		gam_minus_2 = log_R_eff*a + b + np.random.randn()*self.intrinsic_scatter
+		gam_minus_2 = log_R_eff*self.a + self.b + np.random.randn()*self.intrinsic_scatter
 		return gam_minus_2 + 2.0
 
 	def get_gamma_from_vel_disp(self, vel_disp):
