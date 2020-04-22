@@ -14,7 +14,8 @@ cfg.selection = dict(
                  magnification=dict(
                                     min=2.0
                                     ),
-                 initial=["lambda x: x['lens_mass']['theta_E'] > 0.5",]
+                 initial=["lambda x: x['lens_mass']['theta_E'] > 1.0",
+                 "lambda x: x['lens_mass']['theta_E'] < 1.6"]
                  )
 
 cfg.instrument = dict(
@@ -54,10 +55,11 @@ cfg.bnn_omega = dict(
                                 model='differential_comoving_volume',
                                 # Grid of redshift to sample from
                                 grid = dict(
-                                            start=0.01, # min redshift
-                                            stop=5.0, # max redshift
-                                            step=0.1, # resolution of the z_grid
+                                            start=0.1, # min redshift
+                                            stop=4.0, # max redshift
+                                            step=0.05, # resolution of the z_grid
                                             ),
+                                min_diff=0.0,
                                 ),
 
                  kinematics = dict(
@@ -65,9 +67,9 @@ cfg.bnn_omega = dict(
                                    vel_disp = dict(
                                                   model = 'vel_disp_function_CPV2007', # one of ['vel_disp_function_CPV2007',] -- see docstring for details 
                                                   grid = dict(
-                                                             start=100.0, # km/s
+                                                             start=200.0, # km/s
                                                              stop=400.0, # km/s
-                                                             step=10.0, # km/s
+                                                             step=5.0, # km/s
                                                              ),
                                                   )
                                    ),
@@ -77,12 +79,12 @@ cfg.bnn_omega = dict(
                                  center_x = dict(
                                           dist='normal', # one of ['normal', 'beta']
                                           mu=0.0,
-                                          sigma=1.e-7,
+                                          sigma=0.07,
                                           ),
                                  center_y = dict(
                                           dist='normal',
                                           mu=0.0,
-                                          sigma=1.e-7,
+                                          sigma=0.07,
                                           ),
                                  gamma = dict(
                                               model='FundamentalMassHyperplane',
@@ -94,18 +96,17 @@ cfg.bnn_omega = dict(
                                                 model='approximate_theta_E_for_SIS',
                                                 ),
                                  # Beta(a, b)
-                                 e1 = dict(
-                                           dist='beta',
-                                           a=4.0,
-                                           b=4.0,
-                                           lower=-0.9,
-                                           upper=0.9),
-                                 e2 = dict(
-                                           dist='beta',
-                                           a=4.0,
-                                           b=4.0,
-                                           lower=-0.9,
-                                           upper=0.9,),
+                                 q = dict(
+                                           model='AxisRatioRayleigh',
+                                           model_kwargs = dict(
+                                                             fit_data='SDSS'
+                                                             ),
+                                           ),
+                                 phi = dict(
+                                           dist='uniform',
+                                           lower=-np.pi*0.5,
+                                           upper=np.pi*0.5
+                                           ),
                                  ),
 
                  external_shear = dict(
@@ -113,15 +114,12 @@ cfg.bnn_omega = dict(
                                        gamma_ext = dict(
                                                          dist='lognormal',
                                                          mu=-2.73, # See overleaf doc
-                                                         sigma=1.05,
+                                                         sigma=0.2,
                                                          ),
                                        psi_ext = dict(
-                                                     dist='generalized_normal',
-                                                     mu=0.0,
-                                                     alpha=0.5*np.pi,
-                                                     p=10.0,
-                                                     lower=-0.5*np.pi,
-                                                     upper=0.5*np.pi
+                                                     dist='uniform',
+                                           lower=-np.pi*0.5,
+                                           upper=np.pi*0.5
                                                      ),
                                        ),
 
@@ -140,7 +138,7 @@ cfg.bnn_omega = dict(
                                                                     fit_data='SDSS',),
                                                   ),
                                   n_sersic = dict(
-                                                  dist='normal',
+                                                  dist='lognormal',
                                                   mu=1.25,
                                                   sigma=0.13,
                                                   ),
@@ -153,12 +151,9 @@ cfg.bnn_omega = dict(
                                            ),
                                   # ellipticity angle
                                   phi = dict(
-                                             dist='generalized_normal',
-                                             mu=np.pi,
-                                             alpha=np.pi,
-                                             p=10.0,
-                                             lower=0.0,
-                                             upper=2.0*np.pi,
+                                             dist='uniform',
+                                           lower=-np.pi*0.5,
+                                           upper=np.pi*0.5
                                              ),
                                   ),
 
@@ -168,22 +163,20 @@ cfg.bnn_omega = dict(
                                                  model='redshift_binned_luminosity_function',
                                                  ),
                                 n_sersic = dict(
-                                                dist='normal',
-                                                mu=0.7,
-                                                sigma=0.4,
+                                                dist='lognormal',
+                                                mu=0.8,
+                                                sigma=0.3,
                                                 ),
                                 # Normal(mu, sigma^2)
                                 center_x = dict(
-                                         dist='generalized_normal',
-                                         mu=0.0,
-                                         alpha=0.03,
-                                         p=10.0,
+                                         dist='uniform',
+                                         lower=-0.1,
+                                         upper=0.1,
                                          ),
                                 center_y = dict(
-                                               dist='generalized_normal',
-                                               mu=0.0,
-                                               alpha=0.03,
-                                               p=10.0,      
+                                               dist='uniform',
+                                         lower=-0.1,
+                                         upper=0.1,    
                                                 ),
                                 R_sersic = dict(
                                                 model='size_from_luminosity_and_redshift_relation',
@@ -194,12 +187,9 @@ cfg.bnn_omega = dict(
                                          lower=0.2
                                          ),
                                 phi = dict(
-                                           dist='generalized_normal',
-                                           mu=np.pi,
-                                           alpha=np.pi,
-                                           p=10.0,
-                                           lower=0.0,
-                                           upper=2.0*np.pi
+                                           dist='uniform',
+                                           lower=-np.pi*0.5,
+                                           upper=np.pi*0.5
                                            ),
                                 ),
 
