@@ -69,7 +69,7 @@ class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
 
         """
         # lens_mass
-        self.gamma_model = getattr(parameter_models, lens_mass_cfg.gamma.model)(**lens_mass_cfg.gamma.model_kwargs).get_gamma
+        self.gamma_model = getattr(parameter_models, lens_mass_cfg.gamma.model)(**lens_mass_cfg.gamma.model_kwargs).get_gamma_from_vel_disp
         self.theta_E_model = getattr(parameter_models, lens_mass_cfg.theta_E.model)
 
         # lens_light

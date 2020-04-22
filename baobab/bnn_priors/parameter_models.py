@@ -184,11 +184,12 @@ class FundamentalPlane:
 
 		"""
 		log_vel_disp = np.log10(vel_disp)
-		log_R_eff = self.a*log_vel_disp + self.b*m_V + self.c
+		a = self.a + np.random.randn()*self.delta_a
+		b = self.b + np.random.randn()*self.delta_b
+		c = self.c
+		log_R_eff = a*log_vel_disp + b*m_V + c
 		R_eff = 10**log_R_eff
-		sig_scatter = (np.abs(log_vel_disp)*self.delta_a**2.0 + np.abs(m_V)*self.delta_b**2.0)**0.5
-		scatter = np.random.randn()*sig_scatter
-		return R_eff + scatter 
+		return R_eff
 
 class FundamentalMassHyperplane:
 	"""Represents bivariate relations (projections) within the Fundamental Mass Hyperplane (FMHP) relation 
@@ -245,13 +246,18 @@ class FundamentalMassHyperplane:
 		.. [1] Auger, M. W., et al. "The Sloan Lens ACS Survey. X. Stellar, dynamical, and total mass correlations of massive early-type galaxies." The Astrophysical Journal 724.1 (2010): 511.
 
 		"""
+		# Fit params from R_eff
 		self.a = -0.41
 		self.b = 0.39
 		self.delta_a = 0.12
 		self.delta_b = 0.10
 		self.intrinsic_scatter = 0.14
+		# Fit params from vel_disp
+		self.a_v = 0.07
+		self.b_v = -0.12
+		self.int_v = 0.17
 
-	def get_gamma(self, R_eff):
+	def get_gamma_from_R_eff(self, R_eff):
 		"""Evaluate the power-law slope of the mass profile from its power-law relation with effective radius
 
 		Parameters
@@ -266,9 +272,26 @@ class FundamentalMassHyperplane:
 
 		"""
 		log_R_eff = np.log10(R_eff)
-		a = self.a + np.random.randn()*self.delta_a
-		b = self.b + np.random.randn()*self.delta_b
-		gam_minus_2 = log_R_eff*a + b
+		a = self.a #+ np.random.randn()*self.delta_a
+		b = self.b #+ np.random.randn()*self.delta_b
+		gam_minus_2 = log_R_eff*a + b + np.random.randn()*self.intrinsic_scatter
+		return gam_minus_2 + 2.0
+
+	def get_gamma_from_vel_disp(self, vel_disp):
+		"""Evaluate the power-law slope of the mass profile from its power-law relation with effective radius
+
+		Parameters
+		----------
+		vel_disp : float
+			the velocity dispersion in km/s
+
+		Returns
+		-------
+		float
+			the power-law slope, gamma
+
+		"""
+		gam_minus_2 = vel_disp*self.a_v + self.b_v + np.random.randn()*self.int_v
 		return gam_minus_2 + 2.0
 
 class AxisRatioRayleigh:
@@ -404,7 +427,7 @@ def size_from_luminosity_and_redshift_relation(z, M_V):
 	Note
 	----
 	The relation and scatter agree with [1]_ and [2]_, which both show that size decreases
-	with higher redshift. They have been used in LensPop ([3]_).
+	with higher redshift. They have been used in LensPop ([3]_) for source galaxies.
 
 	References
 	----------
