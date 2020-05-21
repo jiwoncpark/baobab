@@ -76,6 +76,10 @@ class BaseCosmoBNNPrior(ABC):
         sampled_z = np.random.choice(z_grid, 2, replace=False, p=dVol_dz_normed)
         z_lens = np.min(sampled_z)
         z_src = np.max(sampled_z)
+        while z_src < z_lens + redshifts_cfg.min_diff:
+            sampled_z = np.random.choice(z_grid, 2, replace=False, p=dVol_dz_normed)
+            z_lens = np.min(sampled_z)
+            z_src = np.max(sampled_z)
         return z_lens, z_src
 
     def sample_redshifts_from_independent_dist(self, redshifts_cfg):

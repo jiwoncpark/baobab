@@ -4,7 +4,7 @@ from addict import Dict
 cfg = Dict()
 
 cfg.name = 'tdlmc'
-cfg.seed = 1113 # random seed
+cfg.seed = 1111 # random seed
 cfg.bnn_prior_class = 'EmpiricalBNNPrior'
 cfg.n_data = 200 # number of images to generate
 cfg.train_vs_val = 'train'

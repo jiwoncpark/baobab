@@ -38,7 +38,7 @@ def velocity_dispersion_analytic(td_cosmo_object, kwargs_lens, kwargs_lens_light
                       r_eff=r_eff,
                       kwargs_aperture=kwargs_aperture,
                       kwargs_psf=kwargs_psf,
-                      num_evaluate=kwargs_numerics['sampling_number'],
+                      sampling_number=kwargs_numerics['sampling_number'],
                       kappa_ext=kappa_ext,
                       )
     return vel_disp

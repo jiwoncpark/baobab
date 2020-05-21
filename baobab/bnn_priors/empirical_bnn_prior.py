@@ -29,8 +29,7 @@ class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
         BaseBNNPrior.__init__(self, bnn_omega, components)
         BaseCosmoBNNPrior.__init__(self, bnn_omega)
 
-        self.params_to_exclude = [('lens_mass', 'theta_E'), ('lens_mass', 'gamma'),
-        ('lens_light', 'magnitude'), ('lens_light', 'R_sersic'), ('lens_light', 'q'),
+        self.params_to_exclude = [('lens_mass', 'theta_E'), ('lens_mass', 'gamma'), ('lens_mass', 'q'), ('lens_light', 'magnitude'), ('lens_light', 'R_sersic'), ('lens_light', 'q'),
         ('src_light', 'magnitude'), ('src_light', 'R_sersic'),
         ('agn_light', 'magnitude')
         ]
@@ -71,11 +70,12 @@ class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
         # lens_mass
         self.gamma_model = getattr(parameter_models, lens_mass_cfg.gamma.model)(**lens_mass_cfg.gamma.model_kwargs).get_gamma_from_vel_disp
         self.theta_E_model = getattr(parameter_models, lens_mass_cfg.theta_E.model)
+        self.lens_axis_ratio_model = getattr(parameter_models, lens_light_cfg.q.model)(**lens_light_cfg.q.model_kwargs).get_axis_ratio
 
         # lens_light
         self.lens_luminosity_model = getattr(parameter_models, lens_light_cfg.magnitude.model)(**lens_light_cfg.magnitude.model_kwargs).get_luminosity
         self.lens_light_size_model = getattr(parameter_models, lens_light_cfg.R_sersic.model)(**lens_light_cfg.R_sersic.model_kwargs).get_effective_radius
-        self.lens_axis_ratio_model = getattr(parameter_models, lens_light_cfg.q.model)(**lens_light_cfg.q.model_kwargs).get_axis_ratio
+        #self.lens_axis_ratio_model = getattr(parameter_models, lens_light_cfg.q.model)(**lens_light_cfg.q.model_kwargs).get_axis_ratio
 
         # src_light
         self.src_luminosity_model = getattr(parameter_models, src_light_cfg.magnitude.model)
@@ -287,15 +287,15 @@ class EmpiricalBNNPrior(BaseBNNPrior, BaseCosmoBNNPrior):
         theta_E = self.theta_E_model(vel_disp_iso, z_lens, z_src, self.cosmo)
         R_eff_lens, r_eff_lens = self.get_lens_size(vel_disp_iso, z_lens, apmag_lens)
         gamma = self.gamma_model(R_eff_lens)
-        lens_light_q = self.lens_axis_ratio_model(vel_disp_iso) 
         kwargs['lens_mass'] = dict(
                                    theta_E=theta_E,
                                    gamma=gamma,
+                                   q=self.lens_axis_ratio_model(vel_disp_iso),
                                    )
         kwargs['lens_light'] = dict(
                                     magnitude=apmag_lens,
                                     R_sersic=r_eff_lens,
-                                    q=lens_light_q,
+                                    q=self.lens_axis_ratio_model(vel_disp_iso),
                                     )
         kwargs['external_shear'] = {}
 
