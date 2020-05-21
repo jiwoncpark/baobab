@@ -39,8 +39,8 @@ def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model
                                                           kwargs_lens_mass,
                                                           min_distance=0.01, # default is 0.01 but td_cosmography default is 0.05
                                                           numImages=4,
-                                                          search_window=num_pix*pixel_scale, #num_pix*pixel_scale, # default is 5 for both this and td_cosmography
-                                                          num_iter_max=100, # default is 10 but td_cosmography default is 100
+                                                          search_window=5, #num_pix*pixel_scale, # default is 5 for both this and td_cosmography
+                                                          #num_iter_max=10, # default is 10 but td_cosmography default is 100
                                                           precision_limit=10**(-10) # default for both this and td_cosmography
                                                           ) 
         magnification = np.abs(lens_mass_model.magnification(x_image, y_image, kwargs=kwargs_lens_mass))
@@ -52,10 +52,11 @@ def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model
             kw.update(point_amp=kw['point_amp']*magnification)
         img_features['x_image'] = x_image
         img_features['y_image'] = y_image
-        if reject_unmatching_td:
-            if len(x_image) != len(np.trim_zeros(sample['misc']['true_td'], 'b')):
-                # Depending on the numerics of the time delay calculation and image finder, the number of images may not agree. Reject these examples.
-                return None, None
+        #if 'true_td' in sample['misc'] and reject_unmatching_td:
+        #    if len(x_image) != len(np.trim_zeros(sample['misc']['true_td'], 'b')):
+        #        print("match td length cut")
+        #        # Depending on the numerics of the time delay calculation and image finder, the number of images may not agree. Reject these examples.
+        #        return None, None
     else:
         kwargs_unlensed_amp_ps = None
     # Add lens light metadata
@@ -69,7 +70,7 @@ def generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model
     unlensed_total_flux = get_unlensed_total_flux(kwargs_src_light, src_light_model, kwargs_unlensed_amp_ps, ps_model)
     total_magnification = lensed_total_flux/unlensed_total_flux
     # Apply magnification cut
-    if total_magnification < min_magnification:
+    if (total_magnification < min_magnification) or np.isnan(total_magnification):
         return None, None
     # Generate image for export
     img = image_model.image(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps)

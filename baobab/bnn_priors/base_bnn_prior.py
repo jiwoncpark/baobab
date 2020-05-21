@@ -19,7 +19,7 @@ class BaseBNNPrior(ABC):
         params_to_realize = []
         for comp in self.components:
             comp_omega = getattr(self, comp).copy()
-            profile = comp_omega.pop('profile') # e.g. 'SPEMD'
+            profile = comp_omega.pop('profile') # e.g. 'PEMD'
             profile_params = comp_omega.keys()
             for param_name in profile_params:
                 if (comp, param_name) not in params_to_exclude:
@@ -56,7 +56,7 @@ class BaseBNNPrior(ABC):
         The dictionary will be updated as more profiles are supported.
 
         """
-        params = dict(SPEMD=['center_x', 'center_y', 'gamma', 'theta_E', 'e1', 'e2'],
+        params = dict(PEMD=['center_x', 'center_y', 'gamma', 'theta_E', 'e1', 'e2'],
                           SHEAR_GAMMA_PSI=['gamma_ext', 'psi_ext'],
                           SERSIC_ELLIPSE=['magnitude', 'center_x', 'center_y', 'n_sersic', 'R_sersic', 'e1', 'e2'],
                           LENSED_POSITION=['magnitude'],

@@ -69,7 +69,6 @@ def main():
     # Instantiate PSF models
     psf_models = instantiate_PSF_models(cfg.psf, cfg.instrument.pixel_scale)
     n_psf = len(psf_models)
-    print(n_psf)
     # Instantiate density models
     kwargs_model = dict(
                     lens_model_list=[cfg.bnn_omega.lens_mass.profile, cfg.bnn_omega.external_shear.profile],
@@ -146,6 +145,7 @@ def main():
                 meta['y_image_{:d}'.format(i)] = y_image[i]
         meta['total_magnification'] = img_features['total_magnification']
         meta['img_filename'] = img_filename
+        meta['psf_idx'] = current_idx%n_psf
         metadata = metadata.append(meta, ignore_index=True)
         # Export metadata.csv for the first time
         if current_idx == 0:
