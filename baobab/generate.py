@@ -23,15 +23,13 @@ import pandas as pd
 import lenstronomy
 print("Lenstronomy path being used: {:s}".format(lenstronomy.__path__[0]))
 from lenstronomy.LensModel.lens_model import LensModel
-from lenstronomy.LensModel.Solver.lens_equation_solver import LensEquationSolver
 from lenstronomy.LightModel.light_model import LightModel
 from lenstronomy.PointSource.point_source import PointSource
-from lenstronomy.SimulationAPI.data_api import DataAPI
 import lenstronomy.Util.util as util
 # Baobab modules
 from baobab.configs import BaobabConfig
 import baobab.bnn_priors as bnn_priors
-from baobab.sim_utils import instantiate_PSF_models, get_PSF_model, generate_image, Selection
+from baobab.sim_utils import instantiate_PSF_models, get_PSF_model, Imager, Selection
 
 def parse_args():
     """Parse command-line arguments
@@ -76,7 +74,6 @@ def main():
                     )       
     lens_mass_model = LensModel(lens_model_list=kwargs_model['lens_model_list'])
     src_light_model = LightModel(light_model_list=kwargs_model['source_light_model_list'])
-    lens_eq_solver = LensEquationSolver(lens_mass_model)
     lens_light_model = None
     ps_model = None                                     
     if 'lens_light' in cfg.components:
@@ -87,6 +84,9 @@ def main():
         ps_model = PointSource(point_source_type_list=kwargs_model['point_source_model_list'], fixed_magnification_list=[False])
     # Instantiate Selection object
     selection = Selection(cfg.selection, cfg.components)
+    # Instantiate Imager object
+    for_cosmography = True if cfg.bnn_prior_class in ['DiagonalCosmoBNNPrior'] else False
+    imager = Imager(cfg.components, lens_mass_model, src_light_model, lens_light_model=lens_light_model, ps_model=ps_model, kwargs_numerics=cfg.numerics, min_magnification=cfg.selection.magnification.min, for_cosmography=for_cosmography)
     # Initialize BNN prior
     bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components)
     # Initialize empty metadata dataframe
@@ -96,20 +96,15 @@ def main():
     pbar = tqdm(total=cfg.n_data)
     while current_idx < cfg.n_data:
         sample = bnn_prior.sample() # FIXME: sampling in batches
-        # Selections on sampled parameters
-        if selection.reject_initial(sample):
+        if selection.reject_initial(sample): # select on sampled model parameters
             continue
-        psf_model = get_PSF_model(psf_models, n_psf, current_idx)
-        # Instantiate the image maker data_api with detector and observation conditions 
+        # Set detector and observation conditions 
         kwargs_detector = util.merge_dicts(cfg.instrument, cfg.bandpass, cfg.observation)
-        kwargs_detector.update(seeing=cfg.psf.fwhm,
-                               psf_type=cfg.psf.type,
-                               kernel_point_source=psf_model,
-                               background_noise=0.0)
-        data_api = DataAPI(cfg.image.num_pix, **kwargs_detector)
+        psf_model = get_PSF_model(psf_models, n_psf, current_idx)
+        kwargs_detector.update(seeing=cfg.psf.fwhm, psf_type=cfg.psf.type, kernel_point_source=psf_model, background_noise=0.0)
         # Generate the image
-        img, img_features = generate_image(sample, psf_model, data_api, lens_mass_model, src_light_model, lens_eq_solver, cfg.instrument.pixel_scale, cfg.image.num_pix, cfg.components, cfg.numerics, min_magnification=cfg.selection.magnification.min, lens_light_model=lens_light_model, ps_model=ps_model)
-        if img is None: # couldn't make the magnification cut
+        img, img_features = imager.generate_image(sample, cfg.image.num_pix, kwargs_detector)
+        if img is None: # select on stats computed while rendering the image
             continue
         # Save image file
         img_filename = 'X_{0:07d}.npy'.format(current_idx)
@@ -117,52 +112,30 @@ def main():
         np.save(img_path, img)
         # Save labels
         meta = {}
-        for comp in cfg.components:
+        for comp in cfg.components: # Log model parameters
             for param_name, param_value in sample[comp].items():
                 meta['{:s}_{:s}'.format(comp, param_name)] = param_value  
-        #if cfg.bnn_prior_class in ['DiagonalCosmoBNNPrior']:
-        #    if cfg.bnn_omega.time_delays.calculate_time_delays:
-        #        # Order time delays in increasing dec
-        #        unordered_td = sample['misc']['true_td'] # np array
-        #        increasing_dec_i = np.argsort(img_features['y_image'])
-        #        td = unordered_td[increasing_dec_i]
-        #        td = td[1:] - td[0] # take BCD - A
-        #        sample['misc']['true_td'] = list(td)
-        #        img_features['x_image'] = img_features['x_image'][increasing_dec_i]
-        #        img_features['y_image'] = img_features['y_image'][increasing_dec_i]
-        if cfg.bnn_prior_class in ['EmpiricalBNNPrior', 'DiagonalCosmoBNNPrior']:
+        if cfg.bnn_prior_class in ['EmpiricalBNNPrior', 'DiagonalCosmoBNNPrior']: # Log other stats
             for misc_name, misc_value in sample['misc'].items():
                 meta['{:s}'.format(misc_name)] = misc_value
         if 'agn_light' in cfg.components:
-            x_image = np.zeros(4)
-            y_image = np.zeros(4)
-            n_img = len(img_features['x_image'])
-            meta['n_img'] = n_img
-            x_image[:n_img] = img_features['x_image']
-            y_image[:n_img] = img_features['y_image']
-            for i in range(4):
-                meta['x_image_{:d}'.format(i)] = x_image[i]
-                meta['y_image_{:d}'.format(i)] = y_image[i]
+            meta['x_image'] = img_features['x_image'].tolist()
+            meta['x_image'] = img_features['y_image'].tolist()
+            meta['n_img'] = len(img_features['y_image'])
         meta['total_magnification'] = img_features['total_magnification']
         meta['img_filename'] = img_filename
         meta['psf_idx'] = current_idx%n_psf
         metadata = metadata.append(meta, ignore_index=True)
         # Export metadata.csv for the first time
         if current_idx == 0:
-            # Sort columns lexicographically
-            metadata = metadata.reindex(sorted(metadata.columns), axis=1)
-            # Export to csv
-            metadata.to_csv(metadata_path, index=None)
-            # Initialize empty dataframe for next checkpoint chunk
-            metadata = pd.DataFrame()
+            metadata = metadata.reindex(sorted(metadata.columns), axis=1) # sort columns lexicographically
+            metadata.to_csv(metadata_path, index=None) # export to csv
+            metadata = pd.DataFrame() # init empty df for next checkpoint chunk
             gc.collect()
-
         # Export metadata every checkpoint interval
         if (current_idx + 1)%cfg.checkpoint_interval == 0:
-            # Export to csv
-            metadata.to_csv(metadata_path, index=None, mode='a', header=None)
-            # Initialize empty dataframe for next checkpoint chunk
-            metadata = pd.DataFrame()
+            metadata.to_csv(metadata_path, index=None, mode='a', header=None) # export to csv
+            metadata = pd.DataFrame() # init empty df for next checkpoint chunk
             gc.collect()
         # Update progress
         current_idx += 1

@@ -76,7 +76,7 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
                           dec_source=kwargs['src_light']['center_y'])]
         # Time delays
         if self.time_delays.calculate_time_delays:
-            true_td = td_cosmo.time_delays(kwargs_lens, kwargs_ps, kappa_ext=kappa_ext)
+            true_td, x_image, y_image = td_cosmo.time_delays(kwargs_lens, kwargs_ps, kappa_ext=kappa_ext)
         else:
             true_td = -1
         # Velocity dispersion
@@ -97,6 +97,8 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
             true_vd = -1
         obs = dict(true_td=true_td.tolist(),
                    true_vd=true_vd,
+                   x_image=x_image,
+                   y_image=y_image
                    )
         return obs
 
