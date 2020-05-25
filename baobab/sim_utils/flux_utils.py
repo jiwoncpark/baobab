@@ -1,8 +1,8 @@
 import copy
 import numpy as np
-__all__ = ['amp_to_mag_extended', 'amp_to_mag_point', 'get_unlensed_total_flux', 'get_lensed_total_flux']
+__all__ = ['mag_to_amp_extended', 'mag_to_amp_point', 'get_unlensed_total_flux', 'get_lensed_total_flux', 'get_unlensed_total_flux_numerical']
 
-def amp_to_mag_extended(mag_kwargs_list, light_model, data_api):
+def mag_to_amp_extended(mag_kwargs_list, light_model, data_api):
     """Convert the magnitude entries into amp (counts per second)
     used by lenstronomy to render the image, for extended objects
 
@@ -34,11 +34,11 @@ def amp_to_mag_extended(mag_kwargs_list, light_model, data_api):
         amp_kwargs['amp'] = amp 
     return amp_kwargs_list
 
-def amp_to_mag_point(mag_kwargs_list, point_source_model, data_api):
+def mag_to_amp_point(mag_kwargs_list, point_source_model, data_api):
     """Convert the magnitude entries into amp (counts per second)
     used by lenstronomy to render the image, for point sources
 
-    See the docstring for `amp_to_mag_extended` for parameter descriptions.
+    See the docstring for `mag_to_amp_extended` for parameter descriptions.
 
     """
     amp_kwargs_list = copy.deepcopy(mag_kwargs_list)
@@ -77,6 +77,19 @@ def get_unlensed_total_flux(kwargs_src_light_list, src_light_model, kwargs_ps_li
         for i, kwargs_ps in enumerate(kwargs_ps_list):
             total_flux += kwargs_ps['point_amp']
     return total_flux
+
+def get_unlensed_total_flux_numerical(kwargs_src_light, kwargs_ps, image_model):
+    """Compute the total flux of the unlensed image by rendering the source on a pixel grid
+
+    Returns
+    -------
+    float
+        the total unlensed flux
+
+    """
+    unlensed_src_image = image_model.image(kwargs_lens=None, kwargs_source=kwargs_src_light, kwargs_lens_light=None, kwargs_ps=kwargs_ps, lens_light_add=False)
+    unlensed_total_flux = np.sum(unlensed_src_image)
+    return unlensed_total_flux
         
 def get_lensed_total_flux(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps, image_model):
     """Compute the total flux of the lensed image

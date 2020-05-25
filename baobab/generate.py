@@ -74,14 +74,16 @@ def main():
                     )       
     lens_mass_model = LensModel(lens_model_list=kwargs_model['lens_model_list'])
     src_light_model = LightModel(light_model_list=kwargs_model['source_light_model_list'])
-    lens_light_model = None
-    ps_model = None                                     
     if 'lens_light' in cfg.components:
         kwargs_model['lens_light_model_list'] = [cfg.bnn_omega.lens_light.profile]
         lens_light_model = LightModel(light_model_list=kwargs_model['lens_light_model_list'])
+    else:
+        lens_light_model = None
     if 'agn_light' in cfg.components:
         kwargs_model['point_source_model_list'] = [cfg.bnn_omega.agn_light.profile]
         ps_model = PointSource(point_source_type_list=kwargs_model['point_source_model_list'], fixed_magnification_list=[False])
+    else:
+        ps_model = None
     # Instantiate Selection object
     selection = Selection(cfg.selection, cfg.components)
     # Instantiate Imager object
