@@ -122,7 +122,7 @@ def main():
                 meta['{:s}'.format(misc_name)] = misc_value
         if 'agn_light' in cfg.components:
             meta['x_image'] = img_features['x_image'].tolist()
-            meta['x_image'] = img_features['y_image'].tolist()
+            meta['y_image'] = img_features['y_image'].tolist()
             meta['n_img'] = len(img_features['y_image'])
         meta['total_magnification'] = img_features['total_magnification']
         meta['img_filename'] = img_filename
