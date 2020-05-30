@@ -91,7 +91,7 @@ def get_unlensed_total_flux_numerical(kwargs_src_light, kwargs_ps, image_model):
     unlensed_total_flux = np.sum(unlensed_src_image)
     return unlensed_total_flux
         
-def get_lensed_total_flux(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps, image_model):
+def get_lensed_total_flux(kwargs_lens_mass, kwargs_src_light, kwargs_ps, image_model):
     """Compute the total flux of the lensed image
 
     Returns
@@ -101,6 +101,6 @@ def get_lensed_total_flux(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light,
 
     """
 
-    lensed_src_image = image_model.image(kwargs_lens_mass, kwargs_src_light, kwargs_lens_light, kwargs_ps, lens_light_add=False)
+    lensed_src_image = image_model.image(kwargs_lens_mass, kwargs_src_light, None, kwargs_ps, lens_light_add=False)
     lensed_total_flux = np.sum(lensed_src_image)
     return lensed_total_flux
