@@ -26,8 +26,6 @@ class Imager:
         self.src_light_model = src_light_model
         self.lens_light_model = lens_light_model
         self.ps_model = ps_model
-        self.min_distance = 0.01
-        self.search_window = 5.0
         self.lens_eq_solver = LensEquationSolver(self.lens_mass_model)
         self.min_magnification = min_magnification
         self.for_cosmography = for_cosmography
@@ -39,8 +37,14 @@ class Imager:
         self.data_api = DataAPI(num_pix, **kwargs_detector)
         #self.pixel_scale = data_api.pixel_scale
         psf_model = kwargs_detector['kernel_point_source']
+        # Set the precision level of lens equation solver
+        pixel_scale = kwargs_detector['pixel_scale']
+        self.min_distance = pixel_scale
+        self.search_window = pixel_scale*num_pix
+        print("instantiate image model")
         self.image_model = ImageModel(self.data_api.data_class, psf_model, self.lens_mass_model, self.src_light_model, self.lens_light_model, self.ps_model, kwargs_numerics=self.kwargs_numerics)
-        self.unlensed_image_model = ImageModel(self.data_api.data_class, psf_model, None, self.src_light_model, None, None, kwargs_numerics=self.kwargs_numerics)
+        print("instantiate unlensed image model")
+        self.unlensed_image_model = ImageModel(self.data_api.data_class, psf_model, None, self.src_light_model, None, self.ps_model, kwargs_numerics=self.kwargs_numerics)
 
     def _load_kwargs(self, sample):
         """Generate an image from provided model and model parameters
@@ -92,7 +96,7 @@ class Imager:
                                                                    min_distance=self.min_distance,
                                                                    search_window=self.search_window,
                                                                    numImages=4,
-                                                                   num_iter_max=10, # default is 10 but td_cosmography default is 100
+                                                                   num_iter_max=100, # default is 10 but td_cosmography default is 100
                                                                    precision_limit=10**(-10) # default for both this and td_cosmography
                                                                     ) 
         agn_light_sample = sample['agn_light']
@@ -114,7 +118,7 @@ class Imager:
         if len(self.img_features['y_image']) not in [2, 4]:
             return None, None
         # Compute magnification
-        lensed_total_flux = get_lensed_total_flux(self.kwargs_lens_mass, self.kwargs_src_light, self.kwargs_lens_light, self.kwargs_ps, self.image_model)
+        lensed_total_flux = get_lensed_total_flux(self.kwargs_lens_mass, self.kwargs_src_light, self.kwargs_ps, self.image_model)
         #unlensed_total_flux = get_unlensed_total_flux(self.kwargs_src_light, self.src_light_model, self.kwargs_unlensed_amp_ps, self.ps_model)
         unlensed_total_flux = get_unlensed_total_flux_numerical(self.kwargs_src_light, self.kwargs_ps, self.unlensed_image_model)
         total_magnification = lensed_total_flux/unlensed_total_flux
@@ -122,6 +126,7 @@ class Imager:
         if (total_magnification < self.min_magnification) or np.isnan(total_magnification):
             return None, None
         # Generate image for export
+        print("actual image")
         img = self.image_model.image(self.kwargs_lens_mass, self.kwargs_src_light, self.kwargs_lens_light, self.kwargs_ps)
         img = np.maximum(0.0, img) # safeguard against negative pixel values
         # Save remaining image features
