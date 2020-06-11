@@ -90,7 +90,12 @@ def main():
     for_cosmography = True if cfg.bnn_prior_class in ['DiagonalCosmoBNNPrior'] else False
     imager = Imager(cfg.components, lens_mass_model, src_light_model, lens_light_model=lens_light_model, ps_model=ps_model, kwargs_numerics=cfg.numerics, min_magnification=cfg.selection.magnification.min, for_cosmography=for_cosmography)
     # Initialize BNN prior
-    bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components)
+    if for_cosmography:
+        kwargs_lens_eq_solver = {'min_distance': cfg.instrument.pixel_scale, 'search_window': cfg.instrument.pixel_scale*cfg.image.num_pix, 'num_iter_max': 100}
+        bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components, kwargs_lens_eq_solver)
+    else:
+        kwargs_lens_eq_solver = {}
+        bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components)
     # Initialize empty metadata dataframe
     metadata = pd.DataFrame()
     metadata_path = os.path.join(save_dir, 'metadata.csv')
