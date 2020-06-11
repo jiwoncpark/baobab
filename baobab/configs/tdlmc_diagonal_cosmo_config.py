@@ -3,7 +3,7 @@ from addict import Dict
 
 cfg = Dict()
 
-cfg.name = 'Rung1'
+cfg.name = 'tdlmc'
 cfg.seed = 1113 # random seed
 cfg.bnn_prior_class = 'DiagonalCosmoBNNPrior'
 cfg.n_data = 200 # number of images to generate
@@ -12,7 +12,7 @@ cfg.components = ['lens_mass', 'external_shear', 'src_light', 'lens_light', 'agn
 
 cfg.selection = dict(
                  magnification=dict(
-                                    min=2.0
+                                    min=1.0
                                     ),
                  initial=["lambda x: x['lens_mass']['theta_E'] > 0.5",]
                  )
@@ -81,7 +81,7 @@ cfg.bnn_omega = dict(
                             ),
                  # Hyperparameters and numerics for inferring the velocity dispersion for a given lens model
                  kinematics = dict(
-                                   calculate_vel_disp=False,
+                                   calculate_vel_disp=True,
                                    vel_disp_frac_err_sigma=0.05,
                                    anisotropy_model='analytic',
                                    kwargs_anisotropy=dict(
@@ -108,7 +108,7 @@ cfg.bnn_omega = dict(
                                                        ),
                                    ),
                  time_delays = dict(
-                                    calculate_time_delays=False,
+                                    calculate_time_delays=True,
                                     error_sigma=0.25,
                                     #frac_error_sigma=0.1,
                                     ),

@@ -30,15 +30,17 @@ def velocity_dispersion_analytic(td_cosmo_object, kwargs_lens, kwargs_lens_light
         the sigma of the velocity dispersion
         
     """
+    td_cosmo_object._kwargs_psf_kin = kwargs_psf
+    td_cosmo_object._kwargs_aperture_kin = kwargs_aperture
     module = getattr(td_cosmo_object, 'velocity_dispersion_analytical')
     vel_disp = module(
                       theta_E=kwargs_lens[0]['theta_E'],
                       gamma=kwargs_lens[0]['gamma'],
                       r_ani=kwargs_anisotropy['aniso_param']*r_eff,
                       r_eff=r_eff,
-                      kwargs_aperture=kwargs_aperture,
-                      kwargs_psf=kwargs_psf,
-                      sampling_number=kwargs_numerics['sampling_number'],
+                      #kwargs_aperture=kwargs_aperture,
+                      #kwargs_psf=kwargs_psf,
+                      #sampling_number=kwargs_numerics['sampling_number'],
                       kappa_ext=kappa_ext,
                       )
     return vel_disp
@@ -49,21 +51,21 @@ def velocity_dispersion_numerical(td_cosmo_object, kwargs_lens, kwargs_lens_ligh
     See `velocity_dispersion_analytic` for the parameter description.
 
     """
-    module = getattr(td_cosmo_object, 'velocity_dispersion_numerical')
+    module = getattr(td_cosmo_object, 'velocity_dispersion')
     vel_disp = module(
                       kwargs_lens=kwargs_lens,
                       kwargs_lens_light=kwargs_lens_light,
                       kwargs_anisotropy={'r_ani': kwargs_anisotropy['aniso_param']*r_eff},
-                      kwargs_aperture=kwargs_aperture,
-                      kwargs_psf=kwargs_psf,
-                      MGE_light=False,
-                      kwargs_mge_light=False,
-                      MGE_mass=False,
-                      kwargs_mge_mass=False,
-                      Hernquist_approx=False,
-                      anisotropy_model=anisotropy_model,
+                      #kwargs_aperture=kwargs_aperture,
+                      #kwargs_psf=kwargs_psf,
+                      #MGE_light=False,
+                      #kwargs_mge_light=False,
+                      #MGE_mass=False,
+                      #kwargs_mge_mass=False,
+                      #Hernquist_approx=False,
+                      #anisotropy_model=anisotropy_model,
                       r_eff=r_eff,
-                      kwargs_numerics=kwargs_numerics,
+                      #kwargs_numerics=kwargs_numerics,
                       kappa_ext=kappa_ext,
                       )
     return vel_disp
