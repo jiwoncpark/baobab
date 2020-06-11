@@ -113,7 +113,7 @@ class Imager:
         self.img_features = {} # any metadata computed while generating the images
         self._load_kwargs(sample)
         # Reject nonsensical number of images (due to insufficient numerical precision)
-        if len(self.img_features['y_image']) not in [2, 4]:
+        if ('y_image' in self.img_features) and (len(self.img_features['y_image']) not in [2, 4]):
             return None, None
         # Compute magnification
         lensed_total_flux = get_lensed_total_flux(self.kwargs_lens_mass, self.kwargs_src_light, self.kwargs_ps, self.image_model)

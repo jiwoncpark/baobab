@@ -102,6 +102,7 @@ def main():
     current_idx = 0 # running idx of dataset
     pbar = tqdm(total=cfg.n_data)
     while current_idx < cfg.n_data:
+        rs = np.random.RandomState(current_idx)
         sample = bnn_prior.sample() # FIXME: sampling in batches
         if selection.reject_initial(sample): # select on sampled model parameters
             continue
