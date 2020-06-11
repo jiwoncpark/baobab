@@ -12,7 +12,7 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
     This BNNPrior is cosmology-aware. For a version that's not tailored to H0 inference, see `DiagonalBNNPrior`.
 
     """
-    def __init__(self, bnn_omega, components):
+    def __init__(self, bnn_omega, components, kwargs_lens_eq_solver={}):
         """
         Note
         ----
@@ -37,6 +37,7 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
         else:
             self.get_cosmography_observables = False
         self.get_velocity_dispersion = getattr(kinematics_utils, 'velocity_dispersion_analytic') if self.kinematics.anisotropy_model == 'analytic' else getattr(kinematics_utils, 'velocity_dispersion_numerical')
+        self.kwargs_lens_eq_solver = kwargs_lens_eq_solver
 
     def get_cosmo_observables(self, kwargs, z_lens, z_src, kappa_ext):
         """Calculate the central estimates of the observables for cosmography, i.e. the velocity dispersion and time delays, with and without noise realization
@@ -55,7 +56,7 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
             the computed central estimates of velocity dispersion and time delays with and without noise realization
 
         """
-        td_cosmo = TDCosmography(z_lens, z_src, self.kwargs_model, cosmo_fiducial=self.cosmo)
+        td_cosmo = TDCosmography(z_lens, z_src, self.kwargs_model, cosmo_fiducial=self.cosmo, kwargs_lens_eq_solver=self.kwargs_lens_eq_solver)
         kwargs_lens_mass = dict(
                                 theta_E=kwargs['lens_mass']['theta_E'],
                                 gamma=kwargs['lens_mass']['gamma'],
