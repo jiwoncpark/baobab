@@ -41,9 +41,7 @@ class Imager:
         pixel_scale = kwargs_detector['pixel_scale']
         self.min_distance = pixel_scale
         self.search_window = pixel_scale*num_pix
-        print("instantiate image model")
         self.image_model = ImageModel(self.data_api.data_class, psf_model, self.lens_mass_model, self.src_light_model, self.lens_light_model, self.ps_model, kwargs_numerics=self.kwargs_numerics)
-        print("instantiate unlensed image model")
         self.unlensed_image_model = ImageModel(self.data_api.data_class, psf_model, None, self.src_light_model, None, self.ps_model, kwargs_numerics=self.kwargs_numerics)
 
     def _load_kwargs(self, sample):
@@ -126,11 +124,12 @@ class Imager:
         if (total_magnification < self.min_magnification) or np.isnan(total_magnification):
             return None, None
         # Generate image for export
-        print("actual image")
         img = self.image_model.image(self.kwargs_lens_mass, self.kwargs_src_light, self.kwargs_lens_light, self.kwargs_ps)
         img = np.maximum(0.0, img) # safeguard against negative pixel values
         # Save remaining image features
-        self.img_features.update(total_magnification=total_magnification)
+        self.img_features.update(total_magnification=total_magnification,
+                                 lensed_total_flux=lensed_total_flux,
+                                 unlensed_total_flux=unlensed_total_flux)
         return img, self.img_features
 
     def add_noise(self, image_array):

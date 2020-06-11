@@ -101,6 +101,6 @@ def get_lensed_total_flux(kwargs_lens_mass, kwargs_src_light, kwargs_ps, image_m
 
     """
 
-    lensed_src_image = image_model.image(kwargs_lens_mass, kwargs_src_light, None, kwargs_ps, lens_light_add=False)
+    lensed_src_image = image_model.image(kwargs_lens_mass, kwargs_source=kwargs_src_light, kwargs_lens_light=None, kwargs_ps=kwargs_ps, lens_light_add=False)
     lensed_total_flux = np.sum(lensed_src_image)
     return lensed_total_flux
