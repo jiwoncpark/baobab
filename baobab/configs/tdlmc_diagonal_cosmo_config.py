@@ -113,7 +113,7 @@ cfg.bnn_omega = dict(
                                     #frac_error_sigma=0.1,
                                     ),
                  lens_mass = dict(
-                                 profile='SPEMD', # only available type now
+                                 profile='PEMD', # only available type now
                                  # Normal(mu, sigma^2)
                                  center_x = dict(
                                           dist='normal', # one of ['normal', 'beta']

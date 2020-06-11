@@ -43,7 +43,7 @@ class BaseBNNPrior(ABC):
         comps_qphi_to_e1e2 = []
         for comp in self.components:
             comp_omega = getattr(self, comp).copy()
-            profile = comp_omega.pop('profile') # e.g. 'SPEMD'
+            profile = comp_omega.pop('profile') # e.g. 'PEMD'
             profile_params = comp_omega.keys()
             if ('e1' in self.params[profile]) and ((comp, 'e1') not in self.params_to_realize):
                 comps_qphi_to_e1e2.append(comp)
