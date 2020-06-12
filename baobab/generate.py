@@ -91,7 +91,7 @@ def main():
     imager = Imager(cfg.components, lens_mass_model, src_light_model, lens_light_model=lens_light_model, ps_model=ps_model, kwargs_numerics=cfg.numerics, min_magnification=cfg.selection.magnification.min, for_cosmography=for_cosmography)
     # Initialize BNN prior
     if for_cosmography:
-        kwargs_lens_eq_solver = {'min_distance': cfg.instrument.pixel_scale, 'search_window': cfg.instrument.pixel_scale*cfg.image.num_pix, 'num_iter_max': 100}
+        kwargs_lens_eq_solver = {'min_distance': 0.05, 'search_window': cfg.instrument.pixel_scale*cfg.image.num_pix, 'num_iter_max': 100}
         bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components, kwargs_lens_eq_solver)
     else:
         kwargs_lens_eq_solver = {}
@@ -102,7 +102,6 @@ def main():
     current_idx = 0 # running idx of dataset
     pbar = tqdm(total=cfg.n_data)
     while current_idx < cfg.n_data:
-        rs = np.random.RandomState(current_idx)
         sample = bnn_prior.sample() # FIXME: sampling in batches
         if selection.reject_initial(sample): # select on sampled model parameters
             continue
