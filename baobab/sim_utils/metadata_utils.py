@@ -1,6 +1,38 @@
 import fnmatch
 import lenstronomy.Util.param_util as param_util
-__all__ = ['add_qphi_columns', 'add_g1g2_columns', 'add_gamma_psi_ext_columns', 'add_relative_src_offset']
+__all__ = ['add_qphi_columns', 'add_g1g2_columns', 'add_gamma_psi_ext_columns', 'add_relative_src_offset', 'get_kwargs_src_light', 'get_kwargs_lens_light', 'get_kwargs_ps', 'get_kwargs_lens_mass']
+
+def get_nested_ps(metadata_row):
+    nested = {'agn_light': get_kwargs_ps(metadata_row)[0]}
+    return nested  
+
+def get_kwargs_src_light(metadata_row):
+    #TODO: use keys if Series, columns.values if DataFrame
+    src_light_keys = [col.split('src_light_')[1] for col in metadata_row.keys() if col.startswith('src_light_')]
+    src_light_cols = ['src_light_' + col for col in src_light_keys]
+    kwargs = dict(zip(src_light_keys, metadata_row[src_light_cols]))
+    return [kwargs]
+
+def get_kwargs_lens_light(metadata_row):
+    lens_light_keys = [col.split('lens_light_')[1] for col in metadata_row.keys() if col.startswith('lens_light_')]
+    lens_light_cols = ['lens_light_' + col for col in lens_light_keys]
+    kwargs = dict(zip(lens_light_keys, metadata_row[lens_light_cols]))
+    return [kwargs]
+
+def get_kwargs_ps(metadata_row):
+    kwargs = {'magnitude': metadata_row['agn_light_magnitude'], 'ra_source': metadata_row['src_light_center_x'], 'dec_source': metadata_row['src_light_center_y']}
+    return [kwargs]
+
+def get_kwargs_lens_mass(metadata_row):
+    # Profile
+    profile_keys = [col.split('lens_mass_')[1] for col in metadata_row.keys() if col.startswith('lens_mass')]
+    profile_cols = ['lens_mass_' + col for col in profile_keys]
+    kwargs_profile = dict(zip(profile_keys, metadata_row[profile_cols]))
+    # External shear
+    ext_shear_keys = [col.split('external_shear_')[1] for col in metadata_row.keys() if col.startswith('external_shear_')]
+    ext_shear_cols = ['external_shear_' + col for col in ext_shear_keys]
+    kwargs_ext_shear = dict(zip(ext_shear_keys, metadata_row[ext_shear_cols]))
+    return [kwargs_profile, kwargs_ext_shear]
 
 def add_qphi_columns(metadata):
     """Add alternate ellipticity definitions (axis ratio and angle) for each component for which ellipticity was defined in terms of e1, e2

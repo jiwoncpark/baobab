@@ -5,6 +5,8 @@ from lenstronomy.ImSim.image_model import ImageModel
 from baobab.sim_utils import mag_to_amp_extended, mag_to_amp_point, get_lensed_total_flux, get_unlensed_total_flux_numerical
 from lenstronomy.LensModel.Solver.lens_equation_solver import LensEquationSolver
 from lenstronomy.SimulationAPI.data_api import DataAPI
+from lenstronomy.PointSource.point_source import PointSource
+
 
 __all__ = ['Imager']
 
@@ -26,9 +28,11 @@ class Imager:
         self.src_light_model = src_light_model
         self.lens_light_model = lens_light_model
         self.ps_model = ps_model
+        self.unlensed_ps_model = PointSource(point_source_type_list=['SOURCE_POSITION'], fixed_magnification_list=[False])
         self.lens_eq_solver = LensEquationSolver(self.lens_mass_model)
         self.min_magnification = min_magnification
         self.for_cosmography = for_cosmography
+        self.img_features = {} # Initialized to store metadata of images, will get updated for each lens
 
     def _set_sim_api(self, num_pix, kwargs_detector):
         """Set the simulation API objects
@@ -42,7 +46,7 @@ class Imager:
         self.min_distance = pixel_scale
         self.search_window = pixel_scale*num_pix
         self.image_model = ImageModel(self.data_api.data_class, psf_model, self.lens_mass_model, self.src_light_model, self.lens_light_model, self.ps_model, kwargs_numerics=self.kwargs_numerics)
-        self.unlensed_image_model = ImageModel(self.data_api.data_class, psf_model, None, self.src_light_model, None, self.ps_model, kwargs_numerics=self.kwargs_numerics)
+        self.unlensed_image_model = ImageModel(self.data_api.data_class, psf_model, None, self.src_light_model, None, self.unlensed_ps_model, kwargs_numerics=self.kwargs_numerics)
 
     def _load_kwargs(self, sample):
         """Generate an image from provided model and model parameters
@@ -98,11 +102,15 @@ class Imager:
                                                                    precision_limit=10**(-10) # default for both this and td_cosmography
                                                                     ) 
         agn_light_sample = sample['agn_light']
-        magnification = np.abs(self.lens_mass_model.magnification(x_image, y_image, kwargs=self.kwargs_lens_mass))
         unlensed_mag = agn_light_sample['magnitude'] # unlensed agn mag
-        kwargs_unlensed_mag_ps = [{'ra_image': x_image, 'dec_image': y_image, 'magnitude': unlensed_mag}] # note unlensed magnitude
-        self.kwargs_unlensed_amp_ps = mag_to_amp_point(kwargs_unlensed_mag_ps, self.ps_model, self.data_api) # note unlensed amp
-        self.kwargs_ps = copy.deepcopy(self.kwargs_unlensed_amp_ps)
+        # Save the unlensed (source-plane) kwargs in amplitude units
+        kwargs_unlensed_unmagnified_mag_ps = [{'ra_source': self.kwargs_src_light[0]['center_x'], 'dec_source': self.kwargs_src_light[0]['center_y'], 'magnitude': unlensed_mag}]
+        self.kwargs_unlensed_unmagnified_amp_ps = mag_to_amp_point(kwargs_unlensed_unmagnified_mag_ps, self.unlensed_ps_model, self.data_api) # note 
+        # Compute the lensed (image-plane), magnified kwargs in amplitude units
+        magnification = np.abs(self.lens_mass_model.magnification(x_image, y_image, kwargs=self.kwargs_lens_mass))
+        kwargs_lensed_unmagnified_mag_ps = [{'ra_image': x_image, 'dec_image': y_image, 'magnitude': unlensed_mag}] # note unlensed magnitude
+        kwargs_lensed_unmagnified_amp_ps = mag_to_amp_point(kwargs_lensed_unmagnified_mag_ps, self.ps_model, self.data_api) # note unmagnified amp
+        self.kwargs_ps = copy.deepcopy(kwargs_lensed_unmagnified_amp_ps)
         for kw in self.kwargs_ps:
             kw.update(point_amp=kw['point_amp']*magnification)
         # Log the solved image positions
@@ -110,7 +118,6 @@ class Imager:
 
     def generate_image(self, sample, num_pix, kwargs_detector):
         self._set_sim_api(num_pix, kwargs_detector)
-        self.img_features = {} # any metadata computed while generating the images
         self._load_kwargs(sample)
         # Reject nonsensical number of images (due to insufficient numerical precision)
         if ('y_image' in self.img_features) and (len(self.img_features['y_image']) not in [2, 4]):
@@ -118,7 +125,7 @@ class Imager:
         # Compute magnification
         lensed_total_flux = get_lensed_total_flux(self.kwargs_lens_mass, self.kwargs_src_light, self.kwargs_ps, self.image_model)
         #unlensed_total_flux = get_unlensed_total_flux(self.kwargs_src_light, self.src_light_model, self.kwargs_unlensed_amp_ps, self.ps_model)
-        unlensed_total_flux = get_unlensed_total_flux_numerical(self.kwargs_src_light, self.kwargs_ps, self.unlensed_image_model)
+        unlensed_total_flux = get_unlensed_total_flux_numerical(self.kwargs_src_light, self.kwargs_unlensed_unmagnified_amp_ps, self.unlensed_image_model)
         total_magnification = lensed_total_flux/unlensed_total_flux
         # Apply magnification cut
         if (total_magnification < self.min_magnification) or np.isnan(total_magnification):
