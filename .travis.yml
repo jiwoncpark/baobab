@@ -16,8 +16,13 @@ before_install:
   - pip install -q python-coveralls
   - pip install -q tensorflow
   - pip install -q torch 
+  - apt-get install gfortran
 
 install:
+  - git clone https://github.com/sibirrer/fastell4py.git
+  - cd fastell4py
+  - python setup.py install --user
+  - cd ..
   - pip install -e . -r requirements.txt
   - df -h
 

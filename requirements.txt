@@ -1,5 +1,4 @@
 git+https://github.com/sibirrer/lenstronomy.git@master
-git+https://github.com/sibirrer/fastell4py.git@master
 astropy
 numpy
 matplotlib
