@@ -25,7 +25,7 @@ def instantiate_PSF_kwargs(psf_config, pixel_scale):
         if psf_config['which_psf_maps'] is None:
             # Instantiate PSF with all available PSF maps
             #FIXME: equate psf_id with psf_i since seed number is meaningless
-            psf_id_list = [101, 102, 103, 104, 105, 107, 108, 109, 110, 111, 113, 114, 115, 116, 117, 118]
+            psf_id_list = [101, 150]
         else:
             psf_id_list = [psf_config['which_psf_maps']]
 

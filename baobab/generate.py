@@ -87,7 +87,10 @@ def main():
     # Instantiate Selection object
     selection = Selection(cfg.selection, cfg.components)
     # Instantiate Imager object
-    for_cosmography = True if cfg.bnn_prior_class in ['DiagonalCosmoBNNPrior'] else False
+    if cfg.bnn_omega.kinematics.calculate_vel_disp or cfg.bnn_omega.time_delays.calculate_time_delays:
+        for_cosmography = True
+    else:
+        for_cosmography = False
     imager = Imager(cfg.components, lens_mass_model, src_light_model, lens_light_model=lens_light_model, ps_model=ps_model, kwargs_numerics=cfg.numerics, min_magnification=cfg.selection.magnification.min, for_cosmography=for_cosmography)
     # Initialize BNN prior
     if for_cosmography:

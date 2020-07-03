@@ -29,7 +29,7 @@ def mag_to_amp_extended(mag_kwargs_list, light_model, data_api):
     for i, mag_kwargs in enumerate(mag_kwargs_list):
         amp_kwargs = amp_kwargs_list[i]
         mag = amp_kwargs.pop('magnitude')
-        cps_norm = light_model.total_flux(amp_kwargs_list, norm=True, k=i)[0]
+        cps_norm = light_model.total_flux(amp_kwargs_list, norm=True, k=i)[0] # computes the total surface brightness with amp = 1
         cps = data_api.magnitude2cps(mag)
         amp = cps/ cps_norm
         amp_kwargs['amp'] = amp 
@@ -104,7 +104,7 @@ def get_lensed_total_flux(kwargs_lens_mass, kwargs_src_light, kwargs_ps, image_m
 
     """
 
-    lensed_src_image = image_model.image(kwargs_lens_mass, kwargs_source=kwargs_src_light, kwargs_lens_light=None, kwargs_ps=kwargs_ps, lens_light_add=False)
+    lensed_src_image = image_model.image(kwargs_lens_mass, kwargs_source=kwargs_src_light, kwargs_lens_light=None, kwargs_ps=kwargs_ps, lens_light_add=False, point_source_add=True if kwargs_ps is not None else False)
     lensed_total_flux = np.sum(lensed_src_image)
     if return_image:
         return lensed_total_flux, lensed_src_image

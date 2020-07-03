@@ -43,10 +43,13 @@ class Imager:
         psf_model = kwargs_detector['kernel_point_source']
         # Set the precision level of lens equation solver
         pixel_scale = kwargs_detector['pixel_scale']
-        self.min_distance = pixel_scale
+        self.min_distance = 0.05
         self.search_window = pixel_scale*num_pix
         self.image_model = ImageModel(self.data_api.data_class, psf_model, self.lens_mass_model, self.src_light_model, self.lens_light_model, self.ps_model, kwargs_numerics=self.kwargs_numerics)
-        self.unlensed_image_model = ImageModel(self.data_api.data_class, psf_model, None, self.src_light_model, None, self.unlensed_ps_model, kwargs_numerics=self.kwargs_numerics)
+        if 'agn_light' in self.components:
+            self.unlensed_image_model = ImageModel(self.data_api.data_class, psf_model, None, self.src_light_model, None, self.unlensed_ps_model, kwargs_numerics=self.kwargs_numerics)
+        else:
+            self.unlensed_image_model = ImageModel(self.data_api.data_class, psf_model, None, self.src_light_model, None, None, kwargs_numerics=self.kwargs_numerics)
 
     def _load_kwargs(self, sample):
         """Generate an image from provided model and model parameters
@@ -67,7 +70,7 @@ class Imager:
             self._load_agn_light_kwargs(sample)
         else:
             self.kwargs_ps = None
-            self.kwargs_unlensed_amp_ps = None
+            self.kwargs_unlensed_unmagnified_amp_ps = None
 
     def _load_lens_mass_kwargs(self, lens_mass_sample, external_shear_sample):
         self.kwargs_lens_mass = [lens_mass_sample, external_shear_sample]
