@@ -68,9 +68,9 @@ def eval_uniform_logpdf_approx(eval_at, lower, upper):
     eval_logpdf=eval_logpdf.reshape(-1)
     for e_i in range(len(eval_at)):
         if eval_at[e_i] < lower:
-            eval_logpdf[e_i] -= 1000
+            eval_logpdf[e_i] -= (lower-eval_at[e_i]) + 1000
         if eval_at[e_i] > upper:
-            eval_logpdf[e_i] -= 1000
+            eval_logpdf[e_i] -= (eval_at[e_i]-upper) + 1000
     eval_logpdf=eval_logpdf.reshape(eval_shape)
     return eval_logpdf
 
