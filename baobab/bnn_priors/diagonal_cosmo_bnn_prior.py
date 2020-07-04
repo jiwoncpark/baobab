@@ -78,6 +78,7 @@ class DiagonalCosmoBNNPrior(DiagonalBNNPrior, BaseCosmoBNNPrior):
         # Time delays
         if self.time_delays.calculate_time_delays:
             true_td, x_image, y_image = td_cosmo.time_delays(kwargs_lens, kwargs_ps, kappa_ext=kappa_ext)
+
         else:
             true_td = -1
         # Velocity dispersion

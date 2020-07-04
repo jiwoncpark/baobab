@@ -10,7 +10,21 @@ __all__ += ['sample_multivar_normal','sample_one_minus_rayleigh']
 __all__ += ['eval_{:s}_pdf'.format(d) for d in dist_names]
 __all__ += ['eval_{:s}_logpdf'.format(d) for d in dist_names]
 __all__ += ['eval_{:s}_logpdf_approx'.format(d) for d in dist_names]
-__all__ += ['hyperparams']
+__all__ += ['hyperparams', 'sample_transformed_kappa_normal']
+
+def sample_transformed_kappa_normal(mu, sigma):
+    """Effectively sample kappa by sampling x, defined by 1/(1-kappa), from a normal dist
+
+    Parameters
+    ----------
+    mu : float
+    sigma : float
+
+    """
+    x = np.random.normal(mu, sigma)
+    while ~np.isfinite(1.0 - 1.0/x): # kappa = 1 - 1/x
+        x = np.random.normal(mu, sigma)
+    return 1.0 - 1.0/x
 
 def sample_uniform(lower, upper):
     """Sample from a uniform distribution

@@ -74,8 +74,8 @@ cfg.bnn_omega = dict(
                  # Hyperparameters of line-of-sight structure
                  LOS = dict(
                             kappa_ext = dict(
-                                            dist='normal', # one of ['normal', 'beta']
-                                            mu=0.0,
+                                            dist='transformed_kappa_normal',
+                                            mu=1.0,
                                             sigma=0.025,
                                              ),
                             ),
