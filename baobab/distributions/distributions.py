@@ -6,6 +6,8 @@ from math import gamma, erf
 
 dist_names = ['uniform', 'normal', 'lognormal', 'beta', 'generalized_normal',]
 __all__ = ['sample_{:s}'.format(d) for d in dist_names]
+__all__ += ['sample_uniform_vectorize','sample_lognormal_vectorize',
+            'sample_normal_vectorize']
 __all__ += ['sample_multivar_normal','sample_one_minus_rayleigh']
 __all__ += ['eval_{:s}_pdf'.format(d) for d in dist_names]
 __all__ += ['eval_{:s}_logpdf'.format(d) for d in dist_names]
@@ -29,6 +31,26 @@ def sample_uniform(lower, upper):
 
     """
     u = np.random.rand()
+    sample = lower + (upper - lower)*u
+    return sample
+
+def sample_uniform_vectorize(size, lower, upper):
+    """Sample from a uniform distribution
+
+    Parameters
+    ----------
+    lower : float
+        min value
+    upper : float
+        max value
+
+    Returns
+    -------
+    float
+        uniform sample
+
+    """
+    u = np.random.rand(size)
     sample = lower + (upper - lower)*u
     return sample
 
@@ -120,6 +142,30 @@ def sample_normal(mu, sigma, lower=-np.inf, upper=np.inf):
                              loc=mu, scale=sigma).rvs()
     return sample
 
+def sample_normal_vectorize(size,mu, sigma, lower=-np.inf, upper=np.inf):
+    """Samples from a normal distribution, optionally truncated
+
+    Parameters
+    ----------
+    mu : float
+        mean
+    sigma : float
+        standard deviation
+    lower : float
+        min value (default: -np.inf)
+    upper : float
+        max value (default: np.inf)
+
+    Returns
+    -------
+    float
+        a sample from the specified normal
+
+    """
+    sample = stats.truncnorm((lower - mu)/sigma, (upper - mu)/sigma,
+                             loc=mu, scale=sigma).rvs(size=size)
+    return sample
+
 def sample_lognormal(mu, sigma, lower=-np.inf, upper=np.inf):
     """Samples from a lognormal distribution, optionally truncated
 
@@ -142,6 +188,30 @@ def sample_lognormal(mu, sigma, lower=-np.inf, upper=np.inf):
     """
     sample = np.exp(stats.truncnorm((lower - mu)/sigma, (upper - mu)/sigma,
                              loc=mu, scale=sigma).rvs())
+    return sample
+
+def sample_lognormal_vectorize(size, mu, sigma, lower=-np.inf, upper=np.inf):
+    """Samples from a lognormal distribution, optionally truncated
+
+    Parameters
+    ----------
+    mu : float
+        mean in dexes
+    sigma : float
+        standard deviation in dexes
+    lower : float
+        min value (default: -np.inf)
+    upper : float
+        max value (default: np.inf)
+
+    Returns
+    -------
+    float
+        a sample from the specified normal
+
+    """
+    sample = np.exp(stats.truncnorm((lower - mu)/sigma, (upper - mu)/sigma,
+                             loc=mu, scale=sigma).rvs(size=size))
     return sample
 
 def eval_normal_pdf(eval_at, mu, sigma, lower=-np.inf, upper=np.inf):
