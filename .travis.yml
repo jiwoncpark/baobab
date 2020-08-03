@@ -5,7 +5,7 @@ python:
 
 compiler:
     - g++
-   
+
 cache:
     ccache: true
     pip: true
@@ -15,8 +15,8 @@ before_install:
   - pip install -q coveralls
   - pip install -q python-coveralls
   - pip install -q tensorflow
-  - pip install -q torch 
-  - apt-get install gfortran
+  - pip install -q torch
+  - sudo apt-get install gfortran
 
 install:
   - git clone https://github.com/sibirrer/fastell4py.git

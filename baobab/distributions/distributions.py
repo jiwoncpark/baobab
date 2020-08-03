@@ -39,6 +39,8 @@ def sample_uniform_vectorize(size, lower, upper):
 
     Parameters
     ----------
+    size : int
+        the number of samples to draw
     lower : float
         min value
     upper : float
@@ -147,6 +149,8 @@ def sample_normal_vectorize(size,mu, sigma, lower=-np.inf, upper=np.inf):
 
     Parameters
     ----------
+    size : int
+        the number of samples to draw
     mu : float
         mean
     sigma : float
@@ -195,6 +199,8 @@ def sample_lognormal_vectorize(size, mu, sigma, lower=-np.inf, upper=np.inf):
 
     Parameters
     ----------
+    size : int
+        the number of samples to draw
     mu : float
         mean in dexes
     sigma : float
