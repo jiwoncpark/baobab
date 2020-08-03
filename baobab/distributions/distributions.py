@@ -5,7 +5,9 @@ import numba
 from math import gamma, erf
 
 dist_names = ['uniform', 'normal', 'lognormal', 'beta', 'generalized_normal',]
-__all__ = ['sample_{:s}'.format(d) for d in dist_names] 
+__all__ = ['sample_{:s}'.format(d) for d in dist_names]
+__all__ += ['sample_uniform_vectorize','sample_lognormal_vectorize',
+            'sample_normal_vectorize']
 __all__ += ['sample_multivar_normal','sample_one_minus_rayleigh']
 __all__ += ['eval_{:s}_pdf'.format(d) for d in dist_names]
 __all__ += ['eval_{:s}_logpdf'.format(d) for d in dist_names]
@@ -46,6 +48,28 @@ def sample_uniform(lower, upper):
     sample = lower + (upper - lower)*u
     return sample
 
+def sample_uniform_vectorize(size, lower, upper):
+    """Sample from a uniform distribution
+
+    Parameters
+    ----------
+    size : int
+        the number of samples to draw
+    lower : float
+        min value
+    upper : float
+        max value
+
+    Returns
+    -------
+    float
+        uniform sample
+
+    """
+    u = np.random.rand(size)
+    sample = lower + (upper - lower)*u
+    return sample
+
 def eval_uniform_pdf(eval_at, lower, upper):
     """Evaluate the uniform PDF
 
@@ -68,16 +92,25 @@ def eval_uniform_logpdf(eval_at, lower, upper):
     normed_eval_logpdf[eval_at>upper] = -np.inf
     return normed_eval_logpdf
 
+@numba.njit
 def eval_uniform_logpdf_approx(eval_at, lower, upper):
     """Evaluate the uniform log PDF without -np.inf
 
     See `sample_uniform` for parameter definitions.
 
     """
-    normed_eval_logpdf = np.zeros_like(eval_at)-np.log(upper-lower)
-    normed_eval_logpdf[eval_at<lower] -= np.abs(eval_at[eval_at<lower]-lower) + 1000
-    normed_eval_logpdf[eval_at>upper] -= np.abs(eval_at[eval_at>upper]-upper) + 1000
-    return normed_eval_logpdf
+    eval_logpdf = np.zeros_like(eval_at)-np.log(upper-lower)
+
+    eval_shape = eval_at.shape
+    eval_at = eval_at.reshape(-1)
+    eval_logpdf=eval_logpdf.reshape(-1)
+    for e_i in range(len(eval_at)):
+        if eval_at[e_i] < lower:
+            eval_logpdf[e_i] -= (lower-eval_at[e_i]) + 1000
+        if eval_at[e_i] > upper:
+            eval_logpdf[e_i] -= (eval_at[e_i]-upper) + 1000
+    eval_logpdf=eval_logpdf.reshape(eval_shape)
+    return eval_logpdf
 
 def sample_one_minus_rayleigh(scale, lower):
     """Samples from a Rayleigh distribution and gets one minus the value,
@@ -115,7 +148,7 @@ def sample_normal(mu, sigma, lower=-np.inf, upper=np.inf):
     upper : float
         max value (default: np.inf)
 
-    Returns 
+    Returns
     -------
     float
         a sample from the specified normal
@@ -123,6 +156,32 @@ def sample_normal(mu, sigma, lower=-np.inf, upper=np.inf):
     """
     sample = stats.truncnorm((lower - mu)/sigma, (upper - mu)/sigma,
                              loc=mu, scale=sigma).rvs()
+    return sample
+
+def sample_normal_vectorize(size,mu, sigma, lower=-np.inf, upper=np.inf):
+    """Samples from a normal distribution, optionally truncated
+
+    Parameters
+    ----------
+    size : int
+        the number of samples to draw
+    mu : float
+        mean
+    sigma : float
+        standard deviation
+    lower : float
+        min value (default: -np.inf)
+    upper : float
+        max value (default: np.inf)
+
+    Returns
+    -------
+    float
+        a sample from the specified normal
+
+    """
+    sample = stats.truncnorm((lower - mu)/sigma, (upper - mu)/sigma,
+                             loc=mu, scale=sigma).rvs(size=size)
     return sample
 
 def sample_lognormal(mu, sigma, lower=-np.inf, upper=np.inf):
@@ -139,7 +198,7 @@ def sample_lognormal(mu, sigma, lower=-np.inf, upper=np.inf):
     upper : float
         max value (default: np.inf)
 
-    Returns 
+    Returns
     -------
     float
         a sample from the specified normal
@@ -147,6 +206,32 @@ def sample_lognormal(mu, sigma, lower=-np.inf, upper=np.inf):
     """
     sample = np.exp(stats.truncnorm((lower - mu)/sigma, (upper - mu)/sigma,
                              loc=mu, scale=sigma).rvs())
+    return sample
+
+def sample_lognormal_vectorize(size, mu, sigma, lower=-np.inf, upper=np.inf):
+    """Samples from a lognormal distribution, optionally truncated
+
+    Parameters
+    ----------
+    size : int
+        the number of samples to draw
+    mu : float
+        mean in dexes
+    sigma : float
+        standard deviation in dexes
+    lower : float
+        min value (default: -np.inf)
+    upper : float
+        max value (default: np.inf)
+
+    Returns
+    -------
+    float
+        a sample from the specified normal
+
+    """
+    sample = np.exp(stats.truncnorm((lower - mu)/sigma, (upper - mu)/sigma,
+                             loc=mu, scale=sigma).rvs(size=size))
     return sample
 
 def eval_normal_pdf(eval_at, mu, sigma, lower=-np.inf, upper=np.inf):
@@ -239,7 +324,7 @@ def _lognorm_cdf(bound,mu,sigma):
     A helper function for eval_lognormal_logpdf_approx
 
     See `sample_normal` for parameter definitions.
-    
+
     """
     return 0.5*erf((np.log(bound)-mu)/(np.sqrt(2)*sigma))
 
@@ -313,7 +398,7 @@ def sample_multivar_normal(mu, cov_mat, is_log=None, lower=-np.inf, upper=np.inf
             print(sample)
             print(lower, upper)
             sample = np.random.multivariate_normal(mean=mu, cov=cov_mat)
-    
+
     if is_log is not None:
         sample[is_log] = np.exp(sample[is_log])
 
@@ -333,11 +418,11 @@ def sample_beta(a, b, lower=0.0, upper=1.0):
     upper : float
         max value (default: 1.0)
 
-    Returns 
+    Returns
     -------
     float
         a sample from the specified beta
-    
+
     """
     sample = np.random.beta(a, b)
     sample = sample*(upper - lower) + lower
@@ -371,7 +456,7 @@ def _beta_log_pdf_numba(eval_at,a,b):
     A helper function for eval_beta_logpdf_approx
 
     See `sample_beta` for parameter definitions.
-    
+
     """
     return np.log(eval_at)*(a-1)+np.log(1-eval_at)*(b-1)
 
@@ -484,7 +569,7 @@ def _incomplete_gamma(s,x):
     A helper function for eval_generalized_normal_logpdf_approx
 
     See `sample_generalized_normal` for parameter definitions.
-    
+
     """
     # For large x, _incomplete_gamma assymptotes to 1. We do not want to
     # compute the series for large x, so we will use this approximation.
@@ -503,7 +588,7 @@ def _gen_norm_cdf(bound,mu,alpha,p):
     A helper function for eval_generalized_normal_logpdf_approx
 
     See `sample_generalized_normal` for parameter definitions.
-    
+
     """
     x = np.power(np.abs(bound-mu)/alpha,p)
     return np.sign(bound-mu)*_incomplete_gamma(1/p,x)/(2*gamma(1/p))
@@ -534,10 +619,10 @@ def eval_generalized_normal_logpdf_approx(eval_at, mu=0.0, alpha=1.0, p=10.0, lo
             if eval_at[e_i] > upper:
                 normed_eval_logpdf[e_i] -= 1000
     normed_eval_logpdf=normed_eval_logpdf.reshape(eval_shape)
-    
+
     return normed_eval_logpdf
 
-# Define the dictionary of distributions and their ordered list of hyperparams 
+# Define the dictionary of distributions and their ordered list of hyperparams
 hyperparams = {}
 for dist_name in dist_names:
     sampling_f = globals()['sample_{:s}'.format(dist_name)]

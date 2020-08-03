@@ -11,3 +11,4 @@ corner
 mpmath
 addict
 numba
+scikit-image

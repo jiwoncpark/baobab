@@ -18,16 +18,16 @@ class TestNoiseTorch(unittest.TestCase):
         cls.noise_kwargs = dict(
                                 pixel_scale=0.08,
                                 exposure_time=100.0,
-                                magnitude_zero_point=25.9463, 
-                                read_noise=10, 
+                                magnitude_zero_point=25.9463,
+                                read_noise=10,
                                 ccd_gain=7.0,
                                 sky_brightness=20.1,
-                                seeing=0.6, 
-                                num_exposures=1, 
-                                psf_type='GAUSSIAN', 
-                                kernel_point_source=None, 
+                                seeing=0.6,
+                                num_exposures=1,
+                                psf_type='GAUSSIAN',
+                                kernel_point_source=None,
                                 truncation=5,
-                                #data_count_unit='ADU', 
+                                #data_count_unit='ADU',
                                 background_noise=None
                                 )
 
