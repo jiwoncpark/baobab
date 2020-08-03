@@ -19,7 +19,7 @@ class TestPSFUtils(unittest.TestCase):
         psf_kwargs = instantiate_PSF_kwargs(psf_dict,pixel_scale)
 
         # Test that the correct number of PSFs are generated
-        self.assertEqual(len(psf_kwargs),16)
+        self.assertEqual(len(psf_kwargs),1)
 
         # Test that the psf kwargs have the expected values
         for kwargs in psf_kwargs:
@@ -74,7 +74,7 @@ class TestPSFUtils(unittest.TestCase):
         psf_models = instantiate_PSF_models(psf_dict,pixel_scale)
 
         # Test that the correct number of PSFs are generated
-        self.assertEqual(len(psf_models),16)
+        self.assertEqual(len(psf_models),1)
 
         # Pick a specific psf map
         psf_dict = dict(
