@@ -21,7 +21,7 @@ class Imager:
             list of components, e.g. `lens_mass`
 
         """
-    def __init__(self, components, lens_mass_model, src_light_model, lens_light_model=None, ps_model=None, kwargs_numerics={'supersampling_factor': 1}, min_magnification=0.0, for_cosmography=False):
+    def __init__(self, components, lens_mass_model, src_light_model, lens_light_model=None, ps_model=None, kwargs_numerics={'supersampling_factor': 1}, min_magnification=0.0, for_cosmography=False, magnification_frac_err=0.0):
         self.components = components
         self.kwargs_numerics = kwargs_numerics
         self.lens_mass_model = lens_mass_model
@@ -32,6 +32,7 @@ class Imager:
         self.lens_eq_solver = LensEquationSolver(self.lens_mass_model)
         self.min_magnification = min_magnification
         self.for_cosmography = for_cosmography
+        self.magnification_frac_err = magnification_frac_err
         self.img_features = {} # Initialized to store metadata of images, will get updated for each lens
 
     def _set_sim_api(self, num_pix, kwargs_detector):
@@ -110,14 +111,19 @@ class Imager:
         kwargs_unlensed_unmagnified_mag_ps = [{'ra_source': self.kwargs_src_light[0]['center_x'], 'dec_source': self.kwargs_src_light[0]['center_y'], 'magnitude': unlensed_mag}]
         self.kwargs_unlensed_unmagnified_amp_ps = mag_to_amp_point(kwargs_unlensed_unmagnified_mag_ps, self.unlensed_ps_model, self.data_api) # note 
         # Compute the lensed (image-plane), magnified kwargs in amplitude units
-        magnification = np.abs(self.lens_mass_model.magnification(x_image, y_image, kwargs=self.kwargs_lens_mass))
+        magnification = self.lens_mass_model.magnification(x_image, y_image, kwargs=self.kwargs_lens_mass)
+        measured_magnification = np.abs(magnification*(1.0 + self.magnification_frac_err*np.random.randn(len(magnification)))) # Add noise to magnification
+        magnification = np.abs(magnification)
         kwargs_lensed_unmagnified_mag_ps = [{'ra_image': x_image, 'dec_image': y_image, 'magnitude': unlensed_mag}] # note unlensed magnitude
         kwargs_lensed_unmagnified_amp_ps = mag_to_amp_point(kwargs_lensed_unmagnified_mag_ps, self.ps_model, self.data_api) # note unmagnified amp
         self.kwargs_ps = copy.deepcopy(kwargs_lensed_unmagnified_amp_ps)
         for kw in self.kwargs_ps:
-            kw.update(point_amp=kw['point_amp']*magnification)
+            kw.update(point_amp=kw['point_amp']*measured_magnification)
         # Log the solved image positions
-        self.img_features.update(x_image=x_image, y_image=y_image, magnification=magnification)
+        self.img_features.update(x_image=x_image, 
+                                 y_image=y_image, 
+                                 magnification=magnification,
+                                 measured_magnification=measured_magnification)
 
     def generate_image(self, sample, num_pix, kwargs_detector):
         self._set_sim_api(num_pix, kwargs_detector)

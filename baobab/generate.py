@@ -36,7 +36,7 @@ def parse_args():
 
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('config', help='train config file path')
+    parser.add_argument('config', help='Baobab config file path')
     parser.add_argument('--n_data', default=None, dest='n_data', type=int,
                         help='size of dataset to generate (overrides config file)')
     args = parser.parse_args()
@@ -91,7 +91,7 @@ def main():
         for_cosmography = True
     else:
         for_cosmography = False
-    imager = Imager(cfg.components, lens_mass_model, src_light_model, lens_light_model=lens_light_model, ps_model=ps_model, kwargs_numerics=cfg.numerics, min_magnification=cfg.selection.magnification.min, for_cosmography=for_cosmography)
+    imager = Imager(cfg.components, lens_mass_model, src_light_model, lens_light_model=lens_light_model, ps_model=ps_model, kwargs_numerics=cfg.numerics, min_magnification=cfg.selection.magnification.min, for_cosmography=for_cosmography, magnification_frac_err=cfg.bnn_omega.magnification.frac_err_sigma)
     # Initialize BNN prior
     if for_cosmography:
         kwargs_lens_eq_solver = {'min_distance': 0.05, 'search_window': cfg.instrument.pixel_scale*cfg.image.num_pix, 'num_iter_max': 100}
@@ -132,6 +132,8 @@ def main():
             meta['x_image'] = img_features['x_image'].tolist()
             meta['y_image'] = img_features['y_image'].tolist()
             meta['n_img'] = len(img_features['y_image'])
+            meta['magnification'] = img_features['magnification'].tolist()
+            meta['measured_magnification'] = img_features['measured_magnification'].tolist()
         meta['total_magnification'] = img_features['total_magnification']
         meta['img_filename'] = img_filename
         meta['psf_idx'] = current_idx%n_psf

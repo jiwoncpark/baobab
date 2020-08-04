@@ -24,6 +24,7 @@ class BaobabConfig:
         self.out_dir = os.path.abspath(self.out_dir)
         if not hasattr(self, 'checkpoint_interval'):
             self.checkpoint_interval = max(100, self.n_data // 100)
+        self.interpret_magnification_cfg()
         self.interpret_kinematics_cfg()
         self.log_filename = datetime.now().strftime("log_%m-%d-%Y_%H:%M_baobab.json")
         self.log_path = os.path.join(self.out_dir, self.log_filename)
@@ -35,6 +36,13 @@ class BaobabConfig:
         with open(self.log_path, 'w') as f:
             json.dump(self.__dict__, f)
             print("Exporting baobab log to {:s}".format(self.log_path))
+
+    def interpret_magnification_cfg(self):
+        if 'magnification' not in self.bnn_omega:
+            self.bnn_omega.magnification.frac_err_sigma = 0.0
+        if self.bnn_omega.magnification.frac_err_sigma is not None and 'agn_light' not in self.components:
+            warnings.warn("`bnn_omega.magnification.frac_err_sigma` field is ignored as the images do not contain AGN.")
+            self.bnn_omega.magnification.frac_err_sigma = 0.0
 
     def interpret_kinematics_cfg(self):
         """Validate the kinematics config
