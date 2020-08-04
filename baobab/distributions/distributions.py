@@ -10,7 +10,10 @@ __all__ += ['sample_multivar_normal','sample_one_minus_rayleigh']
 __all__ += ['eval_{:s}_pdf'.format(d) for d in dist_names]
 __all__ += ['eval_{:s}_logpdf'.format(d) for d in dist_names]
 __all__ += ['eval_{:s}_logpdf_approx'.format(d) for d in dist_names]
-__all__ += ['hyperparams', 'sample_transformed_kappa_normal']
+__all__ += ['hyperparams', 'sample_transformed_kappa_normal', 'sample_delta_function']
+
+def sample_delta_function(value):
+    return value
 
 def sample_transformed_kappa_normal(mu, sigma):
     """Effectively sample kappa by sampling x, defined by 1/(1-kappa), from a normal dist
