@@ -17,7 +17,7 @@ setup(
       #'http://github.com/sibirrer/fastell4py/tarball/master#egg=fastell4py',],
       include_package_data=True,
       entry_points={
-      'console_scripts': ['generate=baobab.generate:main', 'to_hdf5=baobab.to_hdf5:main'],
+      'console_scripts': ['generate=baobab.generate:main', 'modify=baobab.modify_existing:main', 'to_hdf5=baobab.to_hdf5:main'],
       },
       classifiers=['Development Status :: 4 - Beta',
       'License :: OSI Approved :: BSD License',
