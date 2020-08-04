@@ -48,7 +48,7 @@ def get_noise_sigma2_lenstronomy(img, pixel_scale, exposure_time, magnitude_zero
     noise_sigma2 = {}
     noise_sigma2['poisson'] = single_band.flux_noise(img)**2.0
     exposure_time_tot = single_band._num_exposures * single_band._exposure_time
-    readout_noise_tot = single_band._num_exposures * single_band.read_noise**2.0
+    readout_noise_tot = single_band._num_exposures * single_band._read_noise**2.0
     sky_per_pixel = single_band.sky_brightness * single_band.pixel_scale ** 2
     noise_sigma2['sky'] = sky_per_pixel**2.0/exposure_time_tot
     noise_sigma2['readout'] = readout_noise_tot / exposure_time_tot**2.0
@@ -124,7 +124,7 @@ class NoiseModelNumpy:
             self.sky_per_pixel = self.sky_brightness * pixel_scale**2.0
 
         self.get_background_noise_sigma2 = getattr(self, 'get_background_noise_sigma2_composite') if self.background_noise is None else getattr(self, 'get_background_noise_sigma2_simple')
-        
+
         self.scaled_exposure_time = self.exposure_time
         if self.data_count_unit == 'ADU':
             self.scaled_exposure_time *= self.ccd_gain

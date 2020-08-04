@@ -72,7 +72,7 @@ class NoiseModelTorch:
             self.sky_per_pixel = self.sky_brightness * pixel_scale**2.0
 
         self.get_background_noise_sigma2 = getattr(self, 'get_background_noise_sigma2_composite') if self.background_noise is None else getattr(self, 'get_background_noise_sigma2_simple')
-        
+
         self.scaled_exposure_time = self.exposure_time
         if self.data_count_unit == 'ADU':
             self.scaled_exposure_time *= self.ccd_gain
@@ -126,7 +126,7 @@ class NoiseModelTorch:
 
         Parameters
         ----------
-        img : 2D torch.Tensor 
+        img : 2D torch.Tensor
             the image of flux values in cps on which to evaluate the noise
 
         Returns
@@ -142,12 +142,12 @@ class NoiseModelTorch:
 
         Parameters
         ----------
-        img : 2D torch.Tensor 
+        img : 2D torch.Tensor
             the image of flux values in cps on which to evaluate the noise
 
         Returns
         -------
-        2D torch.Tensor 
+        2D torch.Tensor
             variance of total noise, in cps^2
 
         """
@@ -158,12 +158,12 @@ class NoiseModelTorch:
 
         Parameters
         ----------
-        img : 2D torch.Tensor 
+        img : 2D torch.Tensor
             the image of flux values in cps on which to evaluate the noise
 
         Returns
         -------
-        2D torch.Tensor 
+        2D torch.Tensor
             the noise map in cps
 
         """
