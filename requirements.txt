@@ -1,4 +1,4 @@
-git+https://github.com/sibirrer/lenstronomy.git@master
+git+https://github.com/jiwoncpark/lenstronomy.git@master
 astropy
 numpy
 matplotlib
