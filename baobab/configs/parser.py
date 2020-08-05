@@ -4,6 +4,7 @@ import warnings
 from importlib import import_module
 from addict import Dict
 import json
+import lenstronomy.SimulationAPI.ObservationConfig as obs_cfg
 
 class BaobabConfig:
     """Nested dictionary representing the configuration for Baobab data generation
@@ -24,6 +25,7 @@ class BaobabConfig:
         self.out_dir = os.path.abspath(self.out_dir)
         if not hasattr(self, 'checkpoint_interval'):
             self.checkpoint_interval = max(100, self.n_data // 100)
+        self.get_survey_info(self.survey_name, self.bandpass_list, self.coadd_years)
         self.interpret_magnification_cfg()
         self.interpret_kinematics_cfg()
         self.log_filename = datetime.now().strftime("log_%m-%d-%Y_%H:%M_baobab.json")
@@ -67,12 +69,12 @@ class BaobabConfig:
             #user_cfg_file = map(__import__, module_name)
             #user_cfg = getattr(user_cfg_file, 'cfg')
             user_cfg_script = import_module(module_name)
-            user_cfg = getattr(user_cfg_script, 'cfg')
+            user_cfg = getattr(user_cfg_script, 'cfg').deepcopy()
             return cls(user_cfg)
         elif ext == '.json':
             with open(user_cfg_path, 'r') as f:
                 user_cfg_str = f.read()
-            user_cfg = Dict(json.loads(user_cfg_str))
+            user_cfg = Dict(json.loads(user_cfg_str)).deepcopy()
             return cls(user_cfg)
         else:
             raise NotImplementedError("This extension is not supported.")
