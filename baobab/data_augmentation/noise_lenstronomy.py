@@ -46,12 +46,21 @@ def get_noise_sigma2_lenstronomy(img, pixel_scale, exposure_time, magnitude_zero
     """
     single_band = SingleBand(pixel_scale, exposure_time, magnitude_zero_point, read_noise=read_noise, ccd_gain=ccd_gain, sky_brightness=sky_brightness, seeing=seeing, num_exposures=num_exposures, psf_type=psf_type, kernel_point_source=kernel_point_source, truncation=truncation, data_count_unit=data_count_unit, background_noise=background_noise)
     noise_sigma2 = {}
-    noise_sigma2['poisson'] = single_band.flux_noise(img)**2.0
+    poisson = single_band.flux_noise(img)**2.0
     exposure_time_tot = single_band._num_exposures * single_band._exposure_time
     readout_noise_tot = single_band._num_exposures * single_band._read_noise**2.0
-    sky_per_pixel = single_band.sky_brightness * single_band.pixel_scale ** 2
-    noise_sigma2['sky'] = sky_per_pixel**2.0/exposure_time_tot
-    noise_sigma2['readout'] = readout_noise_tot / exposure_time_tot**2.0
+    sky_per_pixel = single_band._sky_brightness_cps * single_band.pixel_scale ** 2
+    sky = sky_per_pixel**2.0/exposure_time_tot
+    readout = readout_noise_tot / exposure_time_tot**2.0
+    sky_plus_readout = single_band.background_noise**2.0
+    if data_count_unit == 'ADU':
+        sky /= ccd_gain**2.0 # squared because sky here is noise variance, not std
+        readout /= ccd_gain**2.0
+
+    noise_sigma2['poisson'] = poisson
+    noise_sigma2['sky'] = sky
+    noise_sigma2['readout'] = readout
+    noise_sigma2['sky_plus_readout'] = sky_plus_readout
     return noise_sigma2
 
 class NoiseModelNumpy:
@@ -116,8 +125,8 @@ class NoiseModelNumpy:
                 self.readout_noise /= self.ccd_gain
 
             self.sky_brightness = data_util.magnitude2cps(self.sky_brightness, self.magnitude_zero_point)
-            if self.data_count_unit == 'e-':
-                self.sky_brightness *= self.ccd_gain
+            if self.data_count_unit == 'ADU':
+                self.sky_brightness /= self.ccd_gain
 
             self.exposure_time_tot = self.num_exposures * self.exposure_time
             self.readout_noise_tot = self.num_exposures * self.readout_noise**2.0
@@ -125,7 +134,8 @@ class NoiseModelNumpy:
 
         self.get_background_noise_sigma2 = getattr(self, 'get_background_noise_sigma2_composite') if self.background_noise is None else getattr(self, 'get_background_noise_sigma2_simple')
 
-        self.scaled_exposure_time = self.exposure_time
+        # For Poisson noise
+        self.scaled_exposure_time = self.exposure_time_tot
         if self.data_count_unit == 'ADU':
             self.scaled_exposure_time *= self.ccd_gain
 

@@ -64,8 +64,8 @@ class NoiseModelTF:
             self.readout_noise /= self.ccd_gain
 
         self.sky_brightness = data_util.magnitude2cps(self.sky_brightness, self.magnitude_zero_point)
-        if self.data_count_unit == 'e-':
-            self.sky_brightness *= self.ccd_gain
+        if self.data_count_unit == 'ADU':
+            self.sky_brightness /= self.ccd_gain
 
         self.exposure_time_tot = self.num_exposures * self.exposure_time
         self.readout_noise_tot = self.num_exposures * self.readout_noise**2.0
@@ -73,7 +73,7 @@ class NoiseModelTF:
 
         self.get_background_noise_sigma2 = getattr(self, 'get_background_noise_sigma2_composite') if self.background_noise is None else getattr(self, 'get_background_noise_sigma2_simple')
         
-        self.scaled_exposure_time = self.exposure_time
+        self.scaled_exposure_time = self.exposure_time_tot
         if self.data_count_unit == 'ADU':
             self.scaled_exposure_time *= self.ccd_gain
 

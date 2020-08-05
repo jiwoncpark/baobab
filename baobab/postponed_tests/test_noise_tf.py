@@ -3,7 +3,8 @@ import random
 import unittest
 import numpy as np
 import tensorflow as tf
-from baobab.data_augmentation import get_noise_sigma2_lenstronomy, NoiseModelTF
+from baobab.data_augmentation import get_noise_sigma2_lenstronomy
+from baobab.data_augmentation.noise_tf import NoiseModelTF
 from baobab.tests.test_data_augmentation.tf_data_utils import generate_simple_tf_record, parse_example, tf_img_size, tf_y_names, tf_data_size
 
 class TestNoiseTF(unittest.TestCase):
@@ -37,33 +38,33 @@ class TestNoiseTF(unittest.TestCase):
         """Compare the lenstronomy and tf noise variance for ADU units
 
         """
-        numpy_sigma2 = get_noise_sigma2_lenstronomy(self.img, data_count_unit='ADU', **self.noise_kwargs)
+        lens_sigma2 = get_noise_sigma2_lenstronomy(self.img, data_count_unit='ADU', **self.noise_kwargs)
         img_tf_tensor = tf.cast(self.img, tf.float32)
         noise_model_tf = NoiseModelTF(**self.noise_kwargs)
         tf_sigma2 = {}
         tf_sigma2['sky'] = noise_model_tf.get_sky_noise_sigma2()
         tf_sigma2['readout'] = noise_model_tf.get_readout_noise_sigma2()
         tf_sigma2['poisson'] = noise_model_tf.get_poisson_noise_sigma2(img_tf_tensor)
-        np.testing.assert_array_almost_equal(self.img, img_tf_tensor.numpy(), decimal=5)
-        np.testing.assert_equal(numpy_sigma2['sky'], tf_sigma2['sky'])
-        np.testing.assert_equal(numpy_sigma2['readout'], tf_sigma2['readout'])
-        np.testing.assert_array_almost_equal(numpy_sigma2['poisson'], tf_sigma2['poisson'].numpy(), decimal=7)
+        np.testing.assert_array_almost_equal(self.img, img_tf_tensor.numpy(), decimal=5, err_msg="image array")
+        np.testing.assert_almost_equal(lens_sigma2['sky'], tf_sigma2['sky'], decimal=7, err_msg="sky")
+        np.testing.assert_almost_equal(lens_sigma2['readout'], tf_sigma2['readout'], decimal=7, err_msg="readout")
+        np.testing.assert_array_almost_equal(lens_sigma2['poisson'], tf_sigma2['poisson'].numpy(), decimal=7, err_msg="poisson")
 
     def test_lenstronomy_vs_tf_electron(self):
         """Compare the lenstronomy and tf noise variance for electron units
 
         """
-        numpy_sigma2 = get_noise_sigma2_lenstronomy(self.img, data_count_unit='e-', **self.noise_kwargs)
+        lens_sigma2 = get_noise_sigma2_lenstronomy(self.img, data_count_unit='e-', **self.noise_kwargs)
         img_tf_tensor = tf.cast(self.img, tf.float32)
         noise_model_tf = NoiseModelTF(data_count_unit='e-', **self.noise_kwargs)
         tf_sigma2 = {}
         tf_sigma2['sky'] = noise_model_tf.get_sky_noise_sigma2()
         tf_sigma2['readout'] = noise_model_tf.get_readout_noise_sigma2()
         tf_sigma2['poisson'] = noise_model_tf.get_poisson_noise_sigma2(img_tf_tensor)
-        np.testing.assert_array_almost_equal(self.img, img_tf_tensor.numpy(), decimal=5)
-        np.testing.assert_equal(numpy_sigma2['sky'], tf_sigma2['sky'])
-        np.testing.assert_equal(numpy_sigma2['readout'], tf_sigma2['readout'])
-        np.testing.assert_array_almost_equal(numpy_sigma2['poisson'], tf_sigma2['poisson'].numpy(), decimal=7)
+        np.testing.assert_array_almost_equal(self.img, img_tf_tensor.numpy(), decimal=5, err_msg="image array")
+        np.testing.assert_almost_equal(lens_sigma2['sky'], tf_sigma2['sky'], decimal=7, err_msg="sky")
+        np.testing.assert_almost_equal(lens_sigma2['readout'], tf_sigma2['readout'], decimal=7, err_msg="readout")
+        np.testing.assert_array_almost_equal(lens_sigma2['poisson'], tf_sigma2['poisson'].numpy(), decimal=7, err_msg="poisson")
 
     def test_build_tf_dataset(self):
         """Test whether tf.data.Dataset can be instantiated from tf.data.TFRecordDataset with the data augmentation (noise addition) mapping
