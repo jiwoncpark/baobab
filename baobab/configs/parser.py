@@ -4,7 +4,6 @@ import warnings
 from importlib import import_module
 from addict import Dict
 import json
-import lenstronomy.SimulationAPI.ObservationConfig as obs_cfg
 
 class BaobabConfig:
     """Nested dictionary representing the configuration for Baobab data generation
