@@ -13,7 +13,6 @@ cache:
 before_install:
   - which pip
   - pip install -q coveralls
-  - pip install -q python-coveralls
   - pip install -q tensorflow
   - pip install -q torch
   - sudo apt-get install gfortran
