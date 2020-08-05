@@ -629,4 +629,4 @@ def eval_generalized_normal_logpdf_approx(eval_at, mu=0.0, alpha=1.0, p=10.0, lo
 hyperparams = {}
 for dist_name in dist_names:
     sampling_f = globals()['sample_{:s}'.format(dist_name)]
-    hyperparams[dist_name] = inspect.getargspec(sampling_f).args
+    hyperparams[dist_name] = inspect.getfullargspec(sampling_f).args

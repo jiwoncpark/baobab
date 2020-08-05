@@ -30,6 +30,12 @@ class TestNoiseNumpy(unittest.TestCase):
                                 background_noise=None
                                 )
 
+    def test_lenstronomy_background(self):
+        """Without involving the numpy noise module, simply check that the background noise variance (readout plus sky) when background noise is specified as None equals the computed readout plus sky variance"""
+        lens_sigma2 = get_noise_sigma2_lenstronomy(self.img, data_count_unit='ADU', **self.noise_kwargs)
+        if self.noise_kwargs['background_noise'] is None:
+            lens_sigma2['sky_plus_readout'] = lens_sigma2['sky'] + lens_sigma2['readout']
+
     def test_get_noise_sigma2_lenstronomy_composite_background(self):
         """Validate the output of the lenstronomy noise module with background noise defined by sky and readout noise properties rather than an estimate of the combined background noise level
 
