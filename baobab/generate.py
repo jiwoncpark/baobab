@@ -29,7 +29,7 @@ import lenstronomy.Util.util as util
 # Baobab modules
 from baobab.configs import BaobabConfig
 import baobab.bnn_priors as bnn_priors
-from baobab.sim_utils import instantiate_PSF_models, get_PSF_model, Imager, Selection
+from baobab.sim_utils import Imager, Selection
 
 def parse_args():
     """Parse command-line arguments
@@ -39,6 +39,8 @@ def parse_args():
     parser.add_argument('config', help='Baobab config file path')
     parser.add_argument('--n_data', default=None, dest='n_data', type=int,
                         help='size of dataset to generate (overrides config file)')
+    parser.add_argument('--dest_dir', default=None, dest='dest_dir', type=str,
+                        help='destination for output folder (overrides config file)')
     args = parser.parse_args()
     # sys.argv rerouting for setuptools entry point
     if args is None:
@@ -52,6 +54,8 @@ def main():
     cfg = BaobabConfig.from_file(args.config)
     if args.n_data is not None:
         cfg.n_data = args.n_data
+    if args.dest_dir is not None:
+        cfg.destination_dir = args.dest_dir
     # Seed for reproducibility
     np.random.seed(cfg.seed)
     random.seed(cfg.seed)
@@ -61,12 +65,11 @@ def main():
         os.makedirs(save_dir)
         print("Destination folder path: {:s}".format(save_dir))
         print("Log path: {:s}".format(cfg.log_path))
-        cfg.export_log()
     else:
         raise OSError("Destination folder already exists.")
     # Instantiate PSF models
-    psf_models = instantiate_PSF_models(cfg.psf, cfg.instrument.pixel_scale)
-    n_psf = len(psf_models)
+    #psf_models = instantiate_PSF_models(cfg.psf, cfg.instrument['pixel_scale'])
+    #n_psf = len(psf_models)
     # Instantiate density models
     kwargs_model = dict(
                     lens_model_list=[cfg.bnn_omega.lens_mass.profile, cfg.bnn_omega.external_shear.profile],
@@ -109,14 +112,16 @@ def main():
         if selection.reject_initial(sample): # select on sampled model parameters
             continue
         # Set detector and observation conditions 
-        kwargs_detector = util.merge_dicts(cfg.instrument, cfg.bandpass, cfg.observation)
-        psf_model = get_PSF_model(psf_models, n_psf, current_idx)
-        kwargs_detector.update(seeing=cfg.psf.fwhm, psf_type=cfg.psf.type, kernel_point_source=psf_model, background_noise=0.0)
+        #kwargs_detector = util.merge_dicts(cfg.instrument, cfg.bandpass, cfg.observation)
+        #psf_model = get_PSF_model(psf_models, n_psf, current_idx)
+        #kwargs_detector.update(seeing=cfg.psf.fwhm, psf_type=cfg.psf.type, kernel_point_source=psf_model, background_noise=0.0)
         # Generate the image
-        img, img_features = imager.generate_image(sample, cfg.image.num_pix, kwargs_detector)
+        img, img_features = imager.generate_image(sample, cfg.image.num_pix, cfg.survey_object_dict)
         if img is None: # select on stats computed while rendering the image
             continue
         # Save image file
+        if cfg.image.squeeze_bandpass_dimension:
+            img = np.squeeze(img)
         img_filename = 'X_{0:07d}.npy'.format(current_idx)
         img_path = os.path.join(save_dir, img_filename)
         np.save(img_path, img)
@@ -128,15 +133,14 @@ def main():
         if cfg.bnn_prior_class in ['EmpiricalBNNPrior', 'DiagonalCosmoBNNPrior']: # Log other stats
             for misc_name, misc_value in sample['misc'].items():
                 meta['{:s}'.format(misc_name)] = misc_value
+        meta.update(img_features)
         if 'agn_light' in cfg.components:
             meta['x_image'] = img_features['x_image'].tolist()
             meta['y_image'] = img_features['y_image'].tolist()
             meta['n_img'] = len(img_features['y_image'])
             meta['magnification'] = img_features['magnification'].tolist()
             meta['measured_magnification'] = img_features['measured_magnification'].tolist()
-        meta['total_magnification'] = img_features['total_magnification']
         meta['img_filename'] = img_filename
-        meta['psf_idx'] = current_idx%n_psf
         metadata = metadata.append(meta, ignore_index=True)
         # Export metadata.csv for the first time
         if current_idx == 0:

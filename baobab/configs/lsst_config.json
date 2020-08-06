@@ -1,0 +1,142 @@
+{
+  "name": "lsst",
+  "destination_dir": "/home/jwp/stage/sl/baobab",
+  "seed": 1113,
+  "bnn_prior_class": "DiagonalBNNPrior",
+  "n_data": 200,
+  "train_vs_val": "train",
+  "components": ["lens_mass", "external_shear", "src_light"],
+  "selection": 
+  {
+    "magnification": {"min": 2.0},
+    "initial": ["lambda x: x['lens_mass']['theta_E'] > 1.0"]
+  },
+  "survey_name": "LSST",
+  "bandpass_list": ["g", "r", "i"],
+  "coadd_years": 10,
+  "psf": 
+  {
+    "type": "GAUSSIAN"
+  },
+  "numerics": {
+    "supersampling_factor": 1
+  },
+  "image": {
+    "num_pix": 64,
+    "inverse": false,
+    "squeeze_bandpass_dimension": false
+  },
+  "bnn_omega": 
+  {
+    "lens_mass":
+    {
+      "profile": "PEMD",
+      "center_x":
+      {
+        "dist": "normal",
+        "mu": 0.0,
+        "sigma": 0.1
+      },
+      "center_y":
+      {
+        "dist": "normal",
+        "mu": 0.0,
+        "sigma": 0.1
+      },
+      "gamma":
+      {
+        "dist": "normal",
+        "mu": 2.0,
+        "sigma": 0.1
+      },
+      "theta_E":
+      {
+        "dist": "normal",
+        "mu": 1.1,
+        "sigma": 0.5
+      },
+      "q":
+      {
+        "dist": "normal",
+        "mu": 0.7,
+        "sigma": 0.15,
+        "upper": 1.0,
+        "lower": 0.3
+      },
+      "phi":
+      {
+        "dist": "uniform",
+        "lower": -1.5707963,
+        "upper": 1.5707963
+
+      }
+    },
+    "external_shear": 
+    {
+        "profile": "SHEAR_GAMMA_PSI",
+        "gamma_ext":
+        {
+            "dist": "uniform",
+            "lower": 0.0,
+            "upper": 0.05
+        },
+        "psi_ext":
+        {
+            "dist": "uniform",
+            "lower": -1.5707963,
+            "upper": 1.5707963
+        }
+    },
+    "src_light":
+    {
+        "profile": "SERSIC_ELLIPSE",
+        "center_x":
+        {
+            "dist": "uniform",
+            "lower": -0.2,
+            "upper": 0.2
+        },
+        "center_y":
+        {
+            "dist": "uniform",
+            "lower": -0.2,
+            "upper": 0.2
+        },
+        "magnitude": 
+        {
+            "dist": "uniform",
+            "lower": 20,
+            "upper": 25
+        },
+        "n_sersic":
+        {
+            "dist": "normal",
+            "mu": 3.0,
+            "sigma": 0.5,
+            "lower": 2.0
+        },
+        "R_sersic":
+        {
+            "dist": "normal",
+            "mu": 0.35,
+            "sigma": 0.05,
+            "lower": 0.25,
+            "upper": 0.45
+        },
+        "q":
+        {
+            "dist": "normal",
+            "mu": 0.6,
+            "sigma": 0.1,
+            "upper": 1.0,
+            "lower": 0.3
+        },
+        "phi":
+        {
+            "dist": "uniform",
+            "lower": -1.5707963,
+            "upper": 1.5707963
+        }
+    }
+  }
+}
