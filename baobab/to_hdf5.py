@@ -60,7 +60,8 @@ def main():
 
     img_path_list = metadata_df['img_filename'].values
     first_img_filepath = os.path.join(args.npy_dir, img_path_list[0])
-    n_x, n_y = np.load(first_img_filepath).shape # image dimensions
+    img_shape = np.load(first_img_filepath).shape # image dimensions
+    n_x, n_y = img_shape[-2], img_shape[-1]
     n_data, n_cols = metadata_df.shape
 
     # Initialize hdf5 file
