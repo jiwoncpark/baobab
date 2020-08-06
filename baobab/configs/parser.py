@@ -26,7 +26,7 @@ class BaobabConfig:
         self.out_dir = os.path.abspath(self.out_dir)
         if not hasattr(self, 'checkpoint_interval'):
             self.checkpoint_interval = max(100, self.n_data // 100)
-        self.get_survey_info(self.survey_name, self.bandpass_list, self.coadd_years, self.psf.type)
+        self.get_survey_info(self.survey_info, self.psf.type)
         self.interpret_magnification_cfg()
         self.interpret_kinematics_cfg()
         self.log_filename = datetime.now().strftime("log_%m-%d-%Y_%H:%M_baobab.json")
@@ -66,10 +66,17 @@ class BaobabConfig:
             print("Exporting baobab log to {:s}".format(self.log_path))
 
     def interpret_magnification_cfg(self):
-        if 'magnification' not in self.bnn_omega:
-            self.bnn_omega.magnification.frac_err_sigma = 0.0
-        if self.bnn_omega.magnification.frac_err_sigma is not None and 'agn_light' not in self.components:
-            warnings.warn("`bnn_omega.magnification.frac_err_sigma` field is ignored as the images do not contain AGN.")
+        if 'agn_light' not in self.components:
+            if len(self.bnn_omega.magnification.frac_err_sigma) != 0: # non-empty dictionary
+                warnings.warn("`bnn_omega.magnification.frac_err_sigma` field is ignored as the images do not contain AGN.")
+                self.bnn_omega.magnification.frac_err_sigma = 0.0
+        else:
+            if 'magnification' not in self.bnn_omega:
+                self.bnn_omega.magnification.frac_err_sigma = 0.0
+            elif self.bnn_omega.magnification is None:
+                self.bnn_omega.magnification.frac_err_sigma = 0.0
+            
+        if ('magnification' not in self.bnn_omega) and 'agn_light' in self.components:
             self.bnn_omega.magnification.frac_err_sigma = 0.0
 
     def interpret_kinematics_cfg(self):
@@ -80,16 +87,18 @@ class BaobabConfig:
         if kinematics_cfg.anisotropy_model == 'analytic':
             warnings.warn("Since velocity dispersion computation is analytic, any entry other than `sampling_number` in `kinematics.numerics_kwargs` will be ignored.")
 
-    def get_survey_info(self, survey_name, bandpass_list, coadd_years, psf_type):
+    def get_survey_info(self, survey_info, psf_type):
         """Fetch the camera and instrument information corresponding to the survey string identifier
 
         """
         sys.path.insert(0, obs_cfg.__path__[0])
-        survey_module = import_module(survey_name)
-        
+        survey_module = import_module(survey_info['survey_name'])
+        survey_class = getattr(survey_module, survey_info['survey_name'])
+        coadd_years = survey_info['coadd_years'] if 'coadd_years' in survey_info else None
+
         self.survey_object_dict = OrderedDict()
-        for bp in bandpass_list:
-            survey_object = getattr(survey_module, survey_name)(band=bp, psf_type=psf_type, coadd_years=coadd_years)
+        for bp in survey_info['bandpass_list']:
+            survey_object = survey_class(band=bp, psf_type=psf_type, coadd_years=coadd_years)
             # Overwrite ObservationConfig PSF type with user-configured PSF type
             if hasattr(self, 'psf'):
                 survey_object.obs['psf_type'] = self.psf.type
@@ -110,7 +119,7 @@ class BaobabConfig:
                 survey_object.which_psf_maps = None
             self.survey_object_dict[bp] = survey_object
         # Camera dict is same across bands, so arbitrarily take the first band
-        self.instrument = getattr(survey_module, survey_name)(band=bandpass_list[0]).camera
+        self.instrument = survey_class(band=survey_info['bandpass_list'][0]).camera
 
     def get_noise_kwargs(self):
         """

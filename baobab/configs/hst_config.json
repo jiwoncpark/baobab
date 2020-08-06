@@ -11,9 +11,11 @@
     "magnification": {"min": 2.0},
     "initial": ["lambda x: x['lens_mass']['theta_E'] > 1.0"]
   },
-  "survey_name": "HST",
-  "bandpass_list": ["WFC3_F160W"],
-  "coadd_years": null,
+  "survey_info":
+  {
+    "survey_name": "HST",
+    "bandpass_list": ["WFC3_F160W"]
+  },
   "psf": 
   {
     "type": "PIXEL",

@@ -11,9 +11,12 @@
     "magnification": {"min": 2.0},
     "initial": ["lambda x: x['lens_mass']['theta_E'] > 1.0"]
   },
-  "survey_name": "LSST",
-  "bandpass_list": ["g", "r", "i"],
-  "coadd_years": 10,
+  "survey_info":
+  {
+    "survey_name": "LSST",
+    "bandpass_list": ["g", "r", "i"],
+    "coadd_years": 10
+  },
   "psf": 
   {
     "type": "GAUSSIAN"
