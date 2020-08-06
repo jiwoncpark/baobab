@@ -25,7 +25,6 @@ print("Lenstronomy path being used: {:s}".format(lenstronomy.__path__[0]))
 from lenstronomy.LensModel.lens_model import LensModel
 from lenstronomy.LightModel.light_model import LightModel
 from lenstronomy.PointSource.point_source import PointSource
-import lenstronomy.Util.util as util
 # Baobab modules
 from baobab.configs import BaobabConfig
 import baobab.bnn_priors as bnn_priors
@@ -67,9 +66,6 @@ def main():
         print("Log path: {:s}".format(cfg.log_path))
     else:
         raise OSError("Destination folder already exists.")
-    # Instantiate PSF models
-    #psf_models = instantiate_PSF_models(cfg.psf, cfg.instrument['pixel_scale'])
-    #n_psf = len(psf_models)
     # Instantiate density models
     kwargs_model = dict(
                     lens_model_list=[cfg.bnn_omega.lens_mass.profile, cfg.bnn_omega.external_shear.profile],
@@ -97,7 +93,7 @@ def main():
     imager = Imager(cfg.components, lens_mass_model, src_light_model, lens_light_model=lens_light_model, ps_model=ps_model, kwargs_numerics=cfg.numerics, min_magnification=cfg.selection.magnification.min, for_cosmography=for_cosmography, magnification_frac_err=cfg.bnn_omega.magnification.frac_err_sigma)
     # Initialize BNN prior
     if for_cosmography:
-        kwargs_lens_eq_solver = {'min_distance': 0.05, 'search_window': cfg.instrument.pixel_scale*cfg.image.num_pix, 'num_iter_max': 100}
+        kwargs_lens_eq_solver = {'min_distance': 0.05, 'search_window': cfg.instrument['pixel_scale']*cfg.image['num_pix'], 'num_iter_max': 100}
         bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components, kwargs_lens_eq_solver)
     else:
         kwargs_lens_eq_solver = {}
@@ -111,10 +107,6 @@ def main():
         sample = bnn_prior.sample() # FIXME: sampling in batches
         if selection.reject_initial(sample): # select on sampled model parameters
             continue
-        # Set detector and observation conditions 
-        #kwargs_detector = util.merge_dicts(cfg.instrument, cfg.bandpass, cfg.observation)
-        #psf_model = get_PSF_model(psf_models, n_psf, current_idx)
-        #kwargs_detector.update(seeing=cfg.psf.fwhm, psf_type=cfg.psf.type, kernel_point_source=psf_model, background_noise=0.0)
         # Generate the image
         img, img_features = imager.generate_image(sample, cfg.image.num_pix, cfg.survey_object_dict)
         if img is None: # select on stats computed while rendering the image

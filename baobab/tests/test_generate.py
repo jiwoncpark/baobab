@@ -15,9 +15,10 @@ def generate_config(cfg_filepath):
     """
     success = True
     cfg = configs.BaobabConfig.from_file(cfg_filepath)
+    cfg.destination_dir = '.'
     save_dir = cfg.out_dir
     try:
-        subprocess.check_output('generate {:s} --n_data 2'.format(cfg_filepath), shell=True)
+        subprocess.check_output("generate {:s} --n_data 2".format(cfg_filepath), shell=True)
     except:
         success = True
     # Delete resulting data
@@ -32,6 +33,30 @@ class TestGenerate(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.cfg_root = os.path.abspath(os.path.dirname(configs.__file__))
+
+    def test_generate_with_des(self):
+        """Tests execution of `generate.py` script for all diagonal DES config files
+         
+        """
+        cfg_filepath = os.path.join(self.cfg_root, 'des_config.json')
+        success = generate_config(cfg_filepath)
+        self.assertTrue(success, msg="des config")
+
+    def test_generate_with_lsst(self):
+        """Tests execution of `generate.py` script for all diagonal LSST config files
+         
+        """
+        cfg_filepath = os.path.join(self.cfg_root, 'lsst_config.json')
+        success = generate_config(cfg_filepath)
+        self.assertTrue(success, msg="lsst config")
+
+    def test_generate_with_hst(self):
+        """Tests execution of `generate.py` script for a json HST config file, for backward compatibility
+         
+        """
+        cfg_filepath = os.path.join(self.cfg_root, 'hst_config.json')
+        success = generate_config(cfg_filepath)
+        self.assertTrue(success, msg="hst config")
 
     def test_generate_with_diagonal_configs(self):
         """Tests execution of `generate.py` script for all diagonal config files
