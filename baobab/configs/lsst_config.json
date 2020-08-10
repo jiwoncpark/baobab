@@ -15,7 +15,9 @@
   {
     "survey_name": "LSST",
     "bandpass_list": ["g", "r", "i"],
-    "coadd_years": 10
+    "coadd_years": 10,
+    "override_camera_kwargs": {},
+    "override_obs_kwargs": {}
   },
   "psf": 
   {

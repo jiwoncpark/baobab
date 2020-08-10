@@ -14,7 +14,16 @@
   "survey_info":
   {
     "survey_name": "HST",
-    "bandpass_list": ["WFC3_F160W"]
+    "bandpass_list": ["WFC3_F160W"],
+    "override_camera_kwargs":
+    {
+      "read_noise": 5,
+      "ccd_gain": 3
+    },
+    "override_obs_kwargs":
+    {
+      "sky_brightness": 22
+    }
   },
   "psf": 
   {

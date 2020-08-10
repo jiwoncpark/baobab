@@ -117,9 +117,12 @@ class BaobabConfig:
             else: # 'GAUSSIAN'
                 survey_object.psf_kernel_size = None
                 survey_object.which_psf_maps = None
+            # Override default survey specs with user-specified kwargs
+            survey_object.camera.update(survey_info['override_camera_kwargs'])
+            survey_object.obs.update(survey_info['override_obs_kwargs'])
             self.survey_object_dict[bp] = survey_object
-        # Camera dict is same across bands, so arbitrarily take the first band
-        self.instrument = survey_class(band=survey_info['bandpass_list'][0]).camera
+        # Camera dict is same across bands, so arbitrarily take the last band
+        self.instrument = survey_object.camera
 
     def get_noise_kwargs(self):
         """
