@@ -1,6 +1,6 @@
 {
   "name": "hst",
-  "destination_dir": "/home/jwp/stage/sl/baobab",
+  "destination_dir": ".",
   "seed": 1113,
   "bnn_prior_class": "DiagonalBNNPrior",
   "n_data": 200,
