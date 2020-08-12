@@ -15,7 +15,6 @@ def generate_config(cfg_filepath):
     """
     success = True
     cfg = configs.BaobabConfig.from_file(cfg_filepath)
-    cfg.destination_dir = '.'
     save_dir = cfg.out_dir
     try:
         subprocess.check_output("generate {:s} --n_data 2".format(cfg_filepath), shell=True)

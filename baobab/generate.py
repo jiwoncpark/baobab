@@ -46,6 +46,7 @@ def parse_args():
         args = SimpleNamespace()
         args.config = sys.argv[0]
         args.n_data = sys.argv[1]
+        args.dest_dir = sys.argv[2]
     return args
 
 def main():
@@ -63,7 +64,6 @@ def main():
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
         print("Destination folder path: {:s}".format(save_dir))
-        print("Log path: {:s}".format(cfg.log_path))
     else:
         raise OSError("Destination folder already exists.")
     # Instantiate density models

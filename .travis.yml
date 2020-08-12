@@ -26,7 +26,7 @@ install:
   - df -h
 
 script:
-  - python baobab/generate.py baobab/configs/lsst_config.json
+  - python baobab/generate.py baobab/configs/tdlmc_diagonal_cosmo_config.py --n_data 2
   - coverage run -m unittest discover -s baobab/tests
 
 after_success:
