@@ -16,10 +16,10 @@ def generate_config(cfg_filepath):
     success = True
     cfg = configs.BaobabConfig.from_file(cfg_filepath)
     save_dir = cfg.out_dir
-    try:
-        subprocess.check_output("generate {:s} --n_data 2".format(cfg_filepath), shell=True)
-    except:
-        success = False
+    #try:
+    subprocess.check_output("generate {:s} --n_data 2".format(cfg_filepath), shell=True)
+    #except:
+    #    success = False
     # Delete resulting data
     if os.path.exists(save_dir):
         shutil.rmtree(save_dir)
