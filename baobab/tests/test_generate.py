@@ -20,7 +20,7 @@ def generate_config(cfg_filepath):
     try:
         subprocess.check_output("generate {:s} --n_data 2".format(cfg_filepath), shell=True)
     except:
-        success = True
+        success = False
     # Delete resulting data
     if os.path.exists(save_dir):
         shutil.rmtree(save_dir)

@@ -93,10 +93,10 @@ def main():
     imager = Imager(cfg.components, lens_mass_model, src_light_model, lens_light_model=lens_light_model, ps_model=ps_model, kwargs_numerics=cfg.numerics, min_magnification=cfg.selection.magnification.min, for_cosmography=for_cosmography, magnification_frac_err=cfg.bnn_omega.magnification.frac_err_sigma)
     # Initialize BNN prior
     if for_cosmography:
-        kwargs_lens_eq_solver = {'min_distance': 0.05, 'search_window': cfg.instrument['pixel_scale']*cfg.image['num_pix'], 'num_iter_max': 100}
-        bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components, kwargs_lens_eq_solver)
+        kwargs_lens_eqn_solver = {'min_distance': 0.05, 'search_window': cfg.instrument['pixel_scale']*cfg.image['num_pix'], 'num_iter_max': 100}
+        bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components, kwargs_lens_eqn_solver)
     else:
-        kwargs_lens_eq_solver = {}
+        kwargs_lens_eqn_solver = {}
         bnn_prior = getattr(bnn_priors, cfg.bnn_prior_class)(cfg.bnn_omega, cfg.components)
     # Initialize empty metadata dataframe
     metadata = pd.DataFrame()
