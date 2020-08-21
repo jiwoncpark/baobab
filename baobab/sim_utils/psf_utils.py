@@ -3,7 +3,7 @@ import numpy as np
 from pkg_resources import resource_filename
 from lenstronomy.Util import kernel_util
 from lenstronomy.Data.psf import PSF
-__all__ = ['get_PSF_model']
+__all__ = ['instantiate_PSF_kwargs','get_PSF_model']
 
 def instantiate_PSF_kwargs(psf_type, pixel_scale, seeing, kernel_size, which_psf_maps):
     """Instantiate PSF kwargs by reading in template PSF maps
