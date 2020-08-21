@@ -32,6 +32,7 @@ def instantiate_PSF_kwargs(psf_type, pixel_scale, seeing, kernel_size, which_psf
         return psf_kwargs
     elif psf_type == 'GAUSSIAN':
         psf_kwargs = {'psf_type': 'GAUSSIAN', 'fwhm': seeing, 'pixel_size': pixel_scale}
+        return psf_kwargs
     else:
         return {'psf_type': 'NONE'}
 
