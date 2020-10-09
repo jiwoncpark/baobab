@@ -124,7 +124,7 @@ class BaobabConfig:
         # Camera dict is same across bands, so arbitrarily take the last band
         self.instrument = survey_object.camera
 
-    def get_noise_kwargs(self):
+    def get_noise_kwargs(self,bandpass):
         """
         Return the noise kwargs defined in the babobab config, e.g. for passing to the noise model for online data augmentation
 
@@ -132,11 +132,11 @@ class BaobabConfig:
         -------
             (dict): A dict containing the noise kwargs to be passed to the noise
                 model.
+            (str): The bandpass to pull the noise information for
 
         """
         # Go through the baobab config and pull out the noise kwargs one by one.
         noise_kwargs = {}
         noise_kwargs.update(self.instrument)
-        noise_kwargs.update(self.bandpass)
-        noise_kwargs.update(self.observation)
+        noise_kwargs.update(self.survey_object_dict[bandpass].kwargs_single_band())
         return noise_kwargs
