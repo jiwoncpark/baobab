@@ -67,17 +67,17 @@ class BaobabConfig:
 
     def interpret_magnification_cfg(self):
         if 'agn_light' not in self.components:
-            if len(self.bnn_omega.magnification.frac_err_sigma) != 0: # non-empty dictionary
-                warnings.warn("`bnn_omega.magnification.frac_err_sigma` field is ignored as the images do not contain AGN.")
-                self.bnn_omega.magnification.frac_err_sigma = 0.0
+            if len(self.bnn_omega.magnification.frac_error_sigma) != 0: # non-empty dictionary
+                warnings.warn("`bnn_omega.magnification.frac_error_sigma` field is ignored as the images do not contain AGN.")
+                self.bnn_omega.magnification.frac_error_sigma = 0.0
         else:
             if 'magnification' not in self.bnn_omega:
-                self.bnn_omega.magnification.frac_err_sigma = 0.0
+                self.bnn_omega.magnification.frac_error_sigma = 0.0
             elif self.bnn_omega.magnification is None:
-                self.bnn_omega.magnification.frac_err_sigma = 0.0
+                self.bnn_omega.magnification.frac_error_sigma = 0.0
             
         if ('magnification' not in self.bnn_omega) and 'agn_light' in self.components:
-            self.bnn_omega.magnification.frac_err_sigma = 0.0
+            self.bnn_omega.magnification.frac_error_sigma = 0.0
 
     def interpret_kinematics_cfg(self):
         """Validate the kinematics config
