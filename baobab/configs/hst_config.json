@@ -9,7 +9,7 @@
   "selection": 
   {
     "magnification": {"min": 2.0},
-    "initial": ["lambda x: x['lens_mass']['theta_E'] > 1.0"]
+    "initial": ["lambda x: x['lens_mass']['theta_E'] > 0.5"]
   },
   "survey_info":
   {
@@ -65,8 +65,8 @@
       "theta_E":
       {
         "dist": "normal",
-        "mu": 1.1,
-        "sigma": 0.5
+        "mu": 1.0,
+        "sigma": 0.1
       },
       "q":
       {
@@ -118,7 +118,7 @@
         "magnitude": 
         {
             "dist": "uniform",
-            "lower": 20,
+            "lower": 22,
             "upper": 25
         },
         "n_sersic":
