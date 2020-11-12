@@ -1,0 +1,6 @@
+[report]
+omit = 
+    */baobab/configs/*_config.json
+    */baobab/configs/*_config.py
+    *__init__*
+    */in_data/*
