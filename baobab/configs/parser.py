@@ -24,7 +24,6 @@ class BaobabConfig:
         self.out_dir = os.path.abspath(self.out_dir)
         if not hasattr(self, 'checkpoint_interval'):
             self.checkpoint_interval = max(100, self.n_data // 100)
-        self.get_survey_info(self.survey_name, self.bandpass_list, self.coadd_years)
         self.interpret_magnification_cfg()
         self.interpret_kinematics_cfg()
         self.log_filename = datetime.now().strftime("log_%m-%d-%Y_%H:%M_baobab.json")
