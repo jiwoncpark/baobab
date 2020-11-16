@@ -1,6 +1,19 @@
+import numpy as np
+from ast import literal_eval
 import fnmatch
 import lenstronomy.Util.param_util as param_util
-__all__ = ['add_qphi_columns', 'add_g1g2_columns', 'add_gamma_psi_ext_columns', 'add_relative_src_offset', 'get_kwargs_src_light', 'get_kwargs_lens_light', 'get_kwargs_ps', 'get_kwargs_lens_mass']
+__all__ = ['add_qphi_columns', 'add_g1g2_columns', 'add_gamma_psi_ext_columns', 'add_relative_src_offset', 'get_kwargs_src_light', 'get_kwargs_lens_light', 'get_kwargs_ps', 'get_kwargs_lens_mass', 'get_kwargs_ps_lensed']
+
+def get_kwargs_ps_lensed(metadata_row):
+    x_image = np.array(literal_eval(metadata_row['x_image']))
+    y_image = np.array(literal_eval(metadata_row['y_image']))
+    magnification = np.array(literal_eval(metadata_row['magnification']))
+    kwargs = dict(
+                  ra_image=x_image,
+                  dec_image=y_image,
+                  point_amp=magnification,
+                  )
+    return kwargs
 
 def get_nested_ps(metadata_row):
     nested = {'agn_light': get_kwargs_ps(metadata_row)[0]}
@@ -11,13 +24,13 @@ def get_kwargs_src_light(metadata_row):
     src_light_keys = [col.split('src_light_')[1] for col in metadata_row.keys() if col.startswith('src_light_')]
     src_light_cols = ['src_light_' + col for col in src_light_keys]
     kwargs = dict(zip(src_light_keys, metadata_row[src_light_cols]))
-    return [kwargs]
+    return kwargs
 
 def get_kwargs_lens_light(metadata_row):
     lens_light_keys = [col.split('lens_light_')[1] for col in metadata_row.keys() if col.startswith('lens_light_')]
     lens_light_cols = ['lens_light_' + col for col in lens_light_keys]
     kwargs = dict(zip(lens_light_keys, metadata_row[lens_light_cols]))
-    return [kwargs]
+    return kwargs
 
 def get_kwargs_ps(metadata_row):
     kwargs = {'magnitude': metadata_row['agn_light_magnitude'], 'ra_source': metadata_row['src_light_center_x'], 'dec_source': metadata_row['src_light_center_y']}

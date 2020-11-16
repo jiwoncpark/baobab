@@ -4,6 +4,7 @@ from addict import Dict
 cfg = Dict()
 
 cfg.name = 'tdlmc'
+cfg.destination_dir = '.'
 cfg.seed = 1113 # random seed
 cfg.bnn_prior_class = 'DiagonalBNNPrior'
 cfg.n_data = 200 # number of images to generate
@@ -18,23 +19,15 @@ cfg.selection = dict(
                  initial=["lambda x: x['lens_mass']['theta_E'] > 0.5",]
                  )
 
-cfg.instrument = dict(
-              pixel_scale=0.08, # scale (in arcseonds) of pixels
-              ccd_gain=4.5, # electrons/ADU (analog-to-digital unit). A gain of 8 means that the camera digitizes the CCD signal so that each ADU corresponds to 8 photoelectrons.
-              )
-
-cfg.bandpass = dict(
-                magnitude_zero_point=25.9463, # (effectively, the throuput) magnitude in which 1 count per second per arcsecond square is registered (in ADUs)
-                )
-
-cfg.observation = dict(
-                  exposure_time=100.0, # exposure time per image (in seconds)
-                  )
+cfg.survey_info = dict(
+                       survey_name="HST",
+                       bandpass_list=["WFC3_F160W"]
+                       )
 
 cfg.psf = dict(
            type='PIXEL', # string, type of PSF ('GAUSSIAN' and 'PIXEL' supported)
            kernel_size=91, # dimension of provided PSF kernel, only valid when profile='PIXEL'
-           which_psf_maps=None, # None if rotate among all available PSF maps, else seed number of the map to generate all images with that map
+           which_psf_maps=[101], # None if rotate among all available PSF maps, else seed number of the map to generate all images with that map
            )
 
 cfg.numerics = dict(
@@ -52,35 +45,37 @@ cfg.bnn_omega = dict(
                                  center_x = dict(
                                           dist='normal', # one of ['normal', 'beta']
                                           mu=0.0,
-                                          sigma=1.e-6,
+                                          sigma=0.1,
                                           ),
                                  center_y = dict(
                                           dist='normal',
                                           mu=0.0,
-                                          sigma=1.e-6,
+                                          sigma=0.1,
                                           ),
                                  # Lognormal(mu, sigma^2)
                                  gamma = dict(
                                               dist='normal',
-                                              mu=1.935,
-                                              sigma=0.001,
+                                              mu=2.0,
+                                              sigma=0.1,
                                               ),
                                  theta_E = dict(
                                                 dist='normal',
-                                                mu=1.082,
-                                                sigma=0.001,
+                                                mu=1.0,
+                                                sigma=0.1,
                                                 ),
                                  # Beta(a, b)
                                  q = dict(
                                            dist='normal',
-                                           mu=0.869,
-                                           sigma=0.001,
+                                           mu=0.7,
+                                           sigma=0.15,
+                                           lower=0.0,
+                                           upper=0.3
                                            ),
                                  phi = dict(
-                                           dist='normal',
-                                           mu= 0.708,
-                                           sigma=0.001,
-                                           ),
+                                           dist='uniform',
+                                           lower=-0.5*np.pi,
+                                           upper=0.5*np.pi,
+                                           )
                                  ),
 
                  external_shear = dict(
@@ -91,11 +86,9 @@ cfg.bnn_omega = dict(
                                                          sigma=0.001,
                                                          ),
                                        psi_ext = dict(
-                                                     dist='normal',
-                                                     mu=0.7853,
-                                                     sigma=0.001,
-                                                     lower=0,
-                                                     upper=np.pi,
+                                                     dist='uniform',
+                                                     lower=-0.5*np.pi,
+                                                     upper=0.5*np.pi,
                                                      )
                                        ),
 
@@ -105,32 +98,33 @@ cfg.bnn_omega = dict(
                                   # Lognormal(mu, sigma^2)
                                   magnitude = dict(
                                              dist='normal',
-                                             mu=17.325,
-                                             sigma=0.001,
+                                             mu=18,
+                                             sigma=1.0,
                                              ),
                                   n_sersic = dict(
                                                   dist='normal',
-                                                  mu=2.683,
-                                                  sigma=0.001,
+                                                  mu=3.0,
+                                                  sigma=0.5,
                                                   ),
                                   R_sersic = dict(
                                                   dist='normal',
-                                                  mu=0.949,
-                                                  sigma=0.001,
+                                                  mu=0.7,
+                                                  sigma=0.05,
                                                   
                                                   ),
                                   # Beta(a, b)
                                   q = dict(
                                            dist='normal',
-                                           mu= 0.5,
-                                           sigma=0.5,
-                                           lower=0.0,
+                                           mu= 0.7,
+                                           sigma=0.2,
+                                           lower=0.1,
+                                           upper=1.0
                                            ),
                                   phi = dict(
-                                            dist='normal',
-                                           mu= 0.658,
-                                           sigma=0.001,
-                                           ),
+                                           dist='uniform',
+                                           lower=-0.5*np.pi,
+                                           upper=0.5*np.pi,
+                                           )
                                   ),
 
                  src_light = dict(
@@ -139,7 +133,7 @@ cfg.bnn_omega = dict(
                                 magnitude = dict(
                                              dist='normal',
                                              mu=20.407,
-                                             sigma=0.001,
+                                             sigma=1,
                                              ),
                                 n_sersic = dict(
                                                 dist='lognormal',
@@ -154,26 +148,28 @@ cfg.bnn_omega = dict(
                                 # Normal(mu, sigma^2)
                                 center_x = dict(
                                          dist='normal',
-                                                mu=0.035,
-                                                sigma=0.001,
+                                                mu=0,
+                                                sigma=0.02,
                                                 
                                                 ),
                                 center_y = dict(
                                          dist='normal',
-                                                mu=-0.025,
-                                                sigma=0.001,
+                                                mu=0,
+                                                sigma=0.02,
                                                 
                                                 ),
                                 q = dict(
                                            dist='normal',
-                                           mu=0.869,
-                                           sigma=0.001,
+                                           mu=0.5,
+                                           sigma=0.3,
+                                           upper=1.0,
+                                           lower=0.1
                                            ),
                                  phi = dict(
-                                           dist='normal',
-                                           mu= 0.708,
-                                           sigma=0.001,
-                                           ),
+                                           dist='uniform',
+                                           lower=-0.5*np.pi,
+                                           upper=0.5*np.pi,
+                                           )
                                 ),
 
                  agn_light = dict(

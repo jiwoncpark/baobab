@@ -4,6 +4,7 @@ from addict import Dict
 cfg = Dict()
 
 cfg.name = 'tdlmc'
+cfg.destination_dir = '.'
 cfg.seed = 1113 # random seed
 cfg.bnn_prior_class = 'DiagonalCosmoBNNPrior'
 cfg.n_data = 200 # number of images to generate
@@ -17,26 +18,15 @@ cfg.selection = dict(
                  initial=["lambda x: x['lens_mass']['theta_E'] > 0.5",]
                  )
 
-cfg.instrument = dict(
-              pixel_scale=0.08, # scale (in arcseonds) of pixels
-              ccd_gain=1.5, # electrons/ADU (analog-to-digital unit). A gain of 8 means that the camera digitizes the CCD signal so that each ADU corresponds to 8 photoelectrons.
-              )
-
-cfg.bandpass = dict(
-                magnitude_zero_point=25.9463, # (effectively, the throuput) magnitude in which 1 count per second per arcsecond square is registered (in ADUs)
-                )
-
-cfg.observation = dict(
-                  exposure_time=9600.0, # exposure time per image (in seconds)
-                  #sky_brightness=20.1, # sky brightness (in magnitude per square arcseconds)
-                  #num_exposures=10, # number of exposures that are combined
-                  )
+cfg.survey_info = dict(
+                       survey_name="HST",
+                       bandpass_list=["WFC3_F160W"]
+                       )
 
 cfg.psf = dict(
            type='PIXEL', # string, type of PSF ('GAUSSIAN' and 'PIXEL' supported)
            kernel_size=91, # dimension of provided PSF kernel, only valid when profile='PIXEL'
-           #fwhm=0.1, # # full width at half maximum of the PSF (if not specific psf_model is specified)
-           which_psf_maps=None, # None if rotate among all available PSF maps, else seed number of the map to generate all images with that map
+           which_psf_maps=[101], # None if rotate among all available PSF maps, else seed number of the map to generate all images with that map
            )
 
 cfg.numerics = dict(

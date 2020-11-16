@@ -6,6 +6,7 @@ from baobab.sim_utils import mag_to_amp_extended, mag_to_amp_point, get_lensed_t
 from lenstronomy.LensModel.Solver.lens_equation_solver import LensEquationSolver
 from lenstronomy.SimulationAPI.data_api import DataAPI
 from lenstronomy.PointSource.point_source import PointSource
+from baobab.sim_utils import psf_utils
 
 
 __all__ = ['Imager']
@@ -35,15 +36,15 @@ class Imager:
         self.magnification_frac_err = magnification_frac_err
         self.img_features = {} # Initialized to store metadata of images, will get updated for each lens
 
-    def _set_sim_api(self, num_pix, kwargs_detector):
+    def _set_sim_api(self, num_pix, kwargs_detector, psf_kernel_size, which_psf_maps):
         """Set the simulation API objects
 
         """
         self.data_api = DataAPI(num_pix, **kwargs_detector)
         #self.pixel_scale = data_api.pixel_scale
-        psf_model = kwargs_detector['kernel_point_source']
-        # Set the precision level of lens equation solver
         pixel_scale = kwargs_detector['pixel_scale']
+        psf_model = psf_utils.get_PSF_model(kwargs_detector['psf_type'], pixel_scale, seeing=kwargs_detector['seeing'], kernel_size=psf_kernel_size, which_psf_maps=which_psf_maps)
+        # Set the precision level of lens equation solver
         self.min_distance = 0.05
         self.search_window = pixel_scale*num_pix
         self.image_model = ImageModel(self.data_api.data_class, psf_model, self.lens_mass_model, self.src_light_model, self.lens_light_model, self.ps_model, kwargs_numerics=self.kwargs_numerics)
@@ -125,28 +126,31 @@ class Imager:
                                  magnification=magnification,
                                  measured_magnification=measured_magnification)
 
-    def generate_image(self, sample, num_pix, kwargs_detector):
-        self._set_sim_api(num_pix, kwargs_detector)
-        self._load_kwargs(sample)
-        # Reject nonsensical number of images (due to insufficient numerical precision)
-        if ('y_image' in self.img_features) and (len(self.img_features['y_image']) not in [2, 4]):
-            return None, None
-        # Compute magnification
-        lensed_total_flux = get_lensed_total_flux(self.kwargs_lens_mass, self.kwargs_src_light, self.kwargs_ps, self.image_model)
-        #unlensed_total_flux = get_unlensed_total_flux(self.kwargs_src_light, self.src_light_model, self.kwargs_unlensed_amp_ps, self.ps_model)
-        unlensed_total_flux = get_unlensed_total_flux_numerical(self.kwargs_src_light, self.kwargs_unlensed_unmagnified_amp_ps, self.unlensed_image_model)
-        total_magnification = lensed_total_flux/unlensed_total_flux
-        # Apply magnification cut
-        if (total_magnification < self.min_magnification) or np.isnan(total_magnification):
-            return None, None
-        # Generate image for export
-        img = self.image_model.image(self.kwargs_lens_mass, self.kwargs_src_light, self.kwargs_lens_light, self.kwargs_ps)
-        img = np.maximum(0.0, img) # safeguard against negative pixel values
-        # Save remaining image features
-        self.img_features.update(total_magnification=total_magnification,
-                                 lensed_total_flux=lensed_total_flux,
-                                 unlensed_total_flux=unlensed_total_flux)
-        return img, self.img_features
+    def generate_image(self, sample, num_pix, survey_object_dict):
+        img_canvas = np.empty([len(survey_object_dict), num_pix, num_pix]) # [n_filters, num_pix, num_pix]
+        # Loop over bands
+        for i, (bp, survey_object) in enumerate(survey_object_dict.items()):
+            self._set_sim_api(num_pix, survey_object.kwargs_single_band(), survey_object.psf_kernel_size, survey_object.which_psf_maps)
+            self._load_kwargs(sample)
+            # Reject nonsensical number of images (due to insufficient numerical precision)
+            if ('y_image' in self.img_features) and (len(self.img_features['y_image']) not in [2, 4]):
+                return None, None
+            # Compute magnification
+            lensed_total_flux = get_lensed_total_flux(self.kwargs_lens_mass, self.kwargs_src_light, self.kwargs_ps, self.image_model)
+            #unlensed_total_flux = get_unlensed_total_flux(self.kwargs_src_light, self.src_light_model, self.kwargs_unlensed_amp_ps, self.ps_model)
+            unlensed_total_flux = get_unlensed_total_flux_numerical(self.kwargs_src_light, self.kwargs_unlensed_unmagnified_amp_ps, self.unlensed_image_model)
+            total_magnification = lensed_total_flux/unlensed_total_flux
+            # Apply magnification cut
+            if (total_magnification < self.min_magnification) or np.isnan(total_magnification):
+                return None, None
+            # Generate image for export
+            img = self.image_model.image(self.kwargs_lens_mass, self.kwargs_src_light, self.kwargs_lens_light, self.kwargs_ps)
+            img = np.maximum(0.0, img) # safeguard against negative pixel values
+            img_canvas[i, :, :] = img 
+            # Save remaining image features
+            img_features_single_band = {f'total_magnification_{bp}': total_magnification, f'lensed_total_flux_{bp}': lensed_total_flux, f'unlensed_total_flux_{bp}': unlensed_total_flux}
+            self.img_features.update(img_features_single_band)
+        return img_canvas, self.img_features
 
     def add_noise(self, image_array):
         """Add noise to the image (deprecated; replaced by the data_augmentation package)
