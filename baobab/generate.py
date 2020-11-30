@@ -28,6 +28,7 @@ from lenstronomy.PointSource.point_source import PointSource
 from baobab.configs import BaobabConfig
 import baobab.bnn_priors as bnn_priors
 from baobab.sim_utils import Imager, Selection
+from baobab.substructure_utils import lens_model_with_subhalos
 print("Lenstronomy path being used: {:s}".format(lenstronomy.__path__[0]))
 
 
@@ -68,9 +69,11 @@ def main():
 		print("Destination folder path: {:s}".format(save_dir))
 	else:
 		raise OSError("Destination folder already exists.")
-	# Instantiate density models
-	kwargs_model = dict(lens_model_list=[cfg.bnn_omega.lens_mass.profile,
-		cfg.bnn_omega.external_shear.profile],
+	# Instantiate density models. Substructure and line of sight haloes will
+	# be added inside the imager class since the number of objects is variable.
+	lens_model_list = [cfg.bnn_omega.lens_mass.profile,
+		cfg.bnn_omega.external_shear.profile]
+	kwargs_model = dict(lens_model_list=lens_model_list,
 		source_light_model_list=[cfg.bnn_omega.src_light.profile],)
 	lens_mass_model = LensModel(lens_model_list=kwargs_model['lens_model_list'])
 	src_light_model = LightModel(

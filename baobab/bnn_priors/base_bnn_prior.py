@@ -56,11 +56,14 @@ class BaseBNNPrior(ABC):
         The dictionary will be updated as more profiles are supported.
 
         """
-        params = dict(PEMD=['center_x', 'center_y', 'gamma', 'theta_E', 'e1', 'e2'],
-                          SHEAR_GAMMA_PSI=['gamma_ext', 'psi_ext'],
-                          SERSIC_ELLIPSE=['magnitude', 'center_x', 'center_y', 'n_sersic', 'R_sersic', 'e1', 'e2'],
-                          LENSED_POSITION=['magnitude'],
-                          SOURCE_POSITION=['ra_source', 'dec_source', 'magnitude'],)
+        params = dict(
+            PEMD=['center_x', 'center_y', 'gamma', 'theta_E', 'e1','e2'],
+            SHEAR_GAMMA_PSI=['gamma_ext', 'psi_ext'],
+            SUBHALO_MASS_FUNCTION=['Sigma_sub','mf_slope','c_200','c_slope'],
+            SERSIC_ELLIPSE=['magnitude', 'center_x', 'center_y', 'n_sersic',
+                'R_sersic', 'e1', 'e2'],
+            LENSED_POSITION=['magnitude'],
+            SOURCE_POSITION=['ra_source', 'dec_source', 'magnitude'],)
         setattr(self, 'params', params)
 
     def _raise_config_error(self, missing_key, parent_config_key, bnn_prior_class):
@@ -78,7 +81,7 @@ class BaseBNNPrior(ABC):
         return getattr(baobab.distributions, 'sample_{:s}'.format(dist))(**hyperparams)
 
     def eval_param_pdf(self, eval_at, hyperparams):
-        """Assigns and evaluates the PDF 
+        """Assigns and evaluates the PDF
 
         """
         hyperparams = hyperparams.copy()
