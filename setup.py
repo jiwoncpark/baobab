@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
       name='pybaobab',
-      version='0.1.0',
+      version='0.1.1',
       author='Ji Won Park',
       author_email='jiwon.christine.park@gmail.com',
       packages=find_packages(),
