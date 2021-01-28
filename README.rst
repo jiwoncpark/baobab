@@ -11,7 +11,9 @@ Baobab
 
 .. image:: https://coveralls.io/repos/github/jiwoncpark/baobab/badge.svg?branch=master
         :target: https://coveralls.io/github/jiwoncpark/baobab?branch=master
-
+        
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4476822.svg
+        :target: https://zenodo.org/record/4476822
 
 Training data generator for hierarchically modeling strong lenses with Bayesian neural networks
 
